@@ -1,6 +1,5 @@
 import { RotateCcw, Settings, Moon, Sun } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import darkModeLogo from 'figma:asset/d3e7946b1358646218c5b05cd0ae729fdd948bd4.png';
 
 interface HeaderProps {
   onReset: () => void;
@@ -35,19 +34,11 @@ export function Header({ onReset }: HeaderProps) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            {isDark ? (
-              <img
-                src={darkModeLogo}
-                alt="Linemaster"
-                className="h-9"
-              />
-            ) : (
-              <img
-                src="https://linemaster.com/wp-content/uploads/2024/10/linemaster-logo.jpg"
-                alt="Linemaster"
-                className="h-9"
-              />
-            )}
+            <img
+              src="https://linemaster.com/wp-content/uploads/2024/10/linemaster-logo.jpg"
+              alt="Linemaster"
+              className="h-9"
+            />
             <div className="hidden sm:block h-6 w-px bg-border" />
             <span className="hidden sm:block text-sm font-semibold text-muted-foreground">
               Product Finder
