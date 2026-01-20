@@ -213,16 +213,16 @@ async function initializeData() {
         { id: 'variable', category: 'action', label: 'Variable Speed', icon: 'Gauge', description: 'Speed varies with pressure.', availableFor: ['electrical', 'pneumatic'], sortOrder: 3 },
         
         // Environments
-        { id: 'dry', category: 'environment', label: 'Dry / Indoor', description: 'IP20 sufficient.', sortOrder: 1 },
-        { id: 'damp', category: 'environment', label: 'Damp / Splash', description: 'IP56 recommended.', sortOrder: 2 },
-        { id: 'wet', category: 'environment', label: 'Wet / Washdown', description: 'IP68 required.', sortOrder: 3 },
+        { id: 'dry', category: 'environment', label: 'Dry / Indoor', description: 'IP20 sufficient.', icon: 'Home', sortOrder: 1 },
+        { id: 'damp', category: 'environment', label: 'Damp / Splash', description: 'IP56 recommended.', icon: 'CloudRain', sortOrder: 2 },
+        { id: 'wet', category: 'environment', label: 'Wet / Washdown', description: 'IP68 required.', icon: 'Droplets', sortOrder: 3 },
         
         // Features
         { id: 'feature-shield', category: 'feature', label: 'Safety Guard/Shield', description: 'Prevents accidental activation.', sortOrder: 1 },
         { id: 'feature-multi_stage', category: 'feature', label: 'Multi-Stage', description: '2 or 3 actuation points.', sortOrder: 2 },
         { id: 'feature-twin', category: 'feature', label: 'Twin Pedal', description: 'Two independent pedals.', sortOrder: 3 },
-        { id: 'feature-custom_cable', category: 'feature', label: 'Custom Cable Length', description: 'Non-standard cord length.', hideFor: ['wireless', 'pneumatic'], sortOrder: 4 },
-        { id: 'feature-custom_connector', category: 'feature', label: 'Custom Connector', description: 'Specific plug type.', sortOrder: 5 },
+        { id: 'feature-custom-cable', category: 'feature', label: 'Custom Cable Length', description: 'Non-standard cord length.', hideFor: ['wireless', 'pneumatic'], sortOrder: 4 },
+        { id: 'feature-custom-connector', category: 'feature', label: 'Custom Connector', description: 'Specific plug type.', sortOrder: 5 },
         
         // Console Styles (Medical)
         { id: 'aero', category: 'console_style', label: 'Aero Channel', description: 'Low-profile, streamlined design.', sortOrder: 1 },
