@@ -169,7 +169,7 @@ function transformOptionToDB(option: any): any {
 // ============================================
 
 // GET all products from Stock Switches table
-app.get('/make-server-a6e7a38d/products', async (c) => {
+app.get('/make-server-4241b73c/products', async (c) => {
   try {
     console.log('Fetching products from Stock Switches table...');
 
@@ -199,7 +199,7 @@ app.get('/make-server-a6e7a38d/products', async (c) => {
 });
 
 // GET single product by ID
-app.get('/make-server-a6e7a38d/products/:id', async (c) => {
+app.get('/make-server-4241b73c/products/:id', async (c) => {
   try {
     const id = c.req.param('id');
 
@@ -225,7 +225,7 @@ app.get('/make-server-a6e7a38d/products/:id', async (c) => {
 });
 
 // POST create or update product
-app.post('/make-server-a6e7a38d/products', async (c) => {
+app.post('/make-server-4241b73c/products', async (c) => {
   try {
     const body = await c.req.json();
     const dbProduct = transformProductToDB(body);
@@ -258,7 +258,7 @@ app.post('/make-server-a6e7a38d/products', async (c) => {
 });
 
 // DELETE product
-app.delete('/make-server-a6e7a38d/products/:id', async (c) => {
+app.delete('/make-server-4241b73c/products/:id', async (c) => {
   try {
     const id = c.req.param('id');
 
@@ -280,7 +280,7 @@ app.delete('/make-server-a6e7a38d/products/:id', async (c) => {
 // ============================================
 
 // GET all options from wizard_options table
-app.get('/make-server-a6e7a38d/options', async (c) => {
+app.get('/make-server-4241b73c/options', async (c) => {
   try {
     console.log('Fetching options from wizard_options table...');
 
@@ -305,7 +305,7 @@ app.get('/make-server-a6e7a38d/options', async (c) => {
 });
 
 // GET options by category
-app.get('/make-server-a6e7a38d/options/:category', async (c) => {
+app.get('/make-server-4241b73c/options/:category', async (c) => {
   try {
     const category = c.req.param('category');
 
@@ -326,7 +326,7 @@ app.get('/make-server-a6e7a38d/options/:category', async (c) => {
 });
 
 // POST create or update option
-app.post('/make-server-a6e7a38d/options', async (c) => {
+app.post('/make-server-4241b73c/options', async (c) => {
   try {
     const body = await c.req.json();
     const dbOption = transformOptionToDB(body);
@@ -346,7 +346,7 @@ app.post('/make-server-a6e7a38d/options', async (c) => {
 });
 
 // DELETE option
-app.delete('/make-server-a6e7a38d/options/:id', async (c) => {
+app.delete('/make-server-4241b73c/options/:id', async (c) => {
   try {
     const id = c.req.param('id');
 
@@ -367,7 +367,7 @@ app.delete('/make-server-a6e7a38d/options/:id', async (c) => {
 // Health check
 // ============================================
 
-app.get('/make-server-a6e7a38d/health', (c) => {
+app.get('/make-server-4241b73c/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 

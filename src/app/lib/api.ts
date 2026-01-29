@@ -1,6 +1,6 @@
 import { projectId, publicAnonKey } from '/utils/supabase/info';
 
-const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-a6e7a38d`;
+const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-4241b73c`;
 
 async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   console.log('🔵 API Request:', API_BASE_URL + endpoint);
