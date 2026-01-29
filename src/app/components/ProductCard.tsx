@@ -51,11 +51,19 @@ export function ProductCard({ product, matchReasons }: ProductCardProps) {
       <div
         className={`h-64 flex items-center justify-center p-8 bg-gradient-to-br ${dutyColor.bg}`}
       >
-        <img
-          src={product.image}
-          alt={product.series}
-          className="w-full h-full object-contain transition-all duration-500 group-hover:scale-110"
-        />
+        {product.image ? (
+          <img
+            src={product.image}
+            alt={product.series}
+            className="w-full h-full object-contain transition-all duration-500 group-hover:scale-110"
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center text-muted-foreground">
+            <div className="text-6xl mb-2">🔌</div>
+            <span className="text-sm font-medium">{product.series}</span>
+            {product.part && <span className="text-xs opacity-75">{product.part}</span>}
+          </div>
+        )}
       </div>
 
       {/* Content */}

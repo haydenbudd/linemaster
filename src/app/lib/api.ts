@@ -52,23 +52,35 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}) {
 }
 
 export interface Product {
-  id: string;
+  id: number;
+  part: string;
   series: string;
-  technology: string;
-  duty: 'heavy' | 'medium' | 'light';
-  ip: string;
+  technology: 'electrical' | 'pneumatic' | 'wireless';
+  action: 'momentary' | 'maintained' | 'variable';
   actions: string[];
+  ip: string;
   material: string;
-  description: string;
-  applications: string[];
-  features?: string[]; // Available features like 'shield', 'multi_stage', 'twin'
-  recommended_for?: string[]; // Array of application IDs where this product shines
-  connector_type?: string; // Connector type: 'hardwired', 'plug-in', 'terminal-block', etc.
-  flagship: boolean;
-  image: string;
+  color?: string;
+  guard?: string | null;
+  numberOfPedals?: number;
+  stages?: string | null;
+  configuration?: string | null;
+  connection?: string | null;
   link: string;
-  created_at?: string;
-  updated_at?: string;
+  applications: string[];
+  duty: 'heavy' | 'medium' | 'light';
+  description: string;
+  image: string;
+  features: string[];
+  // Additional metadata
+  sytelineStatus?: string;
+  gated?: boolean;
+  wireless?: boolean;
+  linear?: boolean;
+  // Legacy fields for backwards compatibility
+  flagship?: boolean;
+  recommended_for?: string[];
+  connector_type?: string;
 }
 
 export interface Option {
@@ -87,14 +99,16 @@ export interface Option {
 export async function fetchProducts(): Promise<Product[]> {
   const data = await fetchAPI('/products');
   const products = data.products || [];
-  
-  // Normalize products to ensure features is always an array
+
+  // Normalize products to ensure all array fields are properly typed
   return products.map((product: any) => ({
     ...product,
     features: Array.isArray(product.features) ? product.features : [],
-    recommended_for: Array.isArray(product.recommended_for) ? product.recommended_for : [],
     actions: Array.isArray(product.actions) ? product.actions : [],
     applications: Array.isArray(product.applications) ? product.applications : [],
+    // Ensure backwards compatibility
+    flagship: product.flagship ?? false,
+    recommended_for: Array.isArray(product.recommended_for) ? product.recommended_for : [],
   }));
 }
 

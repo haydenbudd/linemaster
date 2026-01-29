@@ -1,7 +1,7 @@
 import { Hono } from 'npm:hono';
 import { cors } from 'npm:hono/cors';
 import { logger } from 'npm:hono/logger';
-import * as kv from './kv_store.tsx';
+import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 
 const app = new Hono();
 
@@ -9,271 +9,192 @@ const app = new Hono();
 app.use('*', logger(console.log));
 app.use('*', cors());
 
-// Version tracking to prevent re-initialization on redeploys
-const DB_VERSION = 'v1.1.0'; // Increment this if you want to force a re-seed
+// Supabase client factory
+const supabase = () => createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+);
 
-// Initialize data on first run ONLY
-// This checks for both the existence of data AND a version flag
-// If data exists, it will NEVER be overwritten, even on redeploy
-async function initializeData() {
-  try {
-    console.log('Checking if data initialization is needed...');
-    
-    // Check if we've already initialized (version flag prevents re-init on redeploy)
-    const dbVersion = await kv.get('db_version');
-    if (dbVersion === DB_VERSION) {
-      console.log(`Database already initialized (version ${dbVersion}). Skipping initialization.`);
-      return;
-    }
-    
-    const existingProducts = await kv.get('products');
-    if (!existingProducts) {
-      console.log('No existing products found, initializing...');
-      // Initialize with default products
-      const defaultProducts = [
-        {
-          id: 'hercules',
-          series: 'Hercules',
-          technology: 'electrical',
-          duty: 'heavy',
-          ip: 'IP56',
-          actions: ['momentary', 'maintained'],
-          material: 'Cast Iron',
-          description: 'The ultimate heavy-duty industrial footswitch.',
-          applications: ['industrial', 'automotive', 'woodworking', 'general'],
-          features: ['shield'],
-          flagship: true,
-          image: 'https://linemaster.com/wp-content/uploads/2025/04/hercules-full-shield.png',
-          link: 'https://linemaster.com/product/167/hercules-full-shield/',
-        },
-        {
-          id: 'atlas',
-          series: 'Atlas',
-          technology: 'electrical',
-          duty: 'heavy',
-          ip: 'IP68',
-          actions: ['momentary'],
-          material: 'Cast Aluminum',
-          description: 'Fully sealed IP68 heavy-duty switch.',
-          applications: ['industrial', 'automotive'],
-          features: ['shield'],
-          flagship: false,
-          image: 'https://linemaster.com/wp-content/uploads/2025/04/atlas.png',
-          link: 'https://linemaster.com/product/77/atlas-full-shield/',
-        },
-        {
-          id: 'clipper',
-          series: 'Clipper',
-          technology: 'electrical',
-          duty: 'medium',
-          ip: 'IP20',
-          actions: ['momentary', 'maintained'],
-          material: 'Cast Iron',
-          description: 'The industry standard. Classic cast iron.',
-          applications: ['industrial', 'woodworking', 'automotive', 'general'],
-          features: ['twin'],
-          flagship: true,
-          image: 'https://linemaster.com/wp-content/uploads/2025/04/clipper_duo.png',
-          link: 'https://linemaster.com/product/115/clipper-single-momentary/',
-        },
-        {
-          id: 'classic-iv',
-          series: 'Classic IV',
-          technology: 'electrical',
-          duty: 'medium',
-          ip: 'IP68',
-          actions: ['momentary'],
-          material: 'Cast Aluminum',
-          description: 'Watertight cast aluminum. IP68 sealed.',
-          applications: ['industrial', 'automotive'],
-          features: [],
-          flagship: false,
-          image: 'https://linemaster.com/wp-content/uploads/2025/04/classic-iv.png',
-          link: 'https://linemaster.com/product/112/classic-iv/',
-        },
-        {
-          id: 'dolphin',
-          series: 'Dolphin',
-          technology: 'electrical',
-          duty: 'light',
-          ip: 'IP20',
-          actions: ['momentary'],
-          material: 'Polymeric',
-          description: 'Omni-directional. Popular for tattoo artists.',
-          applications: ['general', 'tattoo', 'medical'],
-          features: [],
-          flagship: false,
-          image: 'https://linemaster.com/wp-content/uploads/2025/04/dolphin-2.png',
-          link: 'https://linemaster.com/product/129/dolphin/',
-        },
-        {
-          id: 'gem-v',
-          series: 'Gem-V',
-          technology: 'electrical',
-          duty: 'light',
-          ip: 'IP20',
-          actions: ['momentary'],
-          material: 'Cast Zinc',
-          description: 'Round omni-directional design.',
-          applications: ['general', 'tattoo', 'medical'],
-          features: [],
-          flagship: false,
-          image: 'https://linemaster.com/wp-content/uploads/2025/04/gem.png',
-          link: 'https://linemaster.com/product/162/gem-v/',
-        },
-        {
-          id: 'varior',
-          series: 'Varior',
-          technology: 'electrical',
-          duty: 'light',
-          ip: 'IP20',
-          actions: ['variable'],
-          material: 'Formed Steel',
-          description: 'Foot-operated potentiometer for variable speed.',
-          applications: ['industrial', 'automotive', 'woodworking', 'general'],
-          features: [],
-          flagship: false,
-          image: 'https://linemaster.com/wp-content/uploads/2025/04/varior-potentiometer.png',
-          link: 'https://linemaster.com/product/407/varior-potentiometer/',
-        },
-        {
-          id: 'wireless-hercules',
-          series: 'RF Wireless Hercules',
-          technology: 'wireless',
-          duty: 'heavy',
-          ip: 'IP68',
-          actions: ['momentary'],
-          material: 'Cast Iron',
-          description: 'RF Wireless. Eliminates trip hazards.',
-          applications: ['industrial', 'automotive', 'medical', 'general'],
-          features: ['shield'],
-          flagship: true,
-          image: 'https://linemaster.com/wp-content/uploads/2025/04/rf-hercules.png',
-          link: 'https://linemaster.com/product/475/radio-frequency-wireless-hercules/',
-        },
-        {
-          id: 'air-seal',
-          series: 'Air Seal',
-          technology: 'pneumatic',
-          duty: 'light',
-          ip: 'IP20',
-          actions: ['momentary', 'maintained'],
-          material: 'Formed Steel',
-          description: 'Air-actuated electrical switch.',
-          applications: ['industrial', 'general', 'medical'],
-          features: [],
-          flagship: false,
-          image: 'https://linemaster.com/wp-content/uploads/2025/03/air_seal.png',
-          link: 'https://linemaster.com/product/2/air-seal-maintained/',
-        },
-        {
-          id: 'airval-hercules',
-          series: 'Airval Hercules',
-          technology: 'pneumatic',
-          duty: 'heavy',
-          ip: 'IP20',
-          actions: ['momentary', 'maintained', 'variable'],
-          material: 'Cast Iron',
-          description: 'Heavy-duty cast iron pneumatic control.',
-          applications: ['industrial', 'automotive'],
-          features: ['shield', 'twin'],
-          flagship: false,
-          image: 'https://linemaster.com/wp-content/uploads/2025/03/airval-hercules-duo_optimized.png',
-          link: 'https://linemaster.com/product/17/airval-hercules-full-shield/',
-        },
-      ];
-      
-      await kv.set('products', defaultProducts);
-      console.log('Initialized products data');
-    } else {
-      console.log(`Found ${existingProducts.length} existing products. Preserving user data.`);
-    }
+// ============================================
+// Data transformation functions
+// ============================================
 
-    const existingOptions = await kv.get('options');
-    if (!existingOptions) {
-      console.log('No existing options found, initializing...');
-      // Initialize with default options
-      const defaultOptions = [
-        // Applications
-        { id: 'industrial', category: 'application', label: 'Industrial & Manufacturing', icon: 'Factory', description: 'Heavy machinery, CNC, assembly', sortOrder: 1 },
-        { id: 'medical', category: 'application', label: 'Medical & Healthcare', icon: 'Heart', description: 'Surgical, diagnostic, patient care', isMedical: true, sortOrder: 2 },
-        { id: 'automotive', category: 'application', label: 'Automotive & Repair', icon: 'Car', description: 'Lifts, paint booths, tire changers', sortOrder: 3 },
-        { id: 'woodworking', category: 'application', label: 'Woodworking', icon: 'Hammer', description: 'Saws, lathes, routers', sortOrder: 4 },
-        { id: 'tattoo', category: 'application', label: 'Tattoo & Body Art', icon: 'Palette', description: 'Precision control for artists', sortOrder: 5 },
-        { id: 'general', category: 'application', label: 'General / Other', icon: 'Coffee', description: 'Office, consumer, specialty', sortOrder: 6 },
-        
-        // Technologies
-        { id: 'electrical', category: 'technology', label: 'Electrical', icon: 'Zap', description: 'Standard wired connection.', availableFor: ['industrial', 'automotive', 'woodworking', 'tattoo', 'general'], sortOrder: 1 },
-        { id: 'pneumatic', category: 'technology', label: 'Pneumatic (Air)', icon: 'Wind', description: 'Uses compressed air.', availableFor: ['industrial', 'automotive', 'woodworking', 'general'], sortOrder: 2 },
-        { id: 'wireless', category: 'technology', label: 'RF Wireless', icon: 'Radio', description: 'Cord-free operation.', availableFor: ['industrial', 'automotive', 'general'], sortOrder: 3 },
-        
-        // Actions
-        { id: 'momentary', category: 'action', label: 'Momentary', icon: 'CircleDot', description: 'Active while pressed.', availableFor: ['electrical', 'pneumatic', 'wireless'], sortOrder: 1 },
-        { id: 'maintained', category: 'action', label: 'Maintained', icon: 'ToggleLeft', description: 'Press ON, press again OFF.', availableFor: ['electrical', 'pneumatic'], sortOrder: 2 },
-        { id: 'variable', category: 'action', label: 'Variable Speed', icon: 'Gauge', description: 'Speed varies with pressure.', availableFor: ['electrical', 'pneumatic'], sortOrder: 3 },
-        
-        // Environments
-        { id: 'dry', category: 'environment', label: 'Dry / Indoor', description: 'IP20 sufficient.', icon: 'Home', sortOrder: 1 },
-        { id: 'damp', category: 'environment', label: 'Damp / Splash', description: 'IP56 recommended.', icon: 'CloudRain', sortOrder: 2 },
-        { id: 'wet', category: 'environment', label: 'Wet / Washdown', description: 'IP68 required.', icon: 'Droplets', sortOrder: 3 },
-        
-        // Features
-        { id: 'feature-shield', category: 'feature', label: 'Safety Guard/Shield', description: 'Prevents accidental activation.', sortOrder: 1 },
-        { id: 'feature-multi_stage', category: 'feature', label: 'Multi-Stage', description: '2 or 3 actuation points.', sortOrder: 2 },
-        { id: 'feature-twin', category: 'feature', label: 'Twin Pedal', description: 'Two independent pedals.', sortOrder: 3 },
-        { id: 'feature-custom-cable', category: 'feature', label: 'Custom Cable Length', description: 'Non-standard cord length.', hideFor: ['wireless', 'pneumatic'], sortOrder: 4 },
-        { id: 'feature-custom-connector', category: 'feature', label: 'Custom Connector', description: 'Specific plug type.', sortOrder: 5 },
-        
-        // Console Styles (Medical)
-        { id: 'aero', category: 'console_style', label: 'Aero Channel', description: 'Low-profile, streamlined design.', sortOrder: 1 },
-        { id: 'custom', category: 'console_style', label: 'Custom Design', description: 'Unique housing tailored to your needs.', sortOrder: 2 },
-        
-        // Pedal Counts (Medical)
-        { id: '1', category: 'pedal_count', label: 'Single', description: 'One function', sortOrder: 1 },
-        { id: '2', category: 'pedal_count', label: 'Dual', description: 'Two functions', sortOrder: 2 },
-        { id: '3', category: 'pedal_count', label: 'Triple', description: 'Three functions', sortOrder: 3 },
-        { id: '4+', category: 'pedal_count', label: 'Multi', description: '4+ controls', sortOrder: 4 },
-        
-        // Medical Technical Features
-        { id: 'wireless_medical', category: 'medical_feature', label: 'RF Wireless', description: 'No cords in the OR.', sortOrder: 1 },
-        { id: 'linear', category: 'medical_feature', label: 'Variable Speed', description: 'Proportional control.', sortOrder: 2 },
-        { id: 'sealed', category: 'medical_feature', label: 'Sealed / Washdown', description: 'IP68 for sterilization.', sortOrder: 3 },
-        
-        // Accessories (Medical)
-        { id: 'toe_loops', category: 'accessory', label: 'Toe Loops', description: 'Secure foot positioning.', sortOrder: 1 },
-        { id: 'guards', category: 'accessory', label: 'Pedal Guards', description: 'Prevent accidental activation.', sortOrder: 2 },
-        { id: 'labels', category: 'accessory', label: 'Custom Labels/Marking', description: 'Branding or identification.', sortOrder: 3 },
-        { id: 'color', category: 'accessory', label: 'Custom Color', description: 'Match your device.', sortOrder: 4 },
-      ];
-      
-      await kv.set('options', defaultOptions);
-      console.log('Initialized options data');
-    } else {
-      console.log(`Found ${existingOptions.length} existing options. Preserving user data.`);
-    }
-
-    // Set the version flag to prevent re-initialization on redeploy
-    await kv.set('db_version', DB_VERSION);
-    console.log(`Set database version to ${DB_VERSION}`);
-  } catch (error) {
-    console.error('Error initializing data:', error);
+// Map Stock Switches row to wizard-friendly technology value
+function mapTechnology(row: any): 'electrical' | 'pneumatic' | 'wireless' {
+  if (row.Wireless === 'Yes') return 'wireless';
+  if (row['Pneumatic Flow Control'] === 'Yes' ||
+      row.Type?.toLowerCase().includes('pneumatic') ||
+      row['Type W/o Electrical']?.toLowerCase().includes('pneumatic')) {
+    return 'pneumatic';
   }
+  return 'electrical';
 }
 
-// Initialize data on startup
-initializeData().catch(console.error);
+// Map Stock Switches row to wizard-friendly action value
+function mapAction(row: any): 'momentary' | 'maintained' | 'variable' {
+  if (row.Linear === 'Yes') return 'variable';
+  if (row['On/Off'] === 'Main') return 'maintained';
+  return 'momentary';
+}
 
-// GET all products
+// Map Stock Switches row to array of actions (some products support multiple)
+function mapActions(row: any): string[] {
+  const actions: string[] = [];
+
+  // Check On/Off field
+  if (row['On/Off'] === 'Mom') actions.push('momentary');
+  if (row['On/Off'] === 'Main') actions.push('maintained');
+
+  // Check for variable/linear
+  if (row.Linear === 'Yes') actions.push('variable');
+
+  // If no actions detected, default to momentary
+  if (actions.length === 0) actions.push('momentary');
+
+  return actions;
+}
+
+// Map Stock Switches row to features array
+function mapFeatures(row: any): string[] {
+  const features: string[] = [];
+
+  // Check for guard/shield
+  if (row.Guard && row.Guard.trim() !== '') {
+    features.push('shield');
+  }
+
+  // Check for twin pedal
+  if (row['Number of Pedals'] && row['Number of Pedals'] >= 2) {
+    features.push('twin');
+  }
+
+  // Check for multi-stage
+  if (row.Stages && row.Stages.toLowerCase().includes('stage')) {
+    features.push('multi_stage');
+  }
+
+  return features;
+}
+
+// Transform Stock Switches row to wizard Product format
+function transformProductFromDB(row: any): any {
+  return {
+    id: row.id,
+    part: row.Part,
+    series: row.series,
+    technology: mapTechnology(row),
+    action: mapAction(row),
+    actions: mapActions(row),
+    ip: row['IP Rating'] || 'IPXX',
+    material: row.Material || '',
+    color: row.Color || '',
+    guard: row.Guard || null,
+    numberOfPedals: row['Number of Pedals'] || 1,
+    stages: row.Stages || null,
+    configuration: row.Configuration || null,
+    connection: row.Connection || null,
+    link: row.Link || '',
+    // New wizard-friendly columns (from migration)
+    applications: row.applications || ['industrial', 'general'],
+    duty: row.duty || 'medium',
+    description: row.description || `${row.series} - ${row.Part}`,
+    image: row.image_url || '',
+    // Computed features
+    features: mapFeatures(row),
+    // Additional data for display
+    sytelineStatus: row['Syteline Status'],
+    gated: row.Gated === 'Yes',
+    wireless: row.Wireless === 'Yes',
+    linear: row.Linear === 'Yes',
+  };
+}
+
+// Transform wizard_options row to API format
+function transformOptionFromDB(row: any): any {
+  return {
+    id: row.id,
+    category: row.category,
+    label: row.label,
+    icon: row.icon || '',
+    description: row.description || '',
+    isMedical: row.is_medical || false,
+    availableFor: row.available_for || [],
+    hideFor: row.hide_for || [],
+    sortOrder: row.sort_order || 0,
+  };
+}
+
+// Transform API product to DB format for upsert
+function transformProductToDB(product: any): any {
+  return {
+    series: product.series,
+    Part: product.part,
+    'On/Off': product.action === 'maintained' ? 'Main' : 'Mom',
+    Wireless: product.technology === 'wireless' ? 'Yes' : null,
+    Linear: product.action === 'variable' ? 'Yes' : null,
+    Type: product.technology === 'pneumatic' ? 'Pneumatic Flow Control' : 'Electrical',
+    'IP Rating': product.ip,
+    Material: product.material,
+    Color: product.color,
+    Guard: product.guard,
+    'Number of Pedals': product.numberOfPedals,
+    Stages: product.stages,
+    Configuration: product.configuration,
+    Connection: product.connection,
+    Link: product.link,
+    applications: product.applications,
+    duty: product.duty,
+    description: product.description,
+    image_url: product.image,
+  };
+}
+
+// Transform API option to DB format for upsert
+function transformOptionToDB(option: any): any {
+  return {
+    id: option.id,
+    category: option.category,
+    label: option.label,
+    icon: option.icon,
+    description: option.description,
+    is_medical: option.isMedical || false,
+    available_for: option.availableFor || [],
+    hide_for: option.hideFor || [],
+    sort_order: option.sortOrder || 0,
+  };
+}
+
+// ============================================
+// Product API endpoints
+// ============================================
+
+// GET all products from Stock Switches table
 app.get('/make-server-a6e7a38d/products', async (c) => {
   try {
-    console.log('Fetching products from KV store...');
-    const products = await kv.get('products') || [];
-    console.log(`Successfully fetched ${products.length} products`);
+    console.log('Fetching products from Stock Switches table...');
+
+    const { data, error } = await supabase()
+      .from('Stock Switches')
+      .select('*')
+      .not('Syteline Status', 'eq', 'Obsolete')
+      .order('series');
+
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+
+    const products = (data || []).map(transformProductFromDB);
+    console.log(`Successfully fetched ${products.length} products from Stock Switches`);
+
     return c.json({ products });
   } catch (error) {
     console.error('Error fetching products:', error);
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-    return c.json({ error: 'Failed to fetch products', details: error instanceof Error ? error.message : String(error) }, 500);
+    return c.json({
+      error: 'Failed to fetch products',
+      details: error instanceof Error ? error.message : String(error)
+    }, 500);
   }
 });
 
@@ -281,13 +202,21 @@ app.get('/make-server-a6e7a38d/products', async (c) => {
 app.get('/make-server-a6e7a38d/products/:id', async (c) => {
   try {
     const id = c.req.param('id');
-    const products = await kv.get('products') || [];
-    const product = products.find((p: any) => p.id === id);
-    
-    if (!product) {
-      return c.json({ error: 'Product not found' }, 404);
+
+    const { data, error } = await supabase()
+      .from('Stock Switches')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return c.json({ error: 'Product not found' }, 404);
+      }
+      throw error;
     }
-    
+
+    const product = transformProductFromDB(data);
     return c.json({ product });
   } catch (error) {
     console.error('Error fetching product:', error);
@@ -299,19 +228,29 @@ app.get('/make-server-a6e7a38d/products/:id', async (c) => {
 app.post('/make-server-a6e7a38d/products', async (c) => {
   try {
     const body = await c.req.json();
-    const products = await kv.get('products') || [];
-    
-    const existingIndex = products.findIndex((p: any) => p.id === body.id);
-    if (existingIndex >= 0) {
-      products[existingIndex] = { ...products[existingIndex], ...body };
+    const dbProduct = transformProductToDB(body);
+
+    // If id is provided, update; otherwise insert
+    if (body.id) {
+      const { data, error } = await supabase()
+        .from('Stock Switches')
+        .update(dbProduct)
+        .eq('id', body.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return c.json({ product: transformProductFromDB(data) });
     } else {
-      products.push(body);
+      const { data, error } = await supabase()
+        .from('Stock Switches')
+        .insert(dbProduct)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return c.json({ product: transformProductFromDB(data) });
     }
-    
-    await kv.set('products', products);
-    const product = existingIndex >= 0 ? products[existingIndex] : body;
-    
-    return c.json({ product });
   } catch (error) {
     console.error('Error upserting product:', error);
     return c.json({ error: 'Failed to save product' }, 500);
@@ -322,10 +261,13 @@ app.post('/make-server-a6e7a38d/products', async (c) => {
 app.delete('/make-server-a6e7a38d/products/:id', async (c) => {
   try {
     const id = c.req.param('id');
-    const products = await kv.get('products') || [];
-    const filtered = products.filter((p: any) => p.id !== id);
-    
-    await kv.set('products', filtered);
+
+    const { error } = await supabase()
+      .from('Stock Switches')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
     return c.json({ success: true });
   } catch (error) {
     console.error('Error deleting product:', error);
@@ -333,10 +275,28 @@ app.delete('/make-server-a6e7a38d/products/:id', async (c) => {
   }
 });
 
-// GET all options
+// ============================================
+// Options API endpoints
+// ============================================
+
+// GET all options from wizard_options table
 app.get('/make-server-a6e7a38d/options', async (c) => {
   try {
-    const options = await kv.get('options') || [];
+    console.log('Fetching options from wizard_options table...');
+
+    const { data, error } = await supabase()
+      .from('wizard_options')
+      .select('*')
+      .order('sort_order');
+
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+
+    const options = (data || []).map(transformOptionFromDB);
+    console.log(`Successfully fetched ${options.length} options`);
+
     return c.json({ options });
   } catch (error) {
     console.error('Error fetching options:', error);
@@ -348,9 +308,16 @@ app.get('/make-server-a6e7a38d/options', async (c) => {
 app.get('/make-server-a6e7a38d/options/:category', async (c) => {
   try {
     const category = c.req.param('category');
-    const allOptions = await kv.get('options') || [];
-    const options = allOptions.filter((o: any) => o.category === category);
-    
+
+    const { data, error } = await supabase()
+      .from('wizard_options')
+      .select('*')
+      .eq('category', category)
+      .order('sort_order');
+
+    if (error) throw error;
+
+    const options = (data || []).map(transformOptionFromDB);
     return c.json({ options });
   } catch (error) {
     console.error('Error fetching options:', error);
@@ -362,19 +329,16 @@ app.get('/make-server-a6e7a38d/options/:category', async (c) => {
 app.post('/make-server-a6e7a38d/options', async (c) => {
   try {
     const body = await c.req.json();
-    const options = await kv.get('options') || [];
-    
-    const existingIndex = options.findIndex((o: any) => o.id === body.id);
-    if (existingIndex >= 0) {
-      options[existingIndex] = { ...options[existingIndex], ...body };
-    } else {
-      options.push(body);
-    }
-    
-    await kv.set('options', options);
-    const option = existingIndex >= 0 ? options[existingIndex] : body;
-    
-    return c.json({ option });
+    const dbOption = transformOptionToDB(body);
+
+    const { data, error } = await supabase()
+      .from('wizard_options')
+      .upsert(dbOption, { onConflict: 'id' })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return c.json({ option: transformOptionFromDB(data) });
   } catch (error) {
     console.error('Error upserting option:', error);
     return c.json({ error: 'Failed to save option' }, 500);
@@ -385,10 +349,13 @@ app.post('/make-server-a6e7a38d/options', async (c) => {
 app.delete('/make-server-a6e7a38d/options/:id', async (c) => {
   try {
     const id = c.req.param('id');
-    const options = await kv.get('options') || [];
-    const filtered = options.filter((o: any) => o.id !== id);
-    
-    await kv.set('options', filtered);
+
+    const { error } = await supabase()
+      .from('wizard_options')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
     return c.json({ success: true });
   } catch (error) {
     console.error('Error deleting option:', error);
@@ -396,7 +363,10 @@ app.delete('/make-server-a6e7a38d/options/:id', async (c) => {
   }
 });
 
+// ============================================
 // Health check
+// ============================================
+
 app.get('/make-server-a6e7a38d/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
