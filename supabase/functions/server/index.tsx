@@ -63,10 +63,10 @@ function mapRowToProduct(row: any) {
   };
 }
 
-// --- ROUTES ---
+// --- ROUTES (Clean, no prefixes) ---
 
-// GET /products - Fetch all products from Stock Switches
-app.get('/make-server-a6e7a38d/products', async (c) => {
+// GET /products
+app.get('/products', async (c) => {
   try {
     const { data, error } = await supabase
       .from('Stock Switches')
@@ -83,15 +83,13 @@ app.get('/make-server-a6e7a38d/products', async (c) => {
 });
 
 // GET /products/:id
-app.get('/make-server-a6e7a38d/products/:id', async (c) => {
+app.get('/products/:id', async (c) => {
   const id = c.req.param('id');
   try {
-    // Try matching Part Number first, then ID (if integer)
-    let query = supabase.from('Stock Switches').select('*');
-    
-    // Check if ID is Part Number (string with dashes/letters) or numeric ID
-    // We'll search both columns to be safe
-    const { data, error } = await query.or(`"Part Number".eq.${id},id.eq.${id}`);
+    const { data, error } = await supabase
+      .from('Stock Switches')
+      .select('*')
+      .or(`"Part Number".eq.${id},id.eq.${id}`);
 
     if (error) throw error;
     if (!data || data.length === 0) return c.json({ error: 'Product not found' }, 404);
@@ -102,24 +100,23 @@ app.get('/make-server-a6e7a38d/products/:id', async (c) => {
   }
 });
 
-// POST /products - Bulk Upsert for CSV Importer
-app.post('/make-server-a6e7a38d/products', async (c) => {
+// POST /products (Bulk Upsert)
+app.post('/products', async (c) => {
   try {
     const body = await c.req.json();
     const items = Array.isArray(body) ? body : [body];
 
     // Handle "Delete All" action
     if (!Array.isArray(body) && body.action === 'delete_all') {
-      const { error } = await supabase.from('Stock Switches').delete().neq('id', 0); // Delete all rows
+      const { error } = await supabase.from('Stock Switches').delete().neq('id', 0); // Delete all
       if (error) throw error;
       return c.json({ success: true, message: 'All products deleted' });
     }
 
-    // Map Frontend Product Interface BACK to Stock Switches Columns
     const rowsToUpsert = items.map((p: any) => ({
       "Part Number": p.part_number || p.Part || p.id,
       "Series": p.series,
-      "Description": p.description, // Write to legacy column too for backward compat
+      "Description": p.description,
       "description": p.description,
       "Type": p.technology === 'air' ? 'Pneumatic' : (p.technology === 'wireless' ? 'Wireless' : 'Electric'),
       "Wireless": p.technology === 'wireless' ? 'Yes' : 'No',
@@ -130,7 +127,6 @@ app.post('/make-server-a6e7a38d/products', async (c) => {
       "Linear": p.actions.includes('variable') ? 'Yes' : 'No',
       "Guard": p.features.includes('shield') ? 'Yes' : 'No',
       "Number of Pedals": p.features.includes('twin') ? 2 : 1,
-      // New Columns
       "duty": p.duty,
       "applications": p.applications,
       "image_url": p.image,
@@ -143,7 +139,7 @@ app.post('/make-server-a6e7a38d/products', async (c) => {
 
     const { data, error } = await supabase
       .from('Stock Switches')
-      .upsert(rowsToUpsert, { onConflict: 'Part Number' }) // Assume Part Number is unique
+      .upsert(rowsToUpsert, { onConflict: 'Part Number' })
       .select();
 
     if (error) throw error;
@@ -155,10 +151,9 @@ app.post('/make-server-a6e7a38d/products', async (c) => {
   }
 });
 
-// DELETE /products - Delete All
-app.delete('/make-server-a6e7a38d/products', async (c) => {
+// DELETE /products (Delete All)
+app.delete('/products', async (c) => {
   try {
-    // Delete everything where ID is not null (effectively all rows)
     const { error } = await supabase.from('Stock Switches').delete().neq('id', -1);
     if (error) throw error;
     return c.json({ success: true, message: 'All products deleted' });
@@ -168,13 +163,13 @@ app.delete('/make-server-a6e7a38d/products', async (c) => {
 });
 
 // DELETE /products/:id
-app.delete('/make-server-a6e7a38d/products/:id', async (c) => {
+app.delete('/products/:id', async (c) => {
   const id = c.req.param('id');
   try {
     const { error } = await supabase
       .from('Stock Switches')
       .delete()
-      .or(`"Part Number".eq.${id},id.eq.${id}`); // Match either ID or Part Number
+      .or(`"Part Number".eq.${id},id.eq.${id}`);
 
     if (error) throw error;
     return c.json({ success: true });
@@ -183,8 +178,8 @@ app.delete('/make-server-a6e7a38d/products/:id', async (c) => {
   }
 });
 
-// GET /options - Fetch from wizard_options table
-app.get('/make-server-a6e7a38d/options', async (c) => {
+// GET /options
+app.get('/options', async (c) => {
   try {
     const { data, error } = await supabase
       .from('wizard_options')
@@ -198,8 +193,8 @@ app.get('/make-server-a6e7a38d/options', async (c) => {
   }
 });
 
-// POST /options - Update/Create Options
-app.post('/make-server-a6e7a38d/options', async (c) => {
+// POST /options
+app.post('/options', async (c) => {
   try {
     const body = await c.req.json();
     const { data, error } = await supabase
@@ -213,6 +208,11 @@ app.post('/make-server-a6e7a38d/options', async (c) => {
   } catch (error) {
     return c.json({ error: 'Failed to save option' }, 500);
   }
+});
+
+// Health check
+app.get('/health', (c) => {
+  return c.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 Deno.serve(app.fetch);

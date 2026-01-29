@@ -1,6 +1,7 @@
 import { projectId, publicAnonKey } from '/utils/supabase/info';
 
-const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-a6e7a38d`;
+// UPDATED: Point to the 'server' function directly
+const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/server`;
 
 async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   console.log('🔵 API Request:', API_BASE_URL + endpoint);
@@ -64,25 +65,26 @@ export interface Product {
   material: string;
   description: string;
   applications: string[];
-  features?: string[]; // Available features like 'shield', 'multi_stage', 'twin'
-  recommended_for?: string[]; // Array of application IDs where this product shines
-  // New fields from user request
-  part_number?: string;      // "Part"
-  pfc_config?: string;       // "PFC Config"
-  pedal_count?: number;      // "Number of Pedals"
-  circuitry?: string;        // "Circuits Controlled"
-  stages?: string;           // "Stages"
-  configuration?: string;    // "Configuration"
-  interior_sub?: string;     // "Interior Sub"
-  microswitch?: string;      // "Microswitch"
-  microswitch_qty?: number;  // "Microswitch Qty"
-  potentiometer?: string;    // "Potentiometer"
-  color?: string;            // "Color"
+  features?: string[];
+  recommended_for?: string[];
+  
+  // Custom fields
+  part_number?: string;
+  pfc_config?: string;
+  pedal_count?: number;
+  circuitry?: string;
+  stages?: string;
+  configuration?: string;
+  interior_sub?: string;
+  microswitch?: string;
+  microswitch_qty?: number;
+  potentiometer?: string;
+  color?: string;
 
-  connector_type?: string; // Connection type from database: '3-Prong Plug', 'Flying Leads', 'NPT Conduit Entry', 'Terminals Only'
-  certifications?: string; // e.g. "UL, CSA, IEC"
-  voltage?: string; // e.g. "120V - 240V"
-  amperage?: string; // e.g. "10A - 15A"
+  connector_type?: string;
+  certifications?: string;
+  voltage?: string;
+  amperage?: string;
   flagship: boolean;
   image: string;
   link: string;
@@ -107,10 +109,9 @@ export async function fetchProducts(): Promise<Product[]> {
   const data = await fetchAPI(`/products?t=${Date.now()}`);
   const products = data.products || [];
   
-  // Normalize products to ensure features is always an array
   return products.map((product: any) => ({
     ...product,
-    part_number: product.part_number || product.Part, // Handle legacy 'Part' field
+    part_number: product.part_number || product.Part,
     features: Array.isArray(product.features) ? product.features : [],
     recommended_for: Array.isArray(product.recommended_for) ? product.recommended_for : [],
     actions: Array.isArray(product.actions) ? product.actions : [],
@@ -132,8 +133,6 @@ export async function createOrUpdateProduct(product: Partial<Product>): Promise<
 }
 
 export async function createOrUpdateProducts(products: Partial<Product>[]): Promise<void> {
-  // Split into smaller batches to prevent timeouts with large datasets
-  // Reduced batch size to 10 to prevent connection closures on large payloads
   const BATCH_SIZE = 10;
   const totalBatches = Math.ceil(products.length / BATCH_SIZE);
   
@@ -145,13 +144,11 @@ export async function createOrUpdateProducts(products: Partial<Product>[]): Prom
     
     console.log(`Uploading batch ${batchNum}/${totalBatches} (${batch.length} items)...`);
     
-    // Add a small delay between batches to prevent overwhelming the server/database
     if (i > 0) {
       await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     try {
-      // Use the standard /products endpoint which now supports array input
       await fetchAPI('/products', {
         method: 'POST',
         body: JSON.stringify(batch),
@@ -172,7 +169,6 @@ export async function deleteProduct(id: string): Promise<void> {
 }
 
 export async function deleteAllProducts(): Promise<void> {
-  // Use a timestamp to prevent caching
   await fetchAPI(`/products?t=${Date.now()}`, {
     method: 'DELETE',
   });
