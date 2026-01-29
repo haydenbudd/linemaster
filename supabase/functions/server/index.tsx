@@ -63,10 +63,13 @@ function mapRowToProduct(row: any) {
   };
 }
 
-// --- ROUTES (Clean, no prefixes) ---
+// --- LOGIC HANDLERS ---
+// We separate logic from routes to allow mounting on multiple paths
+
+const api = new Hono();
 
 // GET /products
-app.get('/products', async (c) => {
+api.get('/products', async (c) => {
   try {
     const { data, error } = await supabase
       .from('Stock Switches')
@@ -83,7 +86,7 @@ app.get('/products', async (c) => {
 });
 
 // GET /products/:id
-app.get('/products/:id', async (c) => {
+api.get('/products/:id', async (c) => {
   const id = c.req.param('id');
   try {
     const { data, error } = await supabase
@@ -101,7 +104,7 @@ app.get('/products/:id', async (c) => {
 });
 
 // POST /products (Bulk Upsert)
-app.post('/products', async (c) => {
+api.post('/products', async (c) => {
   try {
     const body = await c.req.json();
     const items = Array.isArray(body) ? body : [body];
@@ -152,7 +155,7 @@ app.post('/products', async (c) => {
 });
 
 // DELETE /products (Delete All)
-app.delete('/products', async (c) => {
+api.delete('/products', async (c) => {
   try {
     const { error } = await supabase.from('Stock Switches').delete().neq('id', -1);
     if (error) throw error;
@@ -163,7 +166,7 @@ app.delete('/products', async (c) => {
 });
 
 // DELETE /products/:id
-app.delete('/products/:id', async (c) => {
+api.delete('/products/:id', async (c) => {
   const id = c.req.param('id');
   try {
     const { error } = await supabase
@@ -179,7 +182,7 @@ app.delete('/products/:id', async (c) => {
 });
 
 // GET /options
-app.get('/options', async (c) => {
+api.get('/options', async (c) => {
   try {
     const { data, error } = await supabase
       .from('wizard_options')
@@ -194,7 +197,7 @@ app.get('/options', async (c) => {
 });
 
 // POST /options
-app.post('/options', async (c) => {
+api.post('/options', async (c) => {
   try {
     const body = await c.req.json();
     const { data, error } = await supabase
@@ -211,8 +214,14 @@ app.post('/options', async (c) => {
 });
 
 // Health check
-app.get('/health', (c) => {
+api.get('/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// --- MOUNTING ---
+// Mount logic at multiple paths to be robust against function naming
+app.route('/server', api); // Matches /functions/v1/server/products
+app.route('/make-server-a6e7a38d', api); // Matches legacy name just in case
+app.route('/', api); // Matches if path is stripped (unlikely but safe)
 
 Deno.serve(app.fetch);
