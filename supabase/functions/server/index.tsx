@@ -69,10 +69,8 @@ function mapRowToProduct(row: any) {
   };
 }
 
-// --- ROUTES ---
-// We use a prefix group to cleanly handle the standard path
-// But we also mount on the root to handle wildcard cases if needed.
-
+// --- LOGIC HANDLERS ---
+// Define routes on a sub-app to be mounted
 const api = new Hono();
 
 // GET /products
@@ -225,7 +223,9 @@ api.get('/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Mount the API on wildcard routes to handle function name prefixes
+// Mount the api router at the wildcard path
+// This captures /make-server-a6e7a38d/products -> api.get('/products')
+// AND /functions/v1/make-server-a6e7a38d/products -> if configured that way
 app.route('*', api);
 
 Deno.serve(app.fetch);
