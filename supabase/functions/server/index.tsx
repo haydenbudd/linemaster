@@ -10,7 +10,7 @@ app.use('*', logger(console.log));
 app.use('*', cors());
 
 // Version tracking to prevent re-initialization on redeploys
-const DB_VERSION = 'v1.1.0'; // Increment this if you want to force a re-seed
+const DB_VERSION = 'v1.5.3'; // Increment this if you want to force a re-seed
 
 // Initialize data on first run ONLY
 // This checks for both the existence of data AND a version flag
@@ -26,9 +26,10 @@ async function initializeData() {
       return;
     }
     
+    // Check if data exists - explicitly checking for NULL or UNDEFINED, not just falsy (which would include empty arrays)
     const existingProducts = await kv.get('products');
-    if (!existingProducts) {
-      console.log('No existing products found, initializing...');
+    if (existingProducts === null || existingProducts === undefined) {
+      console.log('No existing products found (null/undefined), initializing...');
       // Initialize with default products
       const defaultProducts = [
         {
@@ -42,6 +43,7 @@ async function initializeData() {
           description: 'The ultimate heavy-duty industrial footswitch.',
           applications: ['industrial', 'automotive', 'woodworking', 'general'],
           features: ['shield'],
+          connection: '3-prong',
           flagship: true,
           image: 'https://linemaster.com/wp-content/uploads/2025/04/hercules-full-shield.png',
           link: 'https://linemaster.com/product/167/hercules-full-shield/',
@@ -57,6 +59,7 @@ async function initializeData() {
           description: 'Fully sealed IP68 heavy-duty switch.',
           applications: ['industrial', 'automotive'],
           features: ['shield'],
+          connection: 'flying-leads',
           flagship: false,
           image: 'https://linemaster.com/wp-content/uploads/2025/04/atlas.png',
           link: 'https://linemaster.com/product/77/atlas-full-shield/',
@@ -72,6 +75,7 @@ async function initializeData() {
           description: 'The industry standard. Classic cast iron.',
           applications: ['industrial', 'woodworking', 'automotive', 'general'],
           features: ['twin'],
+          connection: '3-prong',
           flagship: true,
           image: 'https://linemaster.com/wp-content/uploads/2025/04/clipper_duo.png',
           link: 'https://linemaster.com/product/115/clipper-single-momentary/',
@@ -87,6 +91,7 @@ async function initializeData() {
           description: 'Watertight cast aluminum. IP68 sealed.',
           applications: ['industrial', 'automotive'],
           features: [],
+          connection: 'phone-plug',
           flagship: false,
           image: 'https://linemaster.com/wp-content/uploads/2025/04/classic-iv.png',
           link: 'https://linemaster.com/product/112/classic-iv/',
@@ -102,6 +107,7 @@ async function initializeData() {
           description: 'Omni-directional. Popular for tattoo artists.',
           applications: ['general', 'tattoo', 'medical'],
           features: [],
+          connection: 'flying-leads',
           flagship: false,
           image: 'https://linemaster.com/wp-content/uploads/2025/04/dolphin-2.png',
           link: 'https://linemaster.com/product/129/dolphin/',
@@ -117,6 +123,7 @@ async function initializeData() {
           description: 'Round omni-directional design.',
           applications: ['general', 'tattoo', 'medical'],
           features: [],
+          connection: 'phone-plug',
           flagship: false,
           image: 'https://linemaster.com/wp-content/uploads/2025/04/gem.png',
           link: 'https://linemaster.com/product/162/gem-v/',
@@ -132,6 +139,7 @@ async function initializeData() {
           description: 'Foot-operated potentiometer for variable speed.',
           applications: ['industrial', 'automotive', 'woodworking', 'general'],
           features: [],
+          connection: '3-prong',
           flagship: false,
           image: 'https://linemaster.com/wp-content/uploads/2025/04/varior-potentiometer.png',
           link: 'https://linemaster.com/product/407/varior-potentiometer/',
@@ -154,7 +162,7 @@ async function initializeData() {
         {
           id: 'air-seal',
           series: 'Air Seal',
-          technology: 'pneumatic',
+          technology: 'electrical', // Electrical switch activated by air pressure
           duty: 'light',
           ip: 'IP20',
           actions: ['momentary', 'maintained'],
@@ -187,6 +195,34 @@ async function initializeData() {
       console.log('Initialized products data');
     } else {
       console.log(`Found ${existingProducts.length} existing products. Preserving user data.`);
+      
+      // Migration: Add connection field to existing electrical products if they don't have it
+      const needsConnectionMigration = existingProducts.some((p: any) => 
+        p.technology === 'electrical' && !p.connection
+      );
+      
+      if (needsConnectionMigration) {
+        console.log('Adding connection field to electrical products...');
+        const connectionMap: Record<string, string> = {
+          'hercules': '3-prong',
+          'atlas': 'flying-leads',
+          'clipper': '3-prong',
+          'classic-iv': 'phone-plug',
+          'dolphin': 'flying-leads',
+          'gem-v': 'phone-plug',
+          'varior': '3-prong',
+        };
+        
+        const updatedProducts = existingProducts.map((p: any) => {
+          if (p.technology === 'electrical' && !p.connection && connectionMap[p.id]) {
+            return { ...p, connection: connectionMap[p.id] };
+          }
+          return p;
+        });
+        
+        await kv.set('products', updatedProducts);
+        console.log('Successfully added connection field to electrical products');
+      }
     }
 
     const existingOptions = await kv.get('options');
@@ -216,6 +252,11 @@ async function initializeData() {
         { id: 'dry', category: 'environment', label: 'Dry / Indoor', description: 'IP20 sufficient.', icon: 'Home', sortOrder: 1 },
         { id: 'damp', category: 'environment', label: 'Damp / Splash', description: 'IP56 recommended.', icon: 'CloudRain', sortOrder: 2 },
         { id: 'wet', category: 'environment', label: 'Wet / Washdown', description: 'IP68 required.', icon: 'Droplets', sortOrder: 3 },
+        
+        // Connector Types (Electrical only)
+        { id: '3-prong', category: 'connector', label: '3-Prong Plug', description: 'Standard household plug.', icon: 'Plug', availableFor: ['electrical'], sortOrder: 1 },
+        { id: 'flying-leads', category: 'connector', label: 'Flying Leads', description: 'Bare wire ends for custom wiring.', icon: 'Cable', availableFor: ['electrical'], sortOrder: 2 },
+        { id: 'phone-plug', category: 'connector', label: 'Phone Plug (1/4\")', description: '1/4 inch phone jack.', icon: 'Phone', availableFor: ['electrical'], sortOrder: 3 },
         
         // Features
         { id: 'feature-shield', category: 'feature', label: 'Safety Guard/Shield', description: 'Prevents accidental activation.', sortOrder: 1 },
@@ -250,6 +291,20 @@ async function initializeData() {
       console.log('Initialized options data');
     } else {
       console.log(`Found ${existingOptions.length} existing options. Preserving user data.`);
+      
+      // Migration: Add connector options if they don't exist
+      const hasConnectorOptions = existingOptions.some((opt: any) => opt.category === 'connector');
+      if (!hasConnectorOptions) {
+        console.log('Adding missing connector options...');
+        const connectorOptions = [
+          { id: '3-prong', category: 'connector', label: '3-Prong Plug', description: 'Standard household plug.', icon: 'Plug', availableFor: ['electrical'], sortOrder: 1 },
+          { id: 'flying-leads', category: 'connector', label: 'Flying Leads', description: 'Bare wire ends for custom wiring.', icon: 'Cable', availableFor: ['electrical'], sortOrder: 2 },
+          { id: 'phone-plug', category: 'connector', label: 'Phone Plug (1/4\")', description: '1/4 inch phone jack.', icon: 'Phone', availableFor: ['electrical'], sortOrder: 3 },
+        ];
+        const updatedOptions = [...existingOptions, ...connectorOptions];
+        await kv.set('options', updatedOptions);
+        console.log(`Added ${connectorOptions.length} connector options. Total options: ${updatedOptions.length}`);
+      }
     }
 
     // Set the version flag to prevent re-initialization on redeploy
@@ -262,6 +317,9 @@ async function initializeData() {
 
 // Initialize data on startup
 initializeData().catch(console.error);
+
+// Force server update log
+console.log('Server starting... v1.5.2 - consolidated routes');
 
 // GET all products
 app.get('/make-server-a6e7a38d/products', async (c) => {
@@ -295,26 +353,60 @@ app.get('/make-server-a6e7a38d/products/:id', async (c) => {
   }
 });
 
-// POST create or update product
+// POST create or update product (single or bulk)
 app.post('/make-server-a6e7a38d/products', async (c) => {
   try {
     const body = await c.req.json();
-    const products = await kv.get('products') || [];
-    
-    const existingIndex = products.findIndex((p: any) => p.id === body.id);
-    if (existingIndex >= 0) {
-      products[existingIndex] = { ...products[existingIndex], ...body };
-    } else {
-      products.push(body);
+    // Handle special "delete_all" action
+    if (!Array.isArray(body) && body.action === 'delete_all') {
+      console.log('⚠️ PROCESSING DELETE ALL REQUEST...');
+      await kv.set('products', []);
+      console.log('✅ All products deleted via POST endpoint');
+      return c.json({ success: true, message: 'All products have been deleted' });
     }
+
+    const products = await kv.get('products') || [];
+    const productMap = new Map(products.map((p: any) => [p.id, p]));
+
+    // Handle array (bulk)
+    if (Array.isArray(body)) {
+      console.log(`Processing bulk import for ${body.length} products via POST /products...`);
+      for (const product of body) {
+        if (!product.id) continue;
+        productMap.set(product.id, { ...productMap.get(product.id), ...product });
+      }
+      
+      const updatedProducts = Array.from(productMap.values());
+      await kv.set('products', updatedProducts);
+      
+      console.log(`Bulk import complete. Total products: ${updatedProducts.length}`);
+      return c.json({ success: true, count: updatedProducts.length });
+    } 
     
-    await kv.set('products', products);
-    const product = existingIndex >= 0 ? products[existingIndex] : body;
-    
-    return c.json({ product });
+    // Handle single object
+    else {
+      productMap.set(body.id, { ...productMap.get(body.id), ...body });
+      const updatedProducts = Array.from(productMap.values());
+      await kv.set('products', updatedProducts);
+      const product = productMap.get(body.id);
+      return c.json({ product });
+    }
   } catch (error) {
-    console.error('Error upserting product:', error);
-    return c.json({ error: 'Failed to save product' }, 500);
+    console.error('Error upserting product(s):', error);
+    return c.json({ error: 'Failed to save product(s)' }, 500);
+  }
+});
+
+// DELETE ALL products (Collection)
+app.delete('/make-server-a6e7a38d/products', async (c) => {
+  try {
+    console.log('⚠️ DELETING ALL PRODUCTS via DELETE /products...');
+    await kv.set('products', []);
+    console.log('✅ All products deleted');
+    return c.json({ success: true, message: 'All products have been deleted' });
+  } catch (error) {
+    console.error('Error deleting all products:', error);
+    return c.json({ error: 'Failed to delete all products' }, 500);
   }
 });
 
@@ -330,6 +422,28 @@ app.delete('/make-server-a6e7a38d/products/:id', async (c) => {
   } catch (error) {
     console.error('Error deleting product:', error);
     return c.json({ error: 'Failed to delete product' }, 500);
+  }
+});
+
+// RESET/DELETE ALL products (Action) - Deprecated, use DELETE /products
+app.post('/make-server-a6e7a38d/reset-products', async (c) => {
+  try {
+    console.log('⚠️ DELETING ALL PRODUCTS (RESET)...');
+    await kv.set('products', []);
+    return c.json({ success: true, message: 'All products have been deleted' });
+  } catch (error) {
+    return c.json({ error: 'Failed' }, 500);
+  }
+});
+
+// FORCE DELETE ALL (GET) - Emergency fallback
+app.get('/make-server-a6e7a38d/nuke-everything', async (c) => {
+  try {
+    console.log('☢️ NUKING ALL DATA...');
+    await kv.set('products', []);
+    return c.json({ success: true, message: 'Nuked successfully' });
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
   }
 });
 
@@ -399,6 +513,50 @@ app.delete('/make-server-a6e7a38d/options/:id', async (c) => {
 // Health check
 app.get('/make-server-a6e7a38d/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// One-time migration endpoint to add connector options
+app.get('/make-server-a6e7a38d/migrate-connectors', async (c) => {
+  try {
+    console.log('Running connector migration...');
+    const options = await kv.get('options') || [];
+    
+    // Check if connector options already exist
+    const hasConnectorOptions = options.some((opt: any) => opt.category === 'connector');
+    
+    if (hasConnectorOptions) {
+      return c.json({ 
+        success: true, 
+        message: 'Connector options already exist. No migration needed.',
+        totalOptions: options.length,
+        connectorCount: options.filter((o: any) => o.category === 'connector').length
+      });
+    }
+    
+    // Add the 3 connector options
+    const connectorOptions = [
+      { id: '3-prong', category: 'connector', label: '3-Prong Plug', description: 'Standard household plug.', icon: 'Plug', availableFor: ['electrical'], sortOrder: 1 },
+      { id: 'flying-leads', category: 'connector', label: 'Flying Leads', description: 'Bare wire ends for custom wiring.', icon: 'Cable', availableFor: ['electrical'], sortOrder: 2 },
+      { id: 'phone-plug', category: 'connector', label: 'Phone Plug (1/4")', description: '1/4 inch phone jack.', icon: 'Phone', availableFor: ['electrical'], sortOrder: 3 },
+    ];
+    
+    const updatedOptions = [...options, ...connectorOptions];
+    await kv.set('options', updatedOptions);
+    
+    return c.json({ 
+      success: true, 
+      message: 'Successfully added connector options!',
+      addedCount: connectorOptions.length,
+      totalOptions: updatedOptions.length
+    });
+  } catch (error) {
+    console.error('Error running connector migration:', error);
+    return c.json({ 
+      success: false, 
+      error: 'Failed to run migration', 
+      details: error instanceof Error ? error.message : String(error) 
+    }, 500);
+  }
 });
 
 Deno.serve(app.fetch);

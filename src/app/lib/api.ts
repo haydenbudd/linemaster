@@ -7,13 +7,16 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout
     
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
+      cache: 'no-store',
       headers: {
         'Authorization': `Bearer ${publicAnonKey}`,
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
         ...options.headers,
       },
       signal: controller.signal,
@@ -41,7 +44,7 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   } catch (error) {
     if (error instanceof Error) {
       if (error.name === 'AbortError') {
-        console.error('🔴 API Timeout after 30 seconds');
+        console.error('🔴 API Timeout after 120 seconds');
         throw new Error('Request timeout - backend server may be starting up or unavailable');
       }
       console.error('🔴 API Error:', error.message);
@@ -63,7 +66,23 @@ export interface Product {
   applications: string[];
   features?: string[]; // Available features like 'shield', 'multi_stage', 'twin'
   recommended_for?: string[]; // Array of application IDs where this product shines
-  connector_type?: string; // Connector type: 'hardwired', 'plug-in', 'terminal-block', etc.
+  // New fields from user request
+  part_number?: string;      // "Part"
+  pfc_config?: string;       // "PFC Config"
+  pedal_count?: number;      // "Number of Pedals"
+  circuitry?: string;        // "Circuits Controlled"
+  stages?: string;           // "Stages"
+  configuration?: string;    // "Configuration"
+  interior_sub?: string;     // "Interior Sub"
+  microswitch?: string;      // "Microswitch"
+  microswitch_qty?: number;  // "Microswitch Qty"
+  potentiometer?: string;    // "Potentiometer"
+  color?: string;            // "Color"
+
+  connector_type?: string; // Connection type from database: '3-Prong Plug', 'Flying Leads', 'NPT Conduit Entry', 'Terminals Only'
+  certifications?: string; // e.g. "UL, CSA, IEC"
+  voltage?: string; // e.g. "120V - 240V"
+  amperage?: string; // e.g. "10A - 15A"
   flagship: boolean;
   image: string;
   link: string;
@@ -85,12 +104,13 @@ export interface Option {
 
 // Product API calls
 export async function fetchProducts(): Promise<Product[]> {
-  const data = await fetchAPI('/products');
+  const data = await fetchAPI(`/products?t=${Date.now()}`);
   const products = data.products || [];
   
   // Normalize products to ensure features is always an array
   return products.map((product: any) => ({
     ...product,
+    part_number: product.part_number || product.Part, // Handle legacy 'Part' field
     features: Array.isArray(product.features) ? product.features : [],
     recommended_for: Array.isArray(product.recommended_for) ? product.recommended_for : [],
     actions: Array.isArray(product.actions) ? product.actions : [],
@@ -111,8 +131,49 @@ export async function createOrUpdateProduct(product: Partial<Product>): Promise<
   return data.product;
 }
 
+export async function createOrUpdateProducts(products: Partial<Product>[]): Promise<void> {
+  // Split into smaller batches to prevent timeouts with large datasets
+  // Reduced batch size to 10 to prevent connection closures on large payloads
+  const BATCH_SIZE = 10;
+  const totalBatches = Math.ceil(products.length / BATCH_SIZE);
+  
+  console.log(`Starting bulk upload of ${products.length} products in ${totalBatches} batches...`);
+  
+  for (let i = 0; i < products.length; i += BATCH_SIZE) {
+    const batch = products.slice(i, i + BATCH_SIZE);
+    const batchNum = Math.floor(i / BATCH_SIZE) + 1;
+    
+    console.log(`Uploading batch ${batchNum}/${totalBatches} (${batch.length} items)...`);
+    
+    // Add a small delay between batches to prevent overwhelming the server/database
+    if (i > 0) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    try {
+      // Use the standard /products endpoint which now supports array input
+      await fetchAPI('/products', {
+        method: 'POST',
+        body: JSON.stringify(batch),
+      });
+    } catch (error) {
+      console.error(`Error uploading batch ${batchNum}:`, error);
+      throw new Error(`Failed to upload batch ${batchNum}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  
+  console.log('✅ Bulk upload completed successfully');
+}
+
 export async function deleteProduct(id: string): Promise<void> {
   await fetchAPI(`/products/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function deleteAllProducts(): Promise<void> {
+  // Use a timestamp to prevent caching
+  await fetchAPI(`/products?t=${Date.now()}`, {
     method: 'DELETE',
   });
 }

@@ -1,23 +1,13 @@
 import { useState, useEffect } from 'react';
-import { 
-  LogOut, 
-  Package, 
-  Settings, 
-  Upload, 
-  Plus, 
-  Edit2, 
-  Trash2,
-  Search,
-  Clock,
-  RefreshCw,
-  ArrowLeft
-} from 'lucide-react';
-import { Product, fetchProducts, createOrUpdateProduct, deleteProduct } from '@/app/lib/api';
-import { getCurrentUser, signOut } from '@/app/lib/supabase';
-import { projectId } from '/utils/supabase/info';
+import { Package, Upload, RefreshCw, ArrowLeft, LogOut, Clock, Zap, Database } from 'lucide-react';
 import { ProductList } from './ProductList';
 import { ProductForm } from './ProductForm';
 import { CSVImport } from './CSVImport';
+import { BulkAttributeUpdater } from './BulkAttributeUpdater';
+import { SupabaseDebugger } from './SupabaseDebugger';
+import { Product, fetchProducts, createOrUpdateProduct, createOrUpdateProducts, deleteProduct, deleteAllProducts } from '@/app/lib/api';
+import { getCurrentUser, signOut } from '@/app/lib/supabase';
+import { projectId } from '/utils/supabase/info';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -27,7 +17,7 @@ interface AdminDashboardProps {
 export function AdminDashboard({ onLogout, sessionWarning }: AdminDashboardProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'products' | 'import'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'import' | 'bulk-update' | 'debug'>('products');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -86,15 +76,38 @@ export function AdminDashboard({ onLogout, sessionWarning }: AdminDashboardProps
   const handleBulkImport = async (importedProducts: Product[]) => {
     try {
       setSaving(true);
-      // Import all products one by one
-      for (const product of importedProducts) {
-        await createOrUpdateProduct(product);
-      }
+      // Use bulk import API
+      await createOrUpdateProducts(importedProducts);
       await loadProducts();
       alert(`Successfully imported ${importedProducts.length} products!`);
     } catch (err) {
       console.error('Failed to import products:', err);
-      alert('Failed to import some products. Please check console.');
+      alert('Failed to import products. Please check console.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    if (!window.confirm('⚠️ ARE YOU SURE? ⚠️\n\nThis will permanently delete ALL products from the database.\nThis action cannot be undone.')) {
+      return;
+    }
+    
+    // Double confirmation
+    if (!window.confirm('Really delete everything? Last chance!')) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await deleteAllProducts();
+      setProducts([]); // Optimistically clear list immediately
+      alert('All products have been deleted.');
+      // Force reload from server to confirm
+      await loadProducts();
+    } catch (err) {
+      console.error('Failed to delete all products:', err);
+      alert('Failed to delete all products. Please check console.');
     } finally {
       setSaving(false);
     }
@@ -256,6 +269,32 @@ export function AdminDashboard({ onLogout, sessionWarning }: AdminDashboardProps
                   Bulk Import
                 </div>
               </button>
+              <button
+                onClick={() => setActiveTab('bulk-update')}
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'bulk-update'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Zap className="w-5 h-5" />
+                  Bulk Update
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('debug')}
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'debug'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Database className="w-5 h-5" />
+                  Debug
+                </div>
+              </button>
             </nav>
           </div>
 
@@ -270,7 +309,19 @@ export function AdminDashboard({ onLogout, sessionWarning }: AdminDashboardProps
             )}
 
             {activeTab === 'import' && (
-              <CSVImport onImport={handleBulkImport} />
+              <CSVImport 
+                onImport={handleBulkImport} 
+                existingProducts={products}
+                onDeleteAll={handleDeleteAll}
+              />
+            )}
+
+            {activeTab === 'bulk-update' && (
+              <BulkAttributeUpdater products={products} onUpdate={loadProducts} />
+            )}
+
+            {activeTab === 'debug' && (
+              <SupabaseDebugger />
             )}
           </div>
         </div>
