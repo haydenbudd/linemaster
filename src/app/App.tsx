@@ -1,147 +1,158 @@
-import { useState, useEffect } from 'react';
+import { useState, Suspense, lazy, useMemo } from 'react';
 import { Router } from '@/app/components/Router';
-import { AdminContainer } from '@/app/components/admin/AdminContainer';
 import { Header } from '@/app/components/Header';
 import { ProgressDots } from '@/app/components/ProgressDots';
 import { OptionCard } from '@/app/components/OptionCard';
 import { ProductCard } from '@/app/components/ProductCard';
 import { FilterChip } from '@/app/components/FilterChip';
 import { TrustBadges } from '@/app/components/TrustBadges';
-import { ChevronLeft, ArrowRight, Download, Send, CheckCircle, Heart } from 'lucide-react';
-import { fetchProducts, fetchOptions, Product, Option } from '@/app/lib/api';
+import { ProductCountBadge } from '@/app/components/ProductCountBadge';
+import { EnhancedSearch } from '@/app/components/EnhancedSearch';
+import { ChevronLeft, ArrowRight, Download, Send, CheckCircle, Heart, Search, Star } from 'lucide-react';
+import { useProductData } from '@/app/hooks/useProductData';
+import { useProductFilter } from '@/app/hooks/useProductFilter';
+import { useWizardState } from '@/app/hooks/useWizardState';
+import { trackWizardStep, trackProductView, trackPDFDownload, trackQuoteRequest, trackNoResults } from '@/app/utils/analytics';
+import { getProxiedImageUrl } from '@/app/utils/imageProxy';
+import { getProcessedProducts, isProductEnvironmentMatch } from '@/app/utils/productFilters';
 import jsPDF from 'jspdf';
+
+// Lazy load admin panel
+const AdminContainer = lazy(() => 
+  import('@/app/components/admin/AdminContainer').then(module => ({
+    default: module.AdminContainer
+  }))
+);
 
 type FlowType = 'standard' | 'medical';
 
 function WizardApp() {
-  const [flow, setFlow] = useState<FlowType>('standard');
-  const [step, setStep] = useState(0);
+  // Use custom hook for session persistence and state management
+  const wizardState = useWizardState();
   
-  // Data from Supabase
-  const [products, setProducts] = useState<Product[]>([]);
-  const [allOptions, setAllOptions] = useState<Option[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Standard flow state
-  const [selectedApplication, setSelectedApplication] = useState<string>('');
-  const [selectedTechnology, setSelectedTechnology] = useState<string>('');
-  const [selectedAction, setSelectedAction] = useState<string>('');
-  const [selectedEnvironment, setSelectedEnvironment] = useState<string>('');
-  const [selectedConnectorType, setSelectedConnectorType] = useState<string>('');
-  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
-
-  // Medical flow state
-  const [selectedConsoleStyle, setSelectedConsoleStyle] = useState<string>('');
-  const [selectedPedalCount, setSelectedPedalCount] = useState<string>('');
-  const [selectedMedicalFeatures, setSelectedMedicalFeatures] = useState<string[]>([]);
-  const [selectedAccessories, setSelectedAccessories] = useState<string[]>([]);
-
-  // Fetch data on mount
-  useEffect(() => {
-    async function loadData() {
-      try {
-        console.log('🚀 Starting to load data...');
-        setLoading(true);
-        setError(null);
-        
-        const [productsData, optionsData] = await Promise.all([
-          fetchProducts(),
-          fetchOptions(),
-        ]);
-        
-        console.log('📦 Loaded products:', productsData.length);
-        console.log('⚙️ Loaded options:', optionsData.length);
-        
-        setProducts(productsData);
-        setAllOptions(optionsData);
-        setError(null);
-      } catch (err) {
-        console.error('❌ Error loading data:', err);
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-        setError(`Failed to connect to backend: ${errorMessage}`);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, []);
-
-  // Helper functions to get options by category
-  const getOptionsByCategory = (category: string) => {
-    return allOptions.filter((opt) => opt.category === category);
-  };
-
-  const applications = getOptionsByCategory('application');
-  const technologies = getOptionsByCategory('technology');
-  const actions = getOptionsByCategory('action');
-  const environments = getOptionsByCategory('environment');
-  const connectorTypes = getOptionsByCategory('connector_type');
-  const features = getOptionsByCategory('feature');
-  const consoleStyles = getOptionsByCategory('console_style');
-  const pedalCounts = getOptionsByCategory('pedal_count');
-  const medicalTechnicalFeatures = getOptionsByCategory('medical_feature');
-  const accessories = getOptionsByCategory('accessory');
+  // Use custom hook for data fetching
+  const {
+    products,
+    applications,
+    technologies,
+    actions,
+    environments,
+    features,
+    consoleStyles,
+    pedalCounts,
+    medicalTechnicalFeatures,
+    accessories,
+    materials,
+    connections,
+    duties,
+    loading,
+    error,
+  } = useProductData();
+  
+  // Enhanced search state for results page
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'relevance' | 'duty' | 'ip'>('relevance');
+  const [dutyFilter, setDutyFilter] = useState<string[]>([]);
+  const [cordedFilter, setCordedFilter] = useState<'all' | 'corded' | 'cordless'>('all');
 
   const handleReset = () => {
-    setFlow('standard');
-    setStep(0);
-    setSelectedApplication('');
-    setSelectedTechnology('');
-    setSelectedAction('');
-    setSelectedEnvironment('');
-    setSelectedConnectorType('');
-    setSelectedFeatures([]);
-    setSelectedConsoleStyle('');
-    setSelectedPedalCount('');
-    setSelectedMedicalFeatures([]);
-    setSelectedAccessories([]);
+    wizardState.resetWizard();
+    setSearchTerm('');
+    setSortBy('relevance');
+    setDutyFilter([]);
+    setCordedFilter('all');
   };
 
   const handleApplicationSelect = (id: string) => {
-    setSelectedApplication(id);
+    wizardState.setSelectedApplication(id);
     const app = applications.find((a) => a.id === id);
     if (app?.isMedical) {
-      setFlow('medical');
-      setTimeout(() => setStep(1), 150);
+      wizardState.setFlow('medical');
+      setTimeout(() => wizardState.setStep(1), 150);
     } else {
-      setFlow('standard');
-      setTimeout(() => setStep(1), 150);
+      wizardState.setFlow('standard');
+      setTimeout(() => wizardState.setStep(1), 150);
     }
+    
+    // Track analytics
+    trackWizardStep(0, app?.isMedical ? 'medical' : 'standard', { application: id });
   };
 
   const handleBack = () => {
-    if (step === 0) return;
-    if (flow === 'medical' && step === 1) {
-      setFlow('standard');
-      setStep(0);
-      setSelectedApplication('');
+    if (wizardState.step === 0) return;
+    if (wizardState.flow === 'medical' && wizardState.step === 1) {
+      wizardState.setFlow('standard');
+      wizardState.setStep(0);
+      wizardState.setSelectedApplication('');
     } else {
-      setStep(step - 1);
+      let prevStep = wizardState.step - 1;
+      // Skip Connection Type step (index 5) for Air technology
+      if (prevStep === 5 && wizardState.selectedTechnology === 'air') {
+        prevStep--;
+      }
+      wizardState.setStep(prevStep);
     }
   };
 
   const handleContinue = () => {
-    setStep(step + 1);
+    let newStep = wizardState.step + 1;
+    
+    // Skip Connection Type step (index 5) for Air technology
+    if (newStep === 5 && wizardState.selectedTechnology === 'air') {
+      newStep++;
+    }
+    
+    wizardState.setStep(newStep);
+    
+    // Track analytics
+    trackWizardStep(newStep, wizardState.flow, {
+      application: wizardState.selectedApplication,
+      technology: wizardState.selectedTechnology,
+      action: wizardState.selectedAction,
+      environment: wizardState.selectedEnvironment,
+      features: wizardState.selectedFeatures,
+    });
   };
 
-  const filterProducts = () => {
+  const handleViewMedicalProducts = () => {
+    wizardState.setFlow('standard');
+    wizardState.setStep(7);
+    
+    // Track analytics
+    trackWizardStep(7, 'standard', {
+      application: wizardState.selectedApplication,
+      source: 'medical_bypass'
+    });
+  };
+
+  const filterProducts = (overrides: Partial<typeof wizardState> = {}) => {
+    // Create a merged state object for filtering
+    const state = { ...wizardState, ...overrides };
+
     return products.filter((product) => {
       // Filter by application
-      if (!product.applications.includes(selectedApplication)) return false;
+      if (state.selectedApplication && !product.applications.includes(state.selectedApplication)) return false;
       // Filter by technology
-      if (product.technology !== selectedTechnology) return false;
+      if (state.selectedTechnology && product.technology !== state.selectedTechnology) return false;
       // Filter by action
-      if (!product.actions.includes(selectedAction)) return false;
+      if (state.selectedAction && !product.actions.includes(state.selectedAction)) return false;
       // Filter by environment/IP rating
-      if (selectedEnvironment === 'wet' && product.ip !== 'IP68') return false;
-      if (selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(product.ip))
+      if (state.selectedEnvironment === 'wet' && product.ip !== 'IP68') return false;
+      if (state.selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(product.ip))
         return false;
+      // For 'dry' environment, accept any IP rating (no filter needed)
       
+      // Filter by Material
+      if (state.selectedMaterial && product.material !== state.selectedMaterial) return false;
+
+      // Filter by Connection
+      // Skip connection filter for Air technology as it doesn't apply
+      if (state.selectedTechnology !== 'air' && state.selectedConnection && product.connector_type !== state.selectedConnection) return false;
+
       // Filter by selected features (if any features are selected)
-      if (selectedFeatures.length > 0) {
+      if (state.selectedFeatures.length > 0) {
         // Exclude custom cable/connector from this check (those trigger custom solution)
-        const hardwareFeatures = selectedFeatures.filter(
+        const hardwareFeatures = state.selectedFeatures.filter(
           f => f !== 'feature-custom-cable' && f !== 'feature-custom-connector'
         );
         
@@ -163,16 +174,21 @@ function WizardApp() {
     });
   };
 
+  // Helper to calculate product counts for upcoming options
+  const calculateOptionCount = (field: keyof typeof wizardState, value: any) => {
+    return filterProducts({ [field]: value }).length;
+  };
+
   // Fallback filtering: progressively relax constraints to find alternatives
   const getAlternativeProducts = () => {
     // Try relaxing features first (most specific constraint)
-    if (selectedFeatures.length > 0) {
+    if (wizardState.selectedFeatures.length > 0) {
       const withoutFeatures = products.filter((product) => {
-        if (!product.applications.includes(selectedApplication)) return false;
-        if (product.technology !== selectedTechnology) return false;
-        if (!product.actions.includes(selectedAction)) return false;
-        if (selectedEnvironment === 'wet' && product.ip !== 'IP68') return false;
-        if (selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(product.ip))
+        if (!product.applications.includes(wizardState.selectedApplication)) return false;
+        if (product.technology !== wizardState.selectedTechnology) return false;
+        if (!product.actions.includes(wizardState.selectedAction)) return false;
+        if (wizardState.selectedEnvironment === 'wet' && product.ip !== 'IP68') return false;
+        if (wizardState.selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(product.ip))
           return false;
         return true;
       });
@@ -182,11 +198,11 @@ function WizardApp() {
     }
 
     // Try relaxing environment (IP rating)
-    if (selectedEnvironment) {
+    if (wizardState.selectedEnvironment) {
       const withoutEnvironment = products.filter((product) => {
-        if (!product.applications.includes(selectedApplication)) return false;
-        if (product.technology !== selectedTechnology) return false;
-        if (!product.actions.includes(selectedAction)) return false;
+        if (!product.applications.includes(wizardState.selectedApplication)) return false;
+        if (product.technology !== wizardState.selectedTechnology) return false;
+        if (!product.actions.includes(wizardState.selectedAction)) return false;
         return true;
       });
       if (withoutEnvironment.length > 0) {
@@ -195,10 +211,10 @@ function WizardApp() {
     }
 
     // Try relaxing action type
-    if (selectedAction) {
+    if (wizardState.selectedAction) {
       const withoutAction = products.filter((product) => {
-        if (!product.applications.includes(selectedApplication)) return false;
-        if (product.technology !== selectedTechnology) return false;
+        if (!product.applications.includes(wizardState.selectedApplication)) return false;
+        if (product.technology !== wizardState.selectedTechnology) return false;
         return true;
       });
       if (withoutAction.length > 0) {
@@ -207,9 +223,9 @@ function WizardApp() {
     }
 
     // Try relaxing technology (most broad)
-    if (selectedTechnology) {
+    if (wizardState.selectedTechnology) {
       const withoutTechnology = products.filter((product) => {
-        if (!product.applications.includes(selectedApplication)) return false;
+        if (!product.applications.includes(wizardState.selectedApplication)) return false;
         return true;
       });
       if (withoutTechnology.length > 0) {
@@ -219,91 +235,269 @@ function WizardApp() {
 
     // Last resort: show all products for the application
     const allForApplication = products.filter((product) => {
-      return product.applications.includes(selectedApplication);
+      return product.applications.includes(wizardState.selectedApplication);
     });
     return { products: allForApplication, relaxed: 'all' };
   };
 
   const needsCustomSolution = () => {
     const filtered = filterProducts();
+    if (filtered.length === 0) {
+      trackNoResults({
+        application: wizardState.selectedApplication,
+        technology: wizardState.selectedTechnology,
+        action: wizardState.selectedAction,
+        environment: wizardState.selectedEnvironment,
+        features: wizardState.selectedFeatures,
+      });
+    }
     return (
       filtered.length === 0 ||
-      selectedFeatures.includes('feature-custom-cable') ||
-      selectedFeatures.includes('feature-custom-connector')
+      wizardState.selectedFeatures.includes('feature-custom-cable') ||
+      wizardState.selectedFeatures.includes('feature-custom-connector')
     );
+  };
+  
+  // Dynamic filtering: Calculate product counts for each step
+  const getProductCount = (step: number, optionId?: string) => {
+    if (step === 1) {
+      // Technology step: count products for this tech + current application
+      return products.filter(p => 
+        p.applications.includes(wizardState.selectedApplication) &&
+        p.technology === optionId
+      ).length;
+    } else if (step === 2) {
+      // Action step: count products for current selections + this action
+      return products.filter(p => 
+        p.applications.includes(wizardState.selectedApplication) &&
+        p.technology === wizardState.selectedTechnology &&
+        p.actions.includes(optionId || '')
+      ).length;
+    } else if (step === 3) {
+      // Environment step: count products for current selections + this environment
+      return products.filter(p => {
+        if (!p.applications.includes(wizardState.selectedApplication)) return false;
+        if (p.technology !== wizardState.selectedTechnology) return false;
+        if (!p.actions.includes(wizardState.selectedAction)) return false;
+        if (optionId === 'wet' && p.ip !== 'IP68') return false;
+        if (optionId === 'damp' && !['IP56', 'IP68'].includes(p.ip)) return false;
+        return true;
+      }).length;
+    } else if (step === 4) {
+      // Material step
+      return products.filter(p => {
+        if (!p.applications.includes(wizardState.selectedApplication)) return false;
+        if (p.technology !== wizardState.selectedTechnology) return false;
+        if (!p.actions.includes(wizardState.selectedAction)) return false;
+        if (wizardState.selectedEnvironment === 'wet' && p.ip !== 'IP68') return false;
+        if (wizardState.selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(p.ip)) return false;
+        return p.material === optionId;
+      }).length;
+    } else if (step === 5) {
+      // Connection step
+      return products.filter(p => {
+        if (!p.applications.includes(wizardState.selectedApplication)) return false;
+        if (p.technology !== wizardState.selectedTechnology) return false;
+        if (!p.actions.includes(wizardState.selectedAction)) return false;
+        if (wizardState.selectedEnvironment === 'wet' && p.ip !== 'IP68') return false;
+        if (wizardState.selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(p.ip)) return false;
+        if (wizardState.selectedMaterial && p.material !== wizardState.selectedMaterial) return false;
+        return p.connector_type === optionId;
+      }).length;
+    }
+    return 0;
   };
 
   const generatePDF = () => {
+    trackPDFDownload(wizardState.flow, {
+      application: wizardState.selectedApplication,
+      technology: wizardState.selectedTechnology,
+      action: wizardState.selectedAction,
+      environment: wizardState.selectedEnvironment,
+      features: wizardState.selectedFeatures,
+    });
+    
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
 
-    // Header
-    doc.setFillColor(37, 99, 235);
-    doc.rect(0, 0, 210, 15, 'F');
+    // Enhanced Header with gradient effect
+    doc.setFillColor(99, 102, 241); // Indigo
+    doc.rect(0, 0, pageWidth, 25, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(20);
-    doc.text('LINEMASTER', 10, 10);
-
-    doc.setFontSize(10);
-    if (flow === 'medical') {
-      doc.text('Medical Project Specifications', 10, 20);
-    } else {
-      doc.text('Custom Foot Switch Requirements', 10, 20);
-    }
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.text('LINEMASTER', 15, 12);
+    
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    const subtitle = wizardState.flow === 'medical' ? 'Medical Product Specifications' : 'Product Finder Results';
+    doc.text(subtitle, 15, 20);
+    
+    // Add date
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    doc.setFontSize(9);
+    doc.text(`Generated: ${date}`, pageWidth - 15, 20, { align: 'right' });
 
     doc.setTextColor(0, 0, 0);
-    doc.setFontSize(12);
     let yPos = 35;
 
-    doc.text('Project Requirements', 10, yPos);
-    yPos += 10;
+    // Requirements Section
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Your Requirements', 15, yPos);
+    yPos += 8;
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
 
-    if (flow === 'medical') {
-      doc.text(`Console Style: ${selectedConsoleStyle}`, 10, yPos);
-      yPos += 7;
-      doc.text(`Pedal Configuration: ${selectedPedalCount}`, 10, yPos);
-      yPos += 7;
-      if (selectedMedicalFeatures.length > 0) {
-        doc.text(`Technical Features: ${selectedMedicalFeatures.join(', ')}`, 10, yPos);
-        yPos += 7;
+    if (wizardState.flow === 'medical') {
+      doc.text(`Console Style: ${wizardState.selectedConsoleStyle}`, 20, yPos);
+      yPos += 6;
+      doc.text(`Pedal Configuration: ${wizardState.selectedPedalCount}`, 20, yPos);
+      yPos += 6;
+      if (wizardState.selectedMedicalFeatures.length > 0) {
+        doc.text(`Technical Features: ${wizardState.selectedMedicalFeatures.join(', ')}`, 20, yPos);
+        yPos += 6;
       }
-      if (selectedAccessories.length > 0) {
-        doc.text(`Accessories: ${selectedAccessories.join(', ')}`, 10, yPos);
-        yPos += 7;
+      if (wizardState.selectedAccessories.length > 0) {
+        doc.text(`Accessories: ${wizardState.selectedAccessories.join(', ')}`, 20, yPos);
+        yPos += 6;
       }
-
-      // Medical badge box
-      yPos += 10;
-      doc.setFillColor(255, 241, 242);
-      doc.rect(10, yPos, 190, 20, 'F');
-      doc.setFontSize(10);
-      doc.text('ISO Certified Manufacturing', 15, yPos + 7);
-      doc.text('FDA 510(k) Clearance Experience Available', 15, yPos + 14);
     } else {
-      doc.text(`Application: ${selectedApplication}`, 10, yPos);
-      yPos += 7;
-      doc.text(`Technology: ${selectedTechnology}`, 10, yPos);
-      yPos += 7;
-      doc.text(`Action: ${selectedAction}`, 10, yPos);
-      yPos += 7;
-      doc.text(`Environment: ${selectedEnvironment}`, 10, yPos);
-      yPos += 7;
-      if (selectedFeatures.length > 0) {
-        doc.text(`Features: ${selectedFeatures.join(', ')}`, 10, yPos);
+      const appLabel = applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication;
+      const techLabel = technologies.find(t => t.id === wizardState.selectedTechnology)?.label || wizardState.selectedTechnology;
+      const actionLabel = actions.find(a => a.id === wizardState.selectedAction)?.label || wizardState.selectedAction;
+      const envLabel = environments.find(e => e.id === wizardState.selectedEnvironment)?.label || wizardState.selectedEnvironment;
+      
+      doc.text(`Application: ${appLabel}`, 20, yPos);
+      yPos += 6;
+      doc.text(`Technology: ${techLabel}`, 20, yPos);
+      yPos += 6;
+      doc.text(`Action Type: ${actionLabel}`, 20, yPos);
+      yPos += 6;
+      doc.text(`Environment: ${envLabel}`, 20, yPos);
+      yPos += 6;
+      
+      if (wizardState.selectedMaterial) {
+        doc.text(`Material: ${wizardState.selectedMaterial}`, 20, yPos);
+        yPos += 6;
       }
+      
+      if (wizardState.selectedConnection) {
+        doc.text(`Connection: ${wizardState.selectedConnection}`, 20, yPos);
+        yPos += 6;
+      }
+
+      if (wizardState.selectedFeatures.length > 0) {
+        const featureLabels = wizardState.selectedFeatures
+          .map(fId => features.find(f => f.id === fId)?.label || fId)
+          .join(', ');
+        doc.text(`Additional Features: ${featureLabels}`, 20, yPos);
+        yPos += 6;
+      }
+    }
+
+    // Matched Products Section
+    yPos += 5;
+    const matchedProducts = filterProducts();
+    
+    if (matchedProducts.length > 0) {
+      doc.setFillColor(240, 245, 255);
+      doc.rect(15, yPos, pageWidth - 30, 8, 'F');
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(99, 102, 241);
+      doc.text(`Recommended Products (${matchedProducts.length})`, 20, yPos + 5.5);
+      yPos += 12;
+      
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'normal');
+      
+      matchedProducts.slice(0, 5).forEach((product, idx) => {
+        if (yPos > 250) {
+          doc.addPage();
+          yPos = 20;
+        }
+        
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        const title = product.part_number ? `${product.series} (#${product.part_number})` : product.series;
+        doc.text(`${idx + 1}. ${title}`, 20, yPos);
+        yPos += 5;
+        
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${product.description}`, 25, yPos);
+        yPos += 5;
+        
+        // Specifications in columns
+        doc.text(`IP Rating: ${product.ip}`, 25, yPos);
+        doc.text(`Duty: ${product.duty}`, 80, yPos);
+        doc.text(`Material: ${product.material}`, 135, yPos);
+        yPos += 5;
+
+        if (product.connector_type && product.connector_type !== 'undefined') {
+          doc.text(`Connection: ${product.connector_type.replace(/-/g, ' ')}`, 25, yPos);
+          yPos += 5;
+        }
+        
+        if (product.features && product.features.length > 0) {
+          doc.text(`Features: ${product.features.join(', ')}`, 25, yPos);
+          yPos += 5;
+        }
+        
+        doc.setTextColor(99, 102, 241);
+        doc.text(`Learn more: ${product.link}`, 25, yPos);
+        doc.setTextColor(0, 0, 0);
+        yPos += 8;
+      });
+      
+      if (matchedProducts.length > 5) {
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`+ ${matchedProducts.length - 5} more products available`, 20, yPos);
+        yPos += 6;
+      }
+    }
+
+    // Medical Certification Badge
+    if (wizardState.flow === 'medical') {
+      yPos += 5;
+      if (yPos > 240) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.setFillColor(254, 242, 242);
+      doc.rect(15, yPos, pageWidth - 30, 20, 'F');
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(220, 38, 38);
+      doc.text('ISO Certified Manufacturing', 20, yPos + 7);
+      doc.setFont('helvetica', 'normal');
+      doc.text('FDA 510(k) Clearance Experience Available', 20, yPos + 14);
+      doc.setTextColor(0, 0, 0);
     }
 
     // Footer
-    doc.setFontSize(10);
-    doc.text('Linemaster Switch Corporation', 10, 270);
-    doc.text('Tel: (860) 974-1000 | linemaster.com', 10, 275);
-    doc.setTextColor(37, 99, 235);
-    doc.text('Submit this document with your quote request at:', 10, 282);
-    doc.text('linemaster.com/request-a-quote/', 10, 287);
+    const footerY = 280;
+    doc.setFillColor(245, 245, 245);
+    doc.rect(0, footerY, pageWidth, 17, 'F');
+    
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(60, 60, 60);
+    doc.text('Linemaster Switch Corporation', 15, footerY + 5);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.text('Tel: (860) 974-1000 | linemaster.com', 15, footerY + 10);
+    
+    doc.setTextColor(99, 102, 241);
+    doc.text('Request a quote: linemaster.com/request-a-quote/', 15, footerY + 15);
 
-    doc.save('linemaster-specifications.pdf');
+    doc.save(`linemaster-${wizardState.flow}-specifications-${Date.now()}.pdf`);
   };
 
-  const totalSteps = flow === 'medical' ? 5 : 5;
+  const totalSteps = wizardState.flow === 'medical' ? 5 : 7;
 
   // Show loading state
   if (loading) {
@@ -323,32 +517,58 @@ function WizardApp() {
 
   // Show error state
   if (error) {
+    const isBackendError = error.includes('Failed to fetch') || error.includes('backend') || error.includes('timeout');
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 dark:from-slate-950 dark:via-red-950 dark:to-orange-950 flex items-center justify-center p-4">
-        <div className="max-w-md mx-auto p-8 bg-card/80 backdrop-blur-xl rounded-3xl shadow-2xl text-center border border-border">
+        <div className="max-w-2xl mx-auto p-8 bg-card/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-border">
           <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
             <span className="text-4xl">⚠️</span>
           </div>
-          <h2 className="text-2xl font-bold text-foreground mb-3">Error Loading Data</h2>
-          <p className="text-muted-foreground mb-8 leading-relaxed">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-8 py-3.5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-bold rounded-xl transition-all shadow-lg hover:shadow-xl"
-          >
-            Reload Page
-          </button>
+          <h2 className="text-2xl font-bold text-foreground mb-3 text-center">Backend Connection Error</h2>
+          <p className="text-muted-foreground mb-6 leading-relaxed text-center">{error}</p>
+          
+          {isBackendError && (
+            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-6 mb-6 text-left">
+              <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                <span className="text-xl">🚀</span>
+                Deployment Required
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                The Supabase Edge Function needs to be deployed. Follow these steps:
+              </p>
+              <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+                <li>Install Supabase CLI: <code className="px-2 py-1 bg-card rounded text-xs">npm install -g supabase</code></li>
+                <li>Login: <code className="px-2 py-1 bg-card rounded text-xs">supabase login</code></li>
+                <li>Link project: <code className="px-2 py-1 bg-card rounded text-xs">supabase link --project-ref dhaqigiwkmsjrchrbllu</code></li>
+                <li>Deploy: <code className="px-2 py-1 bg-card rounded text-xs">supabase functions deploy server</code></li>
+              </ol>
+              <p className="text-xs text-muted-foreground mt-4">
+                See <span className="font-mono">DEPLOY_BACKEND.md</span> for detailed instructions.
+              </p>
+            </div>
+          )}
+          
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-8 py-3.5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-bold rounded-xl transition-all shadow-lg hover:shadow-xl"
+            >
+              Retry Connection
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   // Render different screens based on step and flow
-  if (flow === 'medical') {
+  if (wizardState.flow === 'medical') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 dark:from-slate-950 dark:via-rose-950 dark:to-purple-950">
         <Header onReset={handleReset} />
 
-        {step === 1 && (
+        {wizardState.step === 1 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
               {/* Banner */}
@@ -392,19 +612,27 @@ function WizardApp() {
                   <ChevronLeft className="w-4 h-4" />
                   Back
                 </button>
-                <button
-                  onClick={handleContinue}
-                  className="flex items-center gap-2 px-8 py-3 bg-[#e11d48] hover:bg-[#be123c] text-white font-semibold rounded-xl transition-colors"
-                >
-                  Continue
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleViewMedicalProducts}
+                    className="px-6 py-3 text-[#e11d48] font-semibold hover:bg-rose-50 rounded-xl transition-colors"
+                  >
+                    View Standard Products
+                  </button>
+                  <button
+                    onClick={handleContinue}
+                    className="flex items-center gap-2 px-8 py-3 bg-[#e11d48] hover:bg-[#be123c] text-white font-semibold rounded-xl transition-colors"
+                  >
+                    Continue
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        {step === 2 && (
+        {wizardState.step === 2 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={1} totalSteps={totalSteps} isMedical />
             <div className="bg-white rounded-3xl shadow-lg p-8">
@@ -416,7 +644,7 @@ function WizardApp() {
 
               <div className="mb-6">
                 <img
-                  src="https://linemaster.com/wp-content/uploads/2024/10/custom-footswitches-img-group.png"
+                  src={getProxiedImageUrl("https://linemaster.com/wp-content/uploads/2024/10/custom-footswitches-img-group.png")}
                   alt="Custom Footswitches"
                   className="max-w-[320px] mx-auto rounded-xl"
                 />
@@ -427,9 +655,9 @@ function WizardApp() {
                   <OptionCard
                     key={option.id}
                     option={option}
-                    selected={selectedConsoleStyle === option.id}
+                    selected={wizardState.selectedConsoleStyle === option.id}
                     onSelect={() => {
-                      setSelectedConsoleStyle(option.id);
+                      wizardState.setSelectedConsoleStyle(option.id);
                       setTimeout(handleContinue, 150);
                     }}
                   />
@@ -450,7 +678,7 @@ function WizardApp() {
           </div>
         )}
 
-        {step === 3 && (
+        {wizardState.step === 3 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={2} totalSteps={totalSteps} isMedical />
             <div className="bg-white rounded-3xl shadow-lg p-8">
@@ -464,9 +692,9 @@ function WizardApp() {
                   <OptionCard
                     key={option.id}
                     option={option}
-                    selected={selectedPedalCount === option.id}
+                    selected={wizardState.selectedPedalCount === option.id}
                     onSelect={() => {
-                      setSelectedPedalCount(option.id);
+                      wizardState.setSelectedPedalCount(option.id);
                       setTimeout(handleContinue, 150);
                     }}
                   />
@@ -487,7 +715,7 @@ function WizardApp() {
           </div>
         )}
 
-        {step === 4 && (
+        {wizardState.step === 4 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={3} totalSteps={totalSteps} isMedical />
             <div className="bg-white rounded-3xl shadow-lg p-8">
@@ -502,10 +730,10 @@ function WizardApp() {
                   <OptionCard
                     key={option.id}
                     option={option}
-                    selected={selectedMedicalFeatures.includes(option.id)}
+                    selected={wizardState.selectedMedicalFeatures.includes(option.id)}
                     multiSelect
                     onSelect={() => {
-                      setSelectedMedicalFeatures((prev) =>
+                      wizardState.setSelectedMedicalFeatures((prev) =>
                         prev.includes(option.id)
                           ? prev.filter((id) => id !== option.id)
                           : [...prev, option.id]
@@ -535,7 +763,7 @@ function WizardApp() {
           </div>
         )}
 
-        {step === 5 && (
+        {wizardState.step === 5 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={4} totalSteps={totalSteps} isMedical />
             <div className="bg-white rounded-3xl shadow-lg p-8">
@@ -550,10 +778,10 @@ function WizardApp() {
                   <OptionCard
                     key={option.id}
                     option={option}
-                    selected={selectedAccessories.includes(option.id)}
+                    selected={wizardState.selectedAccessories.includes(option.id)}
                     multiSelect
                     onSelect={() => {
-                      setSelectedAccessories((prev) =>
+                      wizardState.setSelectedAccessories((prev) =>
                         prev.includes(option.id)
                           ? prev.filter((id) => id !== option.id)
                           : [...prev, option.id]
@@ -583,7 +811,7 @@ function WizardApp() {
           </div>
         )}
 
-        {step === 6 && (
+        {wizardState.step === 6 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
               {/* Banner */}
@@ -609,20 +837,20 @@ function WizardApp() {
                   <div className="flex justify-between py-4">
                     <span className="text-sm text-[#64748b]">Console Style</span>
                     <span className="text-sm font-semibold text-[#0f172a]">
-                      {consoleStyles.find(c => c.id === selectedConsoleStyle)?.label || selectedConsoleStyle}
+                      {consoleStyles.find(c => c.id === wizardState.selectedConsoleStyle)?.label || wizardState.selectedConsoleStyle}
                     </span>
                   </div>
                   <div className="flex justify-between py-4">
                     <span className="text-sm text-[#64748b]">Pedal Configuration</span>
                     <span className="text-sm font-semibold text-[#0f172a]">
-                      {pedalCounts.find(p => p.id === selectedPedalCount)?.label || selectedPedalCount}
+                      {pedalCounts.find(p => p.id === wizardState.selectedPedalCount)?.label || wizardState.selectedPedalCount}
                     </span>
                   </div>
-                  {selectedMedicalFeatures.length > 0 && (
+                  {wizardState.selectedMedicalFeatures.length > 0 && (
                     <div className="flex justify-between py-4">
                       <span className="text-sm text-[#64748b]">Technical Features</span>
                       <div className="flex flex-wrap gap-2 justify-end">
-                        {selectedMedicalFeatures.map((feature) => (
+                        {wizardState.selectedMedicalFeatures.map((feature) => (
                           <span
                             key={feature}
                             className="px-3 py-1 bg-[#2563eb] text-white text-xs font-bold uppercase tracking-wide rounded-full"
@@ -633,11 +861,11 @@ function WizardApp() {
                       </div>
                     </div>
                   )}
-                  {selectedAccessories.length > 0 && (
+                  {wizardState.selectedAccessories.length > 0 && (
                     <div className="flex justify-between py-4">
                       <span className="text-sm text-[#64748b]">Accessories</span>
                       <div className="flex flex-wrap gap-2 justify-end">
-                        {selectedAccessories.map((accessory) => (
+                        {wizardState.selectedAccessories.map((accessory) => (
                           <span
                             key={accessory}
                             className="px-3 py-1 bg-[#14b8a6] text-white text-xs font-bold uppercase tracking-wide rounded-full"
@@ -688,7 +916,7 @@ function WizardApp() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-indigo-950 dark:to-purple-950">
       <Header onReset={handleReset} />
 
-      {step === 0 && (
+      {wizardState.step === 0 && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <ProgressDots currentStep={0} totalSteps={totalSteps} />
           
@@ -707,7 +935,7 @@ function WizardApp() {
               <div className="h-10 w-1 bg-gradient-to-b from-primary to-purple-500 rounded-full"></div>
               <div>
                 <div className="text-primary text-xs font-bold uppercase tracking-wider mb-1">
-                  Step 1 of 5
+                  Step 1 of 7
                 </div>
                 <h2 className="text-2xl font-bold text-foreground">
                   What's your application?
@@ -717,14 +945,16 @@ function WizardApp() {
             <p className="text-muted-foreground mb-8">Select the industry or use case that best describes your needs.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              {applications.map((option) => (
-                <OptionCard
-                  key={option.id}
-                  option={option}
-                  selected={selectedApplication === option.id}
-                  onSelect={() => handleApplicationSelect(option.id)}
-                />
-              ))}
+              {applications
+                .map((option) => (
+                  <OptionCard
+                    key={option.id}
+                    option={option}
+                    selected={wizardState.selectedApplication === option.id}
+                    productCount={calculateOptionCount('selectedApplication', option.id)}
+                    onSelect={() => handleApplicationSelect(option.id)}
+                  />
+                ))}
             </div>
 
             <div className="flex items-center justify-between pt-6 border-t border-border">
@@ -746,30 +976,34 @@ function WizardApp() {
         </div>
       )}
 
-      {step === 1 && (
+      {wizardState.step === 1 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={1} totalSteps={totalSteps} />
           <div className="bg-white rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 2 OF 5
+              STEP 2 OF 7
             </div>
-            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Select Technology</h2>
-            <p className="text-sm text-[#64748b] mb-6">How should it connect?</p>
+            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Technology</h2>
+            <p className="text-sm text-[#64748b] mb-6">Select your technology.</p>
 
             <div className="space-y-4 mb-8">
               {technologies
-                .filter((tech) => tech.availableFor?.includes(selectedApplication))
-                .map((option) => (
-                  <OptionCard
-                    key={option.id}
-                    option={option}
-                    selected={selectedTechnology === option.id}
-                    onSelect={() => {
-                      setSelectedTechnology(option.id);
-                      setTimeout(handleContinue, 150);
-                    }}
-                  />
-                ))}
+                .filter((tech) => tech.availableFor?.includes(wizardState.selectedApplication))
+                .map((option) => {
+                  return (
+                    <div key={option.id}>
+                      <OptionCard
+                        option={option}
+                        selected={wizardState.selectedTechnology === option.id}
+                        productCount={calculateOptionCount('selectedTechnology', option.id)}
+                        onSelect={() => {
+                          wizardState.setSelectedTechnology(option.id);
+                          setTimeout(handleContinue, 150);
+                        }}
+                      />
+                    </div>
+                  );
+                })}
             </div>
 
             <div className="flex items-center justify-between">
@@ -786,26 +1020,115 @@ function WizardApp() {
         </div>
       )}
 
-      {step === 2 && (
+      {wizardState.step === 2 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={2} totalSteps={totalSteps} />
           <div className="bg-white rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 3 OF 5
+              STEP 3 OF 7
             </div>
-            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">How should it operate?</h2>
+            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Action</h2>
             <p className="text-sm text-[#64748b] mb-6">Select switch action.</p>
 
             <div className="space-y-4 mb-8">
               {actions
-                .filter((action) => action.availableFor?.includes(selectedTechnology))
+                .filter((action) => action.availableFor?.includes(wizardState.selectedTechnology))
+                .map((option) => {
+                  return (
+                    <div key={option.id}>
+                      <OptionCard
+                        option={option}
+                        selected={wizardState.selectedAction === option.id}
+                        productCount={calculateOptionCount('selectedAction', option.id)}
+                        onSelect={() => {
+                          wizardState.setSelectedAction(option.id);
+                          setTimeout(handleContinue, 150);
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+            </div>
+
+            <div className="flex items-center justify-between">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Back
+              </button>
+              <span className="text-sm text-[#64748b]">Select to continue</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {wizardState.step === 3 && (
+        <div className="max-w-[800px] mx-auto px-6 py-8">
+          <ProgressDots currentStep={3} totalSteps={totalSteps} />
+          <div className="bg-white rounded-3xl shadow-lg p-8">
+            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
+              STEP 4 OF 7
+            </div>
+            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">IP Rating</h2>
+            <p className="text-sm text-[#64748b] mb-6">Select Ingress Protection rating.</p>
+
+            <div className="space-y-4 mb-8">
+              {environments
+                .map((option) => {
+                return (
+                  <div key={option.id}>
+                    <OptionCard
+                      option={option}
+                      selected={wizardState.selectedEnvironment === option.id}
+                      productCount={calculateOptionCount('selectedEnvironment', option.id)}
+                      onSelect={() => {
+                        wizardState.setSelectedEnvironment(option.id);
+                        setTimeout(handleContinue, 150);
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center justify-between">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Back
+              </button>
+              <span className="text-sm text-[#64748b]">Select to continue</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {wizardState.step === 4 && (
+        <div className="max-w-[800px] mx-auto px-6 py-8">
+          <ProgressDots currentStep={4} totalSteps={totalSteps} />
+          <div className="bg-white rounded-3xl shadow-lg p-8">
+            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
+              STEP 5 OF 7
+            </div>
+            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Stability & Material</h2>
+            <p className="text-sm text-[#64748b] mb-6">
+              Do you need a heavy switch that stays stable on the floor, or a lighter, cost-effective option?
+            </p>
+
+            <div className="space-y-4 mb-8">
+              {materials
                 .map((option) => (
                   <OptionCard
                     key={option.id}
                     option={option}
-                    selected={selectedAction === option.id}
+                    selected={wizardState.selectedMaterial === option.id}
+                    productCount={calculateOptionCount('selectedMaterial', option.id)}
                     onSelect={() => {
-                      setSelectedAction(option.id);
+                      wizardState.setSelectedMaterial(option.id);
                       setTimeout(handleContinue, 150);
                     }}
                   />
@@ -826,28 +1149,30 @@ function WizardApp() {
         </div>
       )}
 
-      {step === 3 && (
+      {wizardState.step === 5 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
-          <ProgressDots currentStep={3} totalSteps={totalSteps} />
+          <ProgressDots currentStep={5} totalSteps={totalSteps} />
           <div className="bg-white rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 4 OF 5
+              STEP 6 OF 7
             </div>
-            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Environment?</h2>
-            <p className="text-sm text-[#64748b] mb-6">Determines IP rating.</p>
+            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Connection Type</h2>
+            <p className="text-sm text-[#64748b] mb-6">Select connection style.</p>
 
             <div className="space-y-4 mb-8">
-              {environments.map((option) => (
-                <OptionCard
-                  key={option.id}
-                  option={option}
-                  selected={selectedEnvironment === option.id}
-                  onSelect={() => {
-                    setSelectedEnvironment(option.id);
-                    setTimeout(handleContinue, 150);
-                  }}
-                />
-              ))}
+              {connections
+                .map((option) => (
+                  <OptionCard
+                    key={option.id}
+                    option={option}
+                    selected={wizardState.selectedConnection === option.id}
+                    productCount={calculateOptionCount('selectedConnection', option.id)}
+                    onSelect={() => {
+                      wizardState.setSelectedConnection(option.id);
+                      setTimeout(handleContinue, 150);
+                    }}
+                  />
+                ))}
             </div>
 
             <div className="flex items-center justify-between">
@@ -864,29 +1189,35 @@ function WizardApp() {
         </div>
       )}
 
-      {step === 4 && (
+      {wizardState.step === 6 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
-          <ProgressDots currentStep={4} totalSteps={totalSteps} />
+          <ProgressDots currentStep={6} totalSteps={totalSteps} />
           <div className="bg-white rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 5 OF 5
+              STEP 7 OF 7
             </div>
-            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Additional features?</h2>
-            <p className="text-sm text-[#64748b] mb-6">Optional.</p>
+            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Features</h2>
+            <p className="text-sm text-[#64748b] mb-6">Select additional features.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               {features
                 .filter(
-                  (feature) => !feature.hideFor?.includes(selectedTechnology)
+                  (feature) => !feature.hideFor?.includes(wizardState.selectedTechnology)
                 )
                 .map((option) => (
                   <OptionCard
                     key={option.id}
                     option={option}
-                    selected={selectedFeatures.includes(option.id)}
+                    selected={wizardState.selectedFeatures.includes(option.id)}
                     multiSelect
+                    productCount={calculateOptionCount(
+                      'selectedFeatures', 
+                      wizardState.selectedFeatures.includes(option.id) 
+                        ? wizardState.selectedFeatures 
+                        : [...wizardState.selectedFeatures, option.id]
+                    )}
                     onSelect={() => {
-                      setSelectedFeatures((prev) =>
+                      wizardState.setSelectedFeatures((prev) =>
                         prev.includes(option.id)
                           ? prev.filter((id) => id !== option.id)
                           : [...prev, option.id]
@@ -916,7 +1247,7 @@ function WizardApp() {
         </div>
       )}
 
-      {step === 5 && (
+      {wizardState.step === 7 && (
         <>
           {needsCustomSolution() ? (
             <div className="max-w-[800px] mx-auto px-6 py-8">
@@ -943,32 +1274,32 @@ function WizardApp() {
                     <div className="flex justify-between py-4">
                       <span className="text-sm text-[#64748b]">Application</span>
                       <span className="text-sm font-semibold text-[#0f172a]">
-                        {applications.find(a => a.id === selectedApplication)?.label || selectedApplication}
+                        {applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication}
                       </span>
                     </div>
                     <div className="flex justify-between py-4">
                       <span className="text-sm text-[#64748b]">Technology</span>
                       <span className="text-sm font-semibold text-[#0f172a]">
-                        {technologies.find(t => t.id === selectedTechnology)?.label || selectedTechnology}
+                        {technologies.find(t => t.id === wizardState.selectedTechnology)?.label || wizardState.selectedTechnology}
                       </span>
                     </div>
                     <div className="flex justify-between py-4">
                       <span className="text-sm text-[#64748b]">Switch Action</span>
                       <span className="text-sm font-semibold text-[#0f172a]">
-                        {actions.find(a => a.id === selectedAction)?.label || selectedAction}
+                        {actions.find(a => a.id === wizardState.selectedAction)?.label || wizardState.selectedAction}
                       </span>
                     </div>
                     <div className="flex justify-between py-4">
                       <span className="text-sm text-[#64748b]">Environment</span>
                       <span className="text-sm font-semibold text-[#0f172a]">
-                        {environments.find(e => e.id === selectedEnvironment)?.label || selectedEnvironment}
+                        {environments.find(e => e.id === wizardState.selectedEnvironment)?.label || wizardState.selectedEnvironment}
                       </span>
                     </div>
-                    {selectedFeatures.length > 0 && (
+                    {wizardState.selectedFeatures.length > 0 && (
                       <div className="flex justify-between py-4">
                         <span className="text-sm text-[#64748b]">Features</span>
                         <div className="flex flex-wrap gap-2 justify-end">
-                          {selectedFeatures.map((feature) => (
+                          {wizardState.selectedFeatures.map((feature) => (
                             <span
                               key={feature}
                               className="px-3 py-1 bg-[#2563eb] text-white text-xs font-bold uppercase tracking-wide rounded-full"
@@ -1014,6 +1345,8 @@ function WizardApp() {
               {(() => {
                 const exactMatches = filterProducts();
                 const hasExactMatches = exactMatches.length > 0;
+                const bestMatch = hasExactMatches ? exactMatches[0] : null;
+                const otherMatches = hasExactMatches ? exactMatches.slice(1) : [];
                 const alternatives = hasExactMatches ? null : getAlternativeProducts();
 
                 const relaxedMessages = {
@@ -1026,14 +1359,22 @@ function WizardApp() {
 
                 return (
                   <>
-                    <div className="text-center mb-8">
+                    <div className="text-center mb-12">
+                      <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-bold uppercase tracking-widest mb-4">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                        </span>
+                        Analyzed 300+ Products
+                      </div>
+                      
                       {hasExactMatches ? (
                         <>
-                          <h1 className="text-3xl font-bold text-[#0f172a] dark:text-white mb-2">
-                            Recommended Solutions
+                          <h1 className="text-4xl md:text-5xl font-extrabold text-[#0f172a] dark:text-white mb-4 tracking-tight">
+                            We Found <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">The One.</span>
                           </h1>
-                          <p className="text-[#64748b] dark:text-gray-400">
-                            {exactMatches.length} products found matching your requirements.
+                          <p className="text-lg text-[#64748b] dark:text-gray-400 max-w-2xl mx-auto">
+                            Based on your requirements, this is the exact switch you need.
                           </p>
                         </>
                       ) : (
@@ -1045,7 +1386,7 @@ function WizardApp() {
                           <h1 className="text-3xl font-bold text-[#0f172a] dark:text-white mb-2">
                             No Exact Matches Found
                           </h1>
-                          <p className="text-[#64748b] dark:text-gray-400 max-w-2xl mx-auto">
+                          <p className="text--[#64748b] dark:text-gray-400 max-w-2xl mx-auto">
                             {alternatives && relaxedMessages[alternatives.relaxed]}
                           </p>
                         </>
@@ -1053,7 +1394,7 @@ function WizardApp() {
                     </div>
 
                     {/* Filter Summary Bar */}
-                    <div className="mb-8 p-6 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm rounded-2xl border border-indigo-200 dark:border-indigo-800">
+                    <div className="mb-12 p-6 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm rounded-2xl border border-indigo-200 dark:border-indigo-800">
                       <div className="flex items-center gap-3 mb-4">
                         <span className="text-sm font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider">
                           Active Filters:
@@ -1066,109 +1407,208 @@ function WizardApp() {
                         </button>
                       </div>
                       <div className="flex gap-2 flex-wrap">
-                        {selectedApplication && (
+                        {wizardState.selectedApplication && (
                           <FilterChip
                             label="Application"
-                            value={applications.find(a => a.id === selectedApplication)?.label || selectedApplication}
+                            value={applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication}
                             onRemove={() => {
-                              setSelectedApplication('');
-                              setStep(0);
+                              wizardState.setSelectedApplication('');
+                              wizardState.setStep(0);
                             }}
                           />
                         )}
-                        {selectedTechnology && (
+                        {wizardState.selectedTechnology && (
                           <FilterChip
                             label="Technology"
-                            value={technologies.find(t => t.id === selectedTechnology)?.label || selectedTechnology}
+                            value={technologies.find(t => t.id === wizardState.selectedTechnology)?.label || wizardState.selectedTechnology}
                             onRemove={() => {
-                              setSelectedTechnology('');
-                              setStep(1);
+                              wizardState.setSelectedTechnology('');
+                              wizardState.setStep(1);
                             }}
                           />
                         )}
-                        {selectedAction && (
+                        {wizardState.selectedAction && (
                           <FilterChip
                             label="Action"
-                            value={actions.find(a => a.id === selectedAction)?.label || selectedAction}
+                            value={actions.find(a => a.id === wizardState.selectedAction)?.label || wizardState.selectedAction}
                             onRemove={() => {
-                              setSelectedAction('');
-                              setStep(2);
+                              wizardState.setSelectedAction('');
+                              wizardState.setStep(2);
                             }}
                           />
                         )}
-                        {selectedEnvironment && (
+                        {wizardState.selectedEnvironment && (
                           <FilterChip
                             label="Environment"
-                            value={environments.find(e => e.id === selectedEnvironment)?.label || selectedEnvironment}
+                            value={environments.find(e => e.id === wizardState.selectedEnvironment)?.label || wizardState.selectedEnvironment}
                             onRemove={() => {
-                              setSelectedEnvironment('');
-                              setStep(3);
+                              wizardState.setSelectedEnvironment('');
+                              wizardState.setStep(3);
                             }}
                           />
                         )}
-                        {selectedFeatures.map((featureId) => (
+                        {wizardState.selectedFeatures.map((featureId) => (
                           <FilterChip
                             key={featureId}
                             label="Feature"
                             value={features.find(f => f.id === featureId)?.label || featureId}
                             onRemove={() => {
-                              setSelectedFeatures(prev => prev.filter(id => id !== featureId));
+                              wizardState.setSelectedFeatures(prev => prev.filter(id => id !== featureId));
                             }}
                           />
                         ))}
                       </div>
                     </div>
 
-                    {/* Product Results */}
-                    {(['heavy', 'medium', 'light'] as const).map((duty) => {
-                      const dutyProducts = (hasExactMatches ? exactMatches : alternatives?.products || []).filter((p) => p.duty === duty);
-                      if (dutyProducts.length === 0) return null;
+                    {/* Best Match Highlight */}
+                    {bestMatch && (
+                      <div className="mb-16 transform hover:scale-[1.01] transition-transform duration-500">
+                        <div className="relative bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden border border-indigo-100 dark:border-indigo-900">
+                           <div className="grid grid-cols-1 lg:grid-cols-2">
+                             <div className="p-12 flex flex-col justify-center relative overflow-hidden bg-[rgba(161,73,206,0)]">
+                               <div className="relative z-10">
+                                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-bold uppercase tracking-wider mb-6">
+                                    <Star className="w-4 h-4 fill-green-700" />
+                                    Top Recommendation
+                                 </div>
+                                 <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-4 leading-tight flex flex-wrap items-baseline gap-3">
+                                   {bestMatch.series}
+                                   {(bestMatch.part_number || bestMatch.id) && (
+                                     <span className="text-2xl font-medium text-slate-500 dark:text-slate-400">
+                                       # {bestMatch.part_number || bestMatch.id.toUpperCase()}
+                                     </span>
+                                   )}
+                                 </h2>
+                                 <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed">
+                                   {bestMatch.description}
+                                 </p>
+                                 
+                                 <div className="grid grid-cols-2 gap-6 mb-10">
+                                   <div>
+                                     <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">IP Rating</div>
+                                     <div className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                                       {bestMatch.ip}
+                                       {bestMatch.ip === 'IP68' && <CheckCircle className="w-4 h-4 text-blue-500" />}
+                                     </div>
+                                   </div>
+                                   <div>
+                                     <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Duty Rating</div>
+                                     <div className="font-medium text-slate-900 dark:text-white">{bestMatch.duty.charAt(0).toUpperCase() + bestMatch.duty.slice(1)}</div>
+                                   </div>
+                                   <div>
+                                      <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Material</div>
+                                      <div className="font-medium text-slate-900 dark:text-white">{bestMatch.material}</div>
+                                   </div>
+                                   <div>
+                                      <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Action</div>
+                                      <div className="font-medium text-slate-900 dark:text-white">{bestMatch.actions.join(', ')}</div>
+                                   </div>
+                                   {bestMatch.voltage && (
+                                     <div>
+                                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Voltage</div>
+                                        <div className="font-medium text-slate-900 dark:text-white">{bestMatch.voltage}</div>
+                                     </div>
+                                   )}
+                                   {bestMatch.certifications && (
+                                     <div>
+                                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Certifications</div>
+                                        <div className="font-medium text-slate-900 dark:text-white">{bestMatch.certifications}</div>
+                                     </div>
+                                   )}
+                                 </div>
 
-                      const dutyLabels = {
-                        heavy: 'Heavy Duty',
-                        medium: 'Medium Duty',
-                        light: 'Light Duty',
-                      };
-                      const dutyDescriptions = {
-                        heavy: 'Continuous, high-force use.',
-                        medium: 'Regular daily use.',
-                        light: 'Occasional use.',
-                      };
+                                 <div className="flex flex-col sm:flex-row gap-4">
+                                   <a 
+                                     href={bestMatch.link} 
+                                     target="_blank" 
+                                     rel="noopener noreferrer"
+                                     className="flex-1 inline-flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-blue-500/30"
+                                   >
+                                     View Full Specifications
+                                     <ArrowRight className="w-5 h-5" />
+                                   </a>
+                                   <button 
+                                      onClick={generatePDF}
+                                      className="flex-1 inline-flex items-center justify-center gap-2 px-8 py-4 bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold rounded-xl transition-colors"
+                                   >
+                                     <Download className="w-5 h-5" />
+                                     Download PDF
+                                   </button>
+                                 </div>
+                               </div>
+                             </div>
+                             <div className="bg-slate-50 dark:bg-slate-800/50 p-12 flex items-center justify-center relative">
+                               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent dark:from-slate-800 opacity-60"></div>
+                               <img 
+                                 src={getProxiedImageUrl(bestMatch.image)} 
+                                 alt={bestMatch.series} 
+                                 className="w-full max-w-md object-contain drop-shadow-2xl relative z-10 transform hover:scale-105 transition-transform duration-500"
+                               />
+                             </div>
+                           </div>
+                        </div>
+                      </div>
+                    )}
 
+                    {/* Enhanced Search and Filter */}
+                    <div className="mb-8">
+                       <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                         {bestMatch ? 'Other Compatible Options' : 'Available Products'}
+                         <span className="text-sm font-normal text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                           {hasExactMatches ? exactMatches.length - 1 + (alternatives?.products.length || 0) : alternatives?.products.length || 0}
+                         </span>
+                       </h3>
+                       <EnhancedSearch
+                        products={hasExactMatches ? otherMatches : alternatives?.products || []}
+                        searchTerm={searchTerm}
+                        setSearchTerm={setSearchTerm}
+                        sortBy={sortBy}
+                        setSortBy={setSortBy}
+                        dutyFilter={dutyFilter}
+                        setDutyFilter={setDutyFilter}
+                        cordedFilter={cordedFilter}
+                        setCordedFilter={setCordedFilter}
+                        onFilteredChange={(filtered) => {
+                          // Filtered products are handled within the component
+                        }}
+                      />
+                    </div>
+
+                    {/* Product Results Grid */}
+                    {(() => {
+                      const baseProducts = hasExactMatches ? otherMatches : alternatives?.products || [];
+                      const filteredProducts = getProcessedProducts(baseProducts, {
+                        searchTerm,
+                        dutyFilter,
+                        cordedFilter,
+                        sortBy,
+                        selectedEnvironment: wizardState.selectedEnvironment,
+                      });
+                      
                       return (
-                        <div key={duty} className="mb-12">
-                          <div className="mb-6">
-                            <h2 className="text-xl font-bold text-[#0f172a] dark:text-white mb-1">
-                              {dutyLabels[duty]}
-                            </h2>
-                            <p className="text-sm text-[#64748b] dark:text-gray-400">{dutyDescriptions[duty]}</p>
-                          </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+                          {filteredProducts.map((product) => {
+                             const matchReasons = {
+                               technology: technologies.find(t => t.id === wizardState.selectedTechnology)?.label,
+                               action: actions.find(a => a.id === wizardState.selectedAction)?.label,
+                               environment: environments.find(e => e.id === wizardState.selectedEnvironment)?.label,
+                               features: wizardState.selectedFeatures
+                                 .filter(f => !f.includes('custom'))
+                                 .map(f => features.find(feat => feat.id === f)?.label)
+                                 .filter(Boolean) as string[],
+                             };
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {dutyProducts.map((product) => {
-                              // Build match reasons for this product
-                              const matchReasons = {
-                                technology: technologies.find(t => t.id === selectedTechnology)?.label,
-                                action: actions.find(a => a.id === selectedAction)?.label,
-                                environment: environments.find(e => e.id === selectedEnvironment)?.label,
-                                features: selectedFeatures
-                                  .filter(f => !f.includes('custom'))
-                                  .map(f => features.find(feat => feat.id === f)?.label)
-                                  .filter(Boolean) as string[],
-                              };
-
-                              return (
-                                <ProductCard 
-                                  key={product.id} 
-                                  product={product} 
-                                  matchReasons={matchReasons}
-                                />
-                              );
-                            })}
-                          </div>
+                             return (
+                               <ProductCard
+                                 key={product.id}
+                                 product={product}
+                                 matchReasons={matchReasons}
+                               />
+                             );
+                          })}
                         </div>
                       );
-                    })}
+                    })()}
 
                     {/* Alternative products notice */}
                     {!hasExactMatches && alternatives && (
@@ -1236,7 +1676,9 @@ export default function App() {
       {(path, navigate) => {
         // If accessing admin route
         if (path.startsWith('/admin')) {
-          return <AdminContainer />;
+          return <Suspense fallback={<div>Loading...</div>}>
+            <AdminContainer />
+          </Suspense>;
         }
         
         // Default to wizard app
