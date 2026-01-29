@@ -69,8 +69,9 @@ function mapRowToProduct(row: any) {
   };
 }
 
-// --- ROUTES ---
-// Using wildcard prefix (*/) to handle any function name (server, make-server-xxx, etc.)
+// --- LOGIC HANDLERS ---
+// Logic is defined in a separate app (api) and then mounted. 
+// However, since we want wildcard matching on the prefix, we just define routes on `app` with a wildcard prefix.
 
 // GET /products
 app.get('*/products', async (c) => {
