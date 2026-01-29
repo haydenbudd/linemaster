@@ -1,7 +1,7 @@
 import { projectId, publicAnonKey } from '/utils/supabase/info';
 
-// Use the legacy name which is most likely correct based on user context
-const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-a6e7a38d`;
+// UPDATED: Pointing explicitly to "server" to match "supabase functions deploy server"
+const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/server`;
 
 async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   console.log('🔵 API Request:', API_BASE_URL + endpoint);
@@ -53,8 +53,8 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}) {
          console.error('🔴 Network/CORS Error:', error.message);
          throw new Error(
            'Connection Failed: The backend server is unreachable. ' +
-           'This usually means the Supabase Edge Function "make-server-a6e7a38d" is not deployed or does not exist. ' +
-           'Please run: "supabase functions deploy make-server-a6e7a38d"'
+           '1. Ensure you have deployed the server: "supabase functions deploy server" ' +
+           '2. Ensure your Project ID is correct.'
          );
       }
       console.error('🔴 API Error:', error.message);

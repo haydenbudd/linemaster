@@ -69,12 +69,14 @@ function mapRowToProduct(row: any) {
   };
 }
 
-// --- LOGIC HANDLERS ---
-// Logic is defined in a separate app (api) and then mounted. 
-// However, since we want wildcard matching on the prefix, we just define routes on `app` with a wildcard prefix.
+// --- ROUTES ---
+// We use a prefix group to cleanly handle the standard path
+// But we also mount on the root to handle wildcard cases if needed.
+
+const api = new Hono();
 
 // GET /products
-app.get('*/products', async (c) => {
+api.get('/products', async (c) => {
   try {
     const { data, error } = await supabase
       .from('Stock Switches')
@@ -91,7 +93,7 @@ app.get('*/products', async (c) => {
 });
 
 // GET /products/:id
-app.get('*/products/:id', async (c) => {
+api.get('/products/:id', async (c) => {
   const id = c.req.param('id');
   try {
     const { data, error } = await supabase
@@ -109,7 +111,7 @@ app.get('*/products/:id', async (c) => {
 });
 
 // POST /products (Bulk Upsert)
-app.post('*/products', async (c) => {
+api.post('/products', async (c) => {
   try {
     const body = await c.req.json();
     const items = Array.isArray(body) ? body : [body];
@@ -160,7 +162,7 @@ app.post('*/products', async (c) => {
 });
 
 // DELETE /products (Delete All)
-app.delete('*/products', async (c) => {
+api.delete('/products', async (c) => {
   try {
     const { error } = await supabase.from('Stock Switches').delete().neq('id', -1);
     if (error) throw error;
@@ -171,7 +173,7 @@ app.delete('*/products', async (c) => {
 });
 
 // DELETE /products/:id
-app.delete('*/products/:id', async (c) => {
+api.delete('/products/:id', async (c) => {
   const id = c.req.param('id');
   try {
     const { error } = await supabase
@@ -187,7 +189,7 @@ app.delete('*/products/:id', async (c) => {
 });
 
 // GET /options
-app.get('*/options', async (c) => {
+api.get('/options', async (c) => {
   try {
     const { data, error } = await supabase
       .from('wizard_options')
@@ -202,7 +204,7 @@ app.get('*/options', async (c) => {
 });
 
 // POST /options
-app.post('*/options', async (c) => {
+api.post('/options', async (c) => {
   try {
     const body = await c.req.json();
     const { data, error } = await supabase
@@ -219,8 +221,11 @@ app.post('*/options', async (c) => {
 });
 
 // Health check
-app.get('*/health', (c) => {
+api.get('/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Mount the API on wildcard routes to handle function name prefixes
+app.route('*', api);
 
 Deno.serve(app.fetch);
