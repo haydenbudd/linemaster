@@ -6,6 +6,7 @@ interface OptionCardProps {
   option: Option;
   selected: boolean;
   multiSelect?: boolean;
+  productCount?: number;
   onSelect: () => void;
 }
 
@@ -13,6 +14,7 @@ export function OptionCard({
   option,
   selected,
   multiSelect = false,
+  productCount,
   onSelect,
 }: OptionCardProps) {
   // Get icon from lucide-react by name
@@ -52,6 +54,11 @@ export function OptionCard({
         <div className="flex-1 min-w-0">
           <h3 className="font-bold text-foreground mb-1.5 text-lg">{option.label}</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">{option.description}</p>
+          {productCount !== undefined && (
+            <span className="mt-1 inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full bg-primary/10 text-primary">
+              {productCount} {productCount === 1 ? 'product' : 'products'}
+            </span>
+          )}
         </div>
 
         <div className="flex-shrink-0 ml-2">
