@@ -128,52 +128,65 @@ function WizardApp() {
   const filterProducts = () => {
     return products.filter((product) => {
       // Filter by application
-      if (!product.applications.includes(selectedApplication)) return false;
+      if (selectedApplication && !product.applications?.includes(selectedApplication)) return false;
       // Filter by technology
-      if (product.technology !== selectedTechnology) return false;
-      // Filter by action
-      if (!product.actions.includes(selectedAction)) return false;
+      if (selectedTechnology && product.technology !== selectedTechnology) return false;
+      // Filter by action - check if product supports this action
+      if (selectedAction && !product.actions?.includes(selectedAction)) return false;
+
       // Filter by environment/IP rating
-      if (selectedEnvironment === 'wet' && product.ip !== 'IP68') return false;
-      if (selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(product.ip))
-        return false;
-      
+      // Handle various IP rating formats (IP68, IP56, IP20, IPXX, etc.)
+      if (selectedEnvironment === 'wet') {
+        // Wet environment requires IP68
+        if (!product.ip?.includes('68')) return false;
+      }
+      if (selectedEnvironment === 'damp') {
+        // Damp environment requires at least IP56
+        const ip = product.ip || '';
+        const hasGoodRating = ip.includes('56') || ip.includes('68');
+        if (!hasGoodRating) return false;
+      }
+
       // Filter by selected features (if any features are selected)
       if (selectedFeatures.length > 0) {
         // Exclude custom cable/connector from this check (those trigger custom solution)
         const hardwareFeatures = selectedFeatures.filter(
           f => f !== 'feature-custom-cable' && f !== 'feature-custom-connector'
         );
-        
+
         if (hardwareFeatures.length > 0) {
           // Product must have all selected hardware features
           const productFeatures = product.features || [];
           const hasAllFeatures = hardwareFeatures.every(featureId => {
             // Feature options have IDs like 'feature-shield', 'feature-twin'
-            // But products store features without prefix: ['shield', 'twin']
-            // So we strip the 'feature-' prefix to match
+            // Products store features without prefix: ['shield', 'twin', 'multi_stage']
             const featureValue = featureId.replace('feature-', '');
             return productFeatures.includes(featureValue);
           });
           if (!hasAllFeatures) return false;
         }
       }
-      
+
       return true;
     });
   };
 
   // Fallback filtering: progressively relax constraints to find alternatives
   const getAlternativeProducts = () => {
+    // Helper function to check IP rating
+    const meetsIpRequirement = (product: Product, env: string) => {
+      if (env === 'wet') return product.ip?.includes('68');
+      if (env === 'damp') return product.ip?.includes('56') || product.ip?.includes('68');
+      return true;
+    };
+
     // Try relaxing features first (most specific constraint)
     if (selectedFeatures.length > 0) {
       const withoutFeatures = products.filter((product) => {
-        if (!product.applications.includes(selectedApplication)) return false;
+        if (!product.applications?.includes(selectedApplication)) return false;
         if (product.technology !== selectedTechnology) return false;
-        if (!product.actions.includes(selectedAction)) return false;
-        if (selectedEnvironment === 'wet' && product.ip !== 'IP68') return false;
-        if (selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(product.ip))
-          return false;
+        if (!product.actions?.includes(selectedAction)) return false;
+        if (!meetsIpRequirement(product, selectedEnvironment)) return false;
         return true;
       });
       if (withoutFeatures.length > 0) {
@@ -184,9 +197,9 @@ function WizardApp() {
     // Try relaxing environment (IP rating)
     if (selectedEnvironment) {
       const withoutEnvironment = products.filter((product) => {
-        if (!product.applications.includes(selectedApplication)) return false;
+        if (!product.applications?.includes(selectedApplication)) return false;
         if (product.technology !== selectedTechnology) return false;
-        if (!product.actions.includes(selectedAction)) return false;
+        if (!product.actions?.includes(selectedAction)) return false;
         return true;
       });
       if (withoutEnvironment.length > 0) {
@@ -197,7 +210,7 @@ function WizardApp() {
     // Try relaxing action type
     if (selectedAction) {
       const withoutAction = products.filter((product) => {
-        if (!product.applications.includes(selectedApplication)) return false;
+        if (!product.applications?.includes(selectedApplication)) return false;
         if (product.technology !== selectedTechnology) return false;
         return true;
       });
@@ -209,7 +222,7 @@ function WizardApp() {
     // Try relaxing technology (most broad)
     if (selectedTechnology) {
       const withoutTechnology = products.filter((product) => {
-        if (!product.applications.includes(selectedApplication)) return false;
+        if (!product.applications?.includes(selectedApplication)) return false;
         return true;
       });
       if (withoutTechnology.length > 0) {
@@ -219,7 +232,7 @@ function WizardApp() {
 
     // Last resort: show all products for the application
     const allForApplication = products.filter((product) => {
-      return product.applications.includes(selectedApplication);
+      return product.applications?.includes(selectedApplication);
     });
     return { products: allForApplication, relaxed: 'all' };
   };
