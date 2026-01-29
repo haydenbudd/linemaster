@@ -1,13 +1,19 @@
 import { Hono } from 'npm:hono';
 import { cors } from 'npm:hono/cors';
 import { logger } from 'npm:hono/logger';
-import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const app = new Hono();
 
 // Middleware
 app.use('*', logger(console.log));
-app.use('*', cors());
+app.use('*', cors({
+  origin: '*',
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization', 'x-client-info', 'apikey'],
+  exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
+  maxAge: 600,
+}));
 
 // Supabase Client
 const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
@@ -63,13 +69,11 @@ function mapRowToProduct(row: any) {
   };
 }
 
-// --- LOGIC HANDLERS ---
-// We separate logic from routes to allow mounting on multiple paths
-
-const api = new Hono();
+// --- ROUTES ---
+// Using wildcard prefix (*/) to handle any function name (server, make-server-xxx, etc.)
 
 // GET /products
-api.get('/products', async (c) => {
+app.get('*/products', async (c) => {
   try {
     const { data, error } = await supabase
       .from('Stock Switches')
@@ -86,7 +90,7 @@ api.get('/products', async (c) => {
 });
 
 // GET /products/:id
-api.get('/products/:id', async (c) => {
+app.get('*/products/:id', async (c) => {
   const id = c.req.param('id');
   try {
     const { data, error } = await supabase
@@ -104,7 +108,7 @@ api.get('/products/:id', async (c) => {
 });
 
 // POST /products (Bulk Upsert)
-api.post('/products', async (c) => {
+app.post('*/products', async (c) => {
   try {
     const body = await c.req.json();
     const items = Array.isArray(body) ? body : [body];
@@ -155,7 +159,7 @@ api.post('/products', async (c) => {
 });
 
 // DELETE /products (Delete All)
-api.delete('/products', async (c) => {
+app.delete('*/products', async (c) => {
   try {
     const { error } = await supabase.from('Stock Switches').delete().neq('id', -1);
     if (error) throw error;
@@ -166,7 +170,7 @@ api.delete('/products', async (c) => {
 });
 
 // DELETE /products/:id
-api.delete('/products/:id', async (c) => {
+app.delete('*/products/:id', async (c) => {
   const id = c.req.param('id');
   try {
     const { error } = await supabase
@@ -182,7 +186,7 @@ api.delete('/products/:id', async (c) => {
 });
 
 // GET /options
-api.get('/options', async (c) => {
+app.get('*/options', async (c) => {
   try {
     const { data, error } = await supabase
       .from('wizard_options')
@@ -197,7 +201,7 @@ api.get('/options', async (c) => {
 });
 
 // POST /options
-api.post('/options', async (c) => {
+app.post('*/options', async (c) => {
   try {
     const body = await c.req.json();
     const { data, error } = await supabase
@@ -214,14 +218,8 @@ api.post('/options', async (c) => {
 });
 
 // Health check
-api.get('/health', (c) => {
+app.get('*/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
-
-// --- MOUNTING ---
-// Mount logic at multiple paths to be robust against function naming
-app.route('/server', api); // Matches /functions/v1/server/products
-app.route('/make-server-a6e7a38d', api); // Matches legacy name just in case
-app.route('/', api); // Matches if path is stripped (unlikely but safe)
 
 Deno.serve(app.fetch);
