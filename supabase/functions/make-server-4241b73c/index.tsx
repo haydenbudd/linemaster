@@ -7,7 +7,13 @@ const app = new Hono();
 
 // Middleware
 app.use('*', logger(console.log));
-app.use('*', cors());
+app.use('*', cors({
+  origin: '*',
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization', 'apikey', 'x-client-info'],
+  exposeHeaders: ['Content-Length'],
+  maxAge: 86400,
+}));
 
 // Supabase client factory
 const supabase = () => createClient(
