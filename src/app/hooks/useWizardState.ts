@@ -12,7 +12,6 @@ export interface WizardState {
   selectedDuty: string;
   selectedMaterial: string;
   selectedConnection: string;
-  selectedCertification: string;
   selectedFeatures: string[];
   // Medical flow
   selectedConsoleStyle: string;
@@ -29,7 +28,6 @@ export interface WizardState {
   setSelectedDuty: (id: string) => void;
   setSelectedMaterial: (id: string) => void;
   setSelectedConnection: (id: string) => void;
-  setSelectedCertification: (id: string) => void;
   setSelectedFeatures: React.Dispatch<React.SetStateAction<string[]>>;
   setSelectedConsoleStyle: (id: string) => void;
   setSelectedPedalCount: (id: string) => void;
@@ -48,7 +46,6 @@ export function useWizardState(): WizardState {
   const [selectedDuty, setSelectedDuty] = useState('');
   const [selectedMaterial, setSelectedMaterial] = useState('');
   const [selectedConnection, setSelectedConnection] = useState('');
-  const [selectedCertification, setSelectedCertification] = useState('');
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   // Medical flow
   const [selectedConsoleStyle, setSelectedConsoleStyle] = useState('');
@@ -66,7 +63,6 @@ export function useWizardState(): WizardState {
     setSelectedDuty('');
     setSelectedMaterial('');
     setSelectedConnection('');
-    setSelectedCertification('');
     setSelectedFeatures([]);
     setSelectedConsoleStyle('');
     setSelectedPedalCount('');
@@ -84,7 +80,6 @@ export function useWizardState(): WizardState {
     selectedDuty,
     selectedMaterial,
     selectedConnection,
-    selectedCertification,
     selectedFeatures,
     selectedConsoleStyle,
     selectedPedalCount,
@@ -99,7 +94,6 @@ export function useWizardState(): WizardState {
     setSelectedDuty,
     setSelectedMaterial,
     setSelectedConnection,
-    setSelectedCertification,
     setSelectedFeatures,
     setSelectedConsoleStyle,
     setSelectedPedalCount,

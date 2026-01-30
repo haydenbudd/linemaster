@@ -37,7 +37,7 @@ export function Header({ onReset }: HeaderProps) {
             <img
               src="https://linemaster.com/wp-content/uploads/2024/10/linemaster-logo.jpg"
               alt="Linemaster"
-              className="h-9"
+              className="h-9 dark:brightness-0 dark:invert"
             />
             <div className="hidden sm:block h-6 w-px bg-border" />
             <span className="hidden sm:block text-sm font-semibold text-muted-foreground">
