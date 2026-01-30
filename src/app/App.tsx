@@ -45,6 +45,7 @@ function WizardApp() {
     materials,
     connections,
     duties,
+    certifications,
     loading,
     error,
   } = useProductData();
@@ -78,6 +79,13 @@ function WizardApp() {
     trackWizardStep(0, app?.isMedical ? 'medical' : 'standard', { application: id });
   };
 
+  // Check if certifications step should be shown (has cert data in filtered products)
+  const shouldShowCertifications = () => {
+    // Only show if at least one product in current filtered set has certifications
+    // and there are certification options beyond just "No Preference"
+    return certifications.length > 1; // more than just the "any" option
+  };
+
   const handleBack = () => {
     if (wizardState.step === 0) return;
     if (wizardState.flow === 'medical' && wizardState.step === 1) {
@@ -86,7 +94,11 @@ function WizardApp() {
       wizardState.setSelectedApplication('');
     } else {
       let prevStep = wizardState.step - 1;
-      // Skip Connection Type step (index 5) for Air technology
+      // Skip Certifications step (index 6) if no cert data
+      if (prevStep === 6 && !shouldShowCertifications()) {
+        prevStep--;
+      }
+      // Skip Connection Type step (index 5) for Air/pneumatic technology
       if (prevStep === 5 && wizardState.selectedTechnology === 'air') {
         prevStep--;
       }
@@ -96,12 +108,16 @@ function WizardApp() {
 
   const handleContinue = () => {
     let newStep = wizardState.step + 1;
-    
-    // Skip Connection Type step (index 5) for Air technology
+
+    // Skip Connection Type step (index 5) for Air/pneumatic technology
     if (newStep === 5 && wizardState.selectedTechnology === 'air') {
       newStep++;
     }
-    
+    // Skip Certifications step (index 6) if no cert data
+    if (newStep === 6 && !shouldShowCertifications()) {
+      newStep++;
+    }
+
     wizardState.setStep(newStep);
     
     // Track analytics
@@ -116,10 +132,10 @@ function WizardApp() {
 
   const handleViewMedicalProducts = () => {
     wizardState.setFlow('standard');
-    wizardState.setStep(7);
-    
+    wizardState.setStep(8);
+
     // Track analytics
-    trackWizardStep(7, 'standard', {
+    trackWizardStep(8, 'standard', {
       application: wizardState.selectedApplication,
       source: 'medical_bypass'
     });
@@ -142,12 +158,18 @@ function WizardApp() {
         return false;
       // For 'dry' environment, accept any IP rating (no filter needed)
       
-      // Filter by Material
-      if (state.selectedMaterial && product.material !== state.selectedMaterial) return false;
+      // Filter by Duty Class
+      if (state.selectedDuty && product.duty !== state.selectedDuty) return false;
 
       // Filter by Connection
       // Skip connection filter for Air technology as it doesn't apply
       if (state.selectedTechnology !== 'air' && state.selectedConnection && product.connector_type !== state.selectedConnection) return false;
+
+      // Filter by Certification
+      if (state.selectedCertification && state.selectedCertification !== 'any') {
+        const productCerts = (product.certifications || '').toLowerCase();
+        if (!productCerts.includes(state.selectedCertification.toLowerCase())) return false;
+      }
 
       // Filter by selected features (if any features are selected)
       if (state.selectedFeatures.length > 0) {
@@ -183,17 +205,25 @@ function WizardApp() {
   const getAlternativeProducts = () => {
     // Try relaxing features first (most specific constraint)
     if (wizardState.selectedFeatures.length > 0) {
-      const withoutFeatures = products.filter((product) => {
-        if (!product.applications.includes(wizardState.selectedApplication)) return false;
-        if (product.technology !== wizardState.selectedTechnology) return false;
-        if (!product.actions.includes(wizardState.selectedAction)) return false;
-        if (wizardState.selectedEnvironment === 'wet' && product.ip !== 'IP68') return false;
-        if (wizardState.selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(product.ip))
-          return false;
-        return true;
-      });
+      const withoutFeatures = filterProducts({ selectedFeatures: [] });
       if (withoutFeatures.length > 0) {
-        return { products: withoutFeatures, relaxed: 'features' };
+        return { products: withoutFeatures, relaxed: 'features' as const };
+      }
+    }
+
+    // Try relaxing certification
+    if (wizardState.selectedCertification && wizardState.selectedCertification !== 'any') {
+      const withoutCert = filterProducts({ selectedFeatures: [], selectedCertification: '' });
+      if (withoutCert.length > 0) {
+        return { products: withoutCert, relaxed: 'certification' as const };
+      }
+    }
+
+    // Try relaxing duty
+    if (wizardState.selectedDuty) {
+      const withoutDuty = filterProducts({ selectedFeatures: [], selectedCertification: '', selectedDuty: '' });
+      if (withoutDuty.length > 0) {
+        return { products: withoutDuty, relaxed: 'duty' as const };
       }
     }
 
@@ -206,7 +236,7 @@ function WizardApp() {
         return true;
       });
       if (withoutEnvironment.length > 0) {
-        return { products: withoutEnvironment, relaxed: 'environment' };
+        return { products: withoutEnvironment, relaxed: 'environment' as const };
       }
     }
 
@@ -218,7 +248,7 @@ function WizardApp() {
         return true;
       });
       if (withoutAction.length > 0) {
-        return { products: withoutAction, relaxed: 'action' };
+        return { products: withoutAction, relaxed: 'action' as const };
       }
     }
 
@@ -229,7 +259,7 @@ function WizardApp() {
         return true;
       });
       if (withoutTechnology.length > 0) {
-        return { products: withoutTechnology, relaxed: 'technology' };
+        return { products: withoutTechnology, relaxed: 'technology' as const };
       }
     }
 
@@ -237,7 +267,7 @@ function WizardApp() {
     const allForApplication = products.filter((product) => {
       return product.applications.includes(wizardState.selectedApplication);
     });
-    return { products: allForApplication, relaxed: 'all' };
+    return { products: allForApplication, relaxed: 'all' as const };
   };
 
   const needsCustomSolution = () => {
@@ -262,19 +292,19 @@ function WizardApp() {
   const getProductCount = (step: number, optionId?: string) => {
     if (step === 1) {
       // Technology step: count products for this tech + current application
-      return products.filter(p => 
+      return products.filter(p =>
         p.applications.includes(wizardState.selectedApplication) &&
         p.technology === optionId
       ).length;
     } else if (step === 2) {
-      // Action step: count products for current selections + this action
-      return products.filter(p => 
+      // Action step
+      return products.filter(p =>
         p.applications.includes(wizardState.selectedApplication) &&
         p.technology === wizardState.selectedTechnology &&
         p.actions.includes(optionId || '')
       ).length;
     } else if (step === 3) {
-      // Environment step: count products for current selections + this environment
+      // Environment step
       return products.filter(p => {
         if (!p.applications.includes(wizardState.selectedApplication)) return false;
         if (p.technology !== wizardState.selectedTechnology) return false;
@@ -284,14 +314,14 @@ function WizardApp() {
         return true;
       }).length;
     } else if (step === 4) {
-      // Material step
+      // Duty Class step
       return products.filter(p => {
         if (!p.applications.includes(wizardState.selectedApplication)) return false;
         if (p.technology !== wizardState.selectedTechnology) return false;
         if (!p.actions.includes(wizardState.selectedAction)) return false;
         if (wizardState.selectedEnvironment === 'wet' && p.ip !== 'IP68') return false;
         if (wizardState.selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(p.ip)) return false;
-        return p.material === optionId;
+        return p.duty === optionId;
       }).length;
     } else if (step === 5) {
       // Connection step
@@ -301,8 +331,25 @@ function WizardApp() {
         if (!p.actions.includes(wizardState.selectedAction)) return false;
         if (wizardState.selectedEnvironment === 'wet' && p.ip !== 'IP68') return false;
         if (wizardState.selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(p.ip)) return false;
-        if (wizardState.selectedMaterial && p.material !== wizardState.selectedMaterial) return false;
+        if (wizardState.selectedDuty && p.duty !== wizardState.selectedDuty) return false;
         return p.connector_type === optionId;
+      }).length;
+    } else if (step === 6) {
+      // Certifications step
+      if (optionId === 'any') {
+        // "No Preference" shows total count with all previous filters
+        return filterProducts({ selectedCertification: '' }).length;
+      }
+      return products.filter(p => {
+        if (!p.applications.includes(wizardState.selectedApplication)) return false;
+        if (p.technology !== wizardState.selectedTechnology) return false;
+        if (!p.actions.includes(wizardState.selectedAction)) return false;
+        if (wizardState.selectedEnvironment === 'wet' && p.ip !== 'IP68') return false;
+        if (wizardState.selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(p.ip)) return false;
+        if (wizardState.selectedDuty && p.duty !== wizardState.selectedDuty) return false;
+        if (wizardState.selectedTechnology !== 'air' && wizardState.selectedConnection && p.connector_type !== wizardState.selectedConnection) return false;
+        const productCerts = (p.certifications || '').toLowerCase();
+        return productCerts.includes((optionId || '').toLowerCase());
       }).length;
     }
     return 0;
@@ -378,13 +425,20 @@ function WizardApp() {
       doc.text(`Environment: ${envLabel}`, 20, yPos);
       yPos += 6;
       
-      if (wizardState.selectedMaterial) {
-        doc.text(`Material: ${wizardState.selectedMaterial}`, 20, yPos);
+      if (wizardState.selectedDuty) {
+        const dutyLabel = duties.find(d => d.id === wizardState.selectedDuty)?.label || wizardState.selectedDuty;
+        doc.text(`Duty Class: ${dutyLabel}`, 20, yPos);
         yPos += 6;
       }
-      
+
       if (wizardState.selectedConnection) {
         doc.text(`Connection: ${wizardState.selectedConnection}`, 20, yPos);
+        yPos += 6;
+      }
+
+      if (wizardState.selectedCertification && wizardState.selectedCertification !== 'any') {
+        const certLabel = certifications.find(c => c.id === wizardState.selectedCertification)?.label || wizardState.selectedCertification;
+        doc.text(`Certification: ${certLabel}`, 20, yPos);
         yPos += 6;
       }
 
@@ -497,7 +551,14 @@ function WizardApp() {
     doc.save(`linemaster-${wizardState.flow}-specifications-${Date.now()}.pdf`);
   };
 
-  const totalSteps = wizardState.flow === 'medical' ? 5 : 7;
+  // Calculate total visible steps dynamically (exclude skipped steps)
+  const totalSteps = (() => {
+    if (wizardState.flow === 'medical') return 5;
+    let steps = 8; // base: steps 0-8 (9 indices, but step 0 = "step 1 of N")
+    if (wizardState.selectedTechnology === 'air') steps--;
+    if (!shouldShowCertifications()) steps--;
+    return steps;
+  })();
 
   // Show loading state
   if (loading) {
@@ -935,7 +996,7 @@ function WizardApp() {
               <div className="h-10 w-1 bg-gradient-to-b from-primary to-purple-500 rounded-full"></div>
               <div>
                 <div className="text-primary text-xs font-bold uppercase tracking-wider mb-1">
-                  Step 1 of 7
+                  Step 1 of {totalSteps}
                 </div>
                 <h2 className="text-2xl font-bold text-foreground">
                   What's your application?
@@ -981,7 +1042,7 @@ function WizardApp() {
           <ProgressDots currentStep={1} totalSteps={totalSteps} />
           <div className="bg-white rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 2 OF 7
+              STEP 2 OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Technology</h2>
             <p className="text-sm text-[#64748b] mb-6">Select your technology.</p>
@@ -1025,7 +1086,7 @@ function WizardApp() {
           <ProgressDots currentStep={2} totalSteps={totalSteps} />
           <div className="bg-white rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 3 OF 7
+              STEP 3 OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Action</h2>
             <p className="text-sm text-[#64748b] mb-6">Select switch action.</p>
@@ -1069,7 +1130,7 @@ function WizardApp() {
           <ProgressDots currentStep={3} totalSteps={totalSteps} />
           <div className="bg-white rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 4 OF 7
+              STEP 4 OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-[#0f172a] mb-2">IP Rating</h2>
             <p className="text-sm text-[#64748b] mb-6">Select Ingress Protection rating.</p>
@@ -1112,7 +1173,7 @@ function WizardApp() {
           <ProgressDots currentStep={4} totalSteps={totalSteps} />
           <div className="bg-white rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 5 OF 7
+              STEP 5 OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Stability & Material</h2>
             <p className="text-sm text-[#64748b] mb-6">
@@ -1120,15 +1181,15 @@ function WizardApp() {
             </p>
 
             <div className="space-y-4 mb-8">
-              {materials
+              {duties
                 .map((option) => (
                   <OptionCard
                     key={option.id}
                     option={option}
-                    selected={wizardState.selectedMaterial === option.id}
-                    productCount={calculateOptionCount('selectedMaterial', option.id)}
+                    selected={wizardState.selectedDuty === option.id}
+                    productCount={getProductCount(4, option.id)}
                     onSelect={() => {
-                      wizardState.setSelectedMaterial(option.id);
+                      wizardState.setSelectedDuty(option.id);
                       setTimeout(handleContinue, 150);
                     }}
                   />
@@ -1154,7 +1215,7 @@ function WizardApp() {
           <ProgressDots currentStep={5} totalSteps={totalSteps} />
           <div className="bg-white rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 6 OF 7
+              STEP 6 OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Connection Type</h2>
             <p className="text-sm text-[#64748b] mb-6">Select connection style.</p>
@@ -1189,12 +1250,52 @@ function WizardApp() {
         </div>
       )}
 
-      {wizardState.step === 6 && (
+      {wizardState.step === 6 && shouldShowCertifications() && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={6} totalSteps={totalSteps} />
           <div className="bg-white rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 7 OF 7
+              STEP 7 OF {totalSteps}
+            </div>
+            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Safety Certifications</h2>
+            <p className="text-sm text-[#64748b] mb-6">Do you need specific safety certifications?</p>
+
+            <div className="space-y-4 mb-8">
+              {certifications
+                .map((option) => (
+                  <OptionCard
+                    key={option.id}
+                    option={option}
+                    selected={wizardState.selectedCertification === option.id}
+                    productCount={getProductCount(6, option.id)}
+                    onSelect={() => {
+                      wizardState.setSelectedCertification(option.id);
+                      setTimeout(handleContinue, 150);
+                    }}
+                  />
+                ))}
+            </div>
+
+            <div className="flex items-center justify-between">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Back
+              </button>
+              <span className="text-sm text-[#64748b]">Select to continue</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {wizardState.step === 7 && (
+        <div className="max-w-[800px] mx-auto px-6 py-8">
+          <ProgressDots currentStep={7} totalSteps={totalSteps} />
+          <div className="bg-white rounded-3xl shadow-lg p-8">
+            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
+              STEP {totalSteps} OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Features</h2>
             <p className="text-sm text-[#64748b] mb-6">Select additional features.</p>
@@ -1247,7 +1348,7 @@ function WizardApp() {
         </div>
       )}
 
-      {wizardState.step === 7 && (
+      {wizardState.step === 8 && (
         <>
           {needsCustomSolution() ? (
             <div className="max-w-[800px] mx-auto px-6 py-8">
@@ -1345,12 +1446,31 @@ function WizardApp() {
               {(() => {
                 const exactMatches = filterProducts();
                 const hasExactMatches = exactMatches.length > 0;
-                const bestMatch = hasExactMatches ? exactMatches[0] : null;
-                const otherMatches = hasExactMatches ? exactMatches.slice(1) : [];
+
+                // Pick best match: flagship products first, then by duty match
+                const sortedMatches = hasExactMatches
+                  ? [...exactMatches].sort((a, b) => {
+                      // Flagship products always rank first
+                      if (a.flagship && !b.flagship) return -1;
+                      if (!a.flagship && b.flagship) return 1;
+                      // Then prefer exact duty match
+                      if (wizardState.selectedDuty) {
+                        const aMatch = a.duty === wizardState.selectedDuty ? 1 : 0;
+                        const bMatch = b.duty === wizardState.selectedDuty ? 1 : 0;
+                        if (aMatch !== bMatch) return bMatch - aMatch;
+                      }
+                      return 0;
+                    })
+                  : [];
+
+                const bestMatch = sortedMatches.length > 0 ? sortedMatches[0] : null;
+                const otherMatches = sortedMatches.length > 1 ? sortedMatches.slice(1) : [];
                 const alternatives = hasExactMatches ? null : getAlternativeProducts();
 
-                const relaxedMessages = {
+                const relaxedMessages: Record<string, string> = {
                   features: 'No exact matches with your selected features, but these products match all other criteria:',
+                  certification: 'No exact matches for your certification requirement, but these products match your other criteria:',
+                  duty: 'No exact matches for your duty class, but these products match your other requirements:',
                   environment: 'No exact matches for your environment rating, but these products match your other requirements:',
                   action: 'No exact matches for your action type, but these products match your application and technology:',
                   technology: 'No exact matches for your technology type, but these products are compatible with your application:',
@@ -1444,6 +1564,26 @@ function WizardApp() {
                             onRemove={() => {
                               wizardState.setSelectedEnvironment('');
                               wizardState.setStep(3);
+                            }}
+                          />
+                        )}
+                        {wizardState.selectedDuty && (
+                          <FilterChip
+                            label="Duty"
+                            value={duties.find(d => d.id === wizardState.selectedDuty)?.label || wizardState.selectedDuty}
+                            onRemove={() => {
+                              wizardState.setSelectedDuty('');
+                              wizardState.setStep(4);
+                            }}
+                          />
+                        )}
+                        {wizardState.selectedCertification && wizardState.selectedCertification !== 'any' && (
+                          <FilterChip
+                            label="Certification"
+                            value={certifications.find(c => c.id === wizardState.selectedCertification)?.label || wizardState.selectedCertification}
+                            onRemove={() => {
+                              wizardState.setSelectedCertification('');
+                              wizardState.setStep(6);
                             }}
                           />
                         )}

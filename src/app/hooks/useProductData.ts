@@ -22,6 +22,7 @@ interface ProductData {
   materials: OptionWithIcon[];
   connections: OptionWithIcon[];
   duties: OptionWithIcon[];
+  certifications: OptionWithIcon[];
   loading: boolean;
   error: string | null;
 }
@@ -123,9 +124,13 @@ export function useProductData(): ProductData {
       }));
   })();
 
-  // Derive unique duty ratings
+  // Derive unique duty ratings with user-friendly descriptions
   const duties: OptionWithIcon[] = (() => {
-    const order: Record<string, number> = { heavy: 0, medium: 1, light: 2 };
+    const dutyMeta: Record<string, { label: string; description: string; icon: string; order: number }> = {
+      heavy: { label: 'Heavy Duty', description: 'Maximum stability. Cast metal construction stays firmly in place. Best for machinery and high-force applications.', icon: 'Anvil', order: 0 },
+      medium: { label: 'Standard Duty', description: 'Balanced durability and weight. Reliable cast metal for everyday industrial use.', icon: 'Scale', order: 1 },
+      light: { label: 'Lightweight', description: 'Compact and portable. Polymer or formed steel for lighter tasks and general use.', icon: 'Feather', order: 2 },
+    };
     const seen = new Set<string>();
     return products
       .filter(p => {
@@ -136,10 +141,46 @@ export function useProductData(): ProductData {
       .map(p => ({
         id: p.duty,
         category: 'duty',
-        label: p.duty.charAt(0).toUpperCase() + p.duty.slice(1),
-        description: '',
+        label: dutyMeta[p.duty]?.label || p.duty.charAt(0).toUpperCase() + p.duty.slice(1),
+        description: dutyMeta[p.duty]?.description || '',
+        icon: dutyMeta[p.duty]?.icon,
       }))
-      .sort((a, b) => (order[a.id] ?? 99) - (order[b.id] ?? 99));
+      .sort((a, b) => (dutyMeta[a.id]?.order ?? 99) - (dutyMeta[b.id]?.order ?? 99));
+  })();
+
+  // Derive unique certifications from product data
+  const certifications: OptionWithIcon[] = (() => {
+    const certMeta: Record<string, { label: string; description: string; icon: string }> = {
+      ul: { label: 'UL Listed', description: 'Underwriters Laboratories certification for North America.', icon: 'ShieldCheck' },
+      csa: { label: 'CSA Certified', description: 'Canadian Standards Association approval.', icon: 'ShieldCheck' },
+      ce: { label: 'CE Marked', description: 'European conformity marking.', icon: 'ShieldCheck' },
+      iec: { label: 'IEC Compliant', description: 'International Electrotechnical Commission standards.', icon: 'ShieldCheck' },
+    };
+    const seen = new Set<string>();
+    products.forEach(p => {
+      if (p.certifications) {
+        p.certifications.split(',').forEach(c => {
+          const key = c.trim().toLowerCase();
+          if (key && !seen.has(key)) seen.add(key);
+        });
+      }
+    });
+    const result: OptionWithIcon[] = Array.from(seen).map(key => ({
+      id: key,
+      category: 'certification',
+      label: certMeta[key]?.label || key.toUpperCase(),
+      description: certMeta[key]?.description || '',
+      icon: certMeta[key]?.icon,
+    }));
+    // Add a "No Preference" option
+    result.push({
+      id: 'any',
+      category: 'certification',
+      label: 'No Preference',
+      description: 'Skip — I don\'t have a specific certification requirement.',
+      icon: 'CircleSlash',
+    });
+    return result;
   })();
 
   return {
@@ -156,6 +197,7 @@ export function useProductData(): ProductData {
     materials,
     connections,
     duties,
+    certifications,
     loading,
     error,
   };

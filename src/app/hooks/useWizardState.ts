@@ -9,8 +9,10 @@ export interface WizardState {
   selectedTechnology: string;
   selectedAction: string;
   selectedEnvironment: string;
+  selectedDuty: string;
   selectedMaterial: string;
   selectedConnection: string;
+  selectedCertification: string;
   selectedFeatures: string[];
   // Medical flow
   selectedConsoleStyle: string;
@@ -24,8 +26,10 @@ export interface WizardState {
   setSelectedTechnology: (id: string) => void;
   setSelectedAction: (id: string) => void;
   setSelectedEnvironment: (id: string) => void;
+  setSelectedDuty: (id: string) => void;
   setSelectedMaterial: (id: string) => void;
   setSelectedConnection: (id: string) => void;
+  setSelectedCertification: (id: string) => void;
   setSelectedFeatures: React.Dispatch<React.SetStateAction<string[]>>;
   setSelectedConsoleStyle: (id: string) => void;
   setSelectedPedalCount: (id: string) => void;
@@ -41,8 +45,10 @@ export function useWizardState(): WizardState {
   const [selectedTechnology, setSelectedTechnology] = useState('');
   const [selectedAction, setSelectedAction] = useState('');
   const [selectedEnvironment, setSelectedEnvironment] = useState('');
+  const [selectedDuty, setSelectedDuty] = useState('');
   const [selectedMaterial, setSelectedMaterial] = useState('');
   const [selectedConnection, setSelectedConnection] = useState('');
+  const [selectedCertification, setSelectedCertification] = useState('');
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   // Medical flow
   const [selectedConsoleStyle, setSelectedConsoleStyle] = useState('');
@@ -57,8 +63,10 @@ export function useWizardState(): WizardState {
     setSelectedTechnology('');
     setSelectedAction('');
     setSelectedEnvironment('');
+    setSelectedDuty('');
     setSelectedMaterial('');
     setSelectedConnection('');
+    setSelectedCertification('');
     setSelectedFeatures([]);
     setSelectedConsoleStyle('');
     setSelectedPedalCount('');
@@ -73,8 +81,10 @@ export function useWizardState(): WizardState {
     selectedTechnology,
     selectedAction,
     selectedEnvironment,
+    selectedDuty,
     selectedMaterial,
     selectedConnection,
+    selectedCertification,
     selectedFeatures,
     selectedConsoleStyle,
     selectedPedalCount,
@@ -86,8 +96,10 @@ export function useWizardState(): WizardState {
     setSelectedTechnology,
     setSelectedAction,
     setSelectedEnvironment,
+    setSelectedDuty,
     setSelectedMaterial,
     setSelectedConnection,
+    setSelectedCertification,
     setSelectedFeatures,
     setSelectedConsoleStyle,
     setSelectedPedalCount,
