@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchProducts, fetchOptions, Product, Option } from '@/app/lib/api';
 
 interface OptionWithIcon extends Option {
@@ -24,6 +24,7 @@ interface ProductData {
   duties: OptionWithIcon[];
   loading: boolean;
   error: string | null;
+  refresh: () => void;
 }
 
 export function useProductData(): ProductData {
@@ -32,54 +33,43 @@ export function useProductData(): ProductData {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    async function loadData() {
-      try {
-        setLoading(true);
-        setError(null);
+      const [productsData, optionsData] = await Promise.all([
+        fetchProducts(),
+        fetchOptions(),
+      ]);
 
-        const [productsData, optionsData] = await Promise.all([
-          fetchProducts(),
-          fetchOptions(),
-        ]);
+      setProducts(productsData);
 
-        if (cancelled) return;
+      // Map options from Supabase, using the 'value' field as 'id' for backward compatibility
+      const mapped: OptionWithIcon[] = optionsData.map((opt: any) => ({
+        id: opt.value || opt.id,
+        category: opt.category,
+        label: opt.label,
+        description: opt.description,
+        icon: opt.icon || undefined,
+        isMedical: opt.is_medical || false,
+        availableFor: opt.available_for || undefined,
+        hideFor: opt.hide_for || undefined,
+        sortOrder: opt.sort_order || 0,
+      }));
 
-        setProducts(productsData);
-
-        // Map options from Supabase, using the 'value' field as 'id' for backward compatibility
-        const mapped: OptionWithIcon[] = optionsData.map((opt: any) => ({
-          id: opt.value || opt.id,
-          category: opt.category,
-          label: opt.label,
-          description: opt.description,
-          icon: opt.icon || undefined,
-          isMedical: opt.is_medical || false,
-          availableFor: opt.available_for || undefined,
-          hideFor: opt.hide_for || undefined,
-          sortOrder: opt.sort_order || 0,
-        }));
-
-        setOptions(mapped);
-      } catch (err) {
-        if (cancelled) return;
-        const message = err instanceof Error ? err.message : 'Failed to load data';
-        setError(message);
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
+      setOptions(mapped);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load data';
+      setError(message);
+    } finally {
+      setLoading(false);
     }
-
-    loadData();
-
-    return () => {
-      cancelled = true;
-    };
   }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // Helper to filter and sort options by category
   const getByCategory = (category: string): OptionWithIcon[] => {
@@ -172,5 +162,6 @@ export function useProductData(): ProductData {
     duties,
     loading,
     error,
+    refresh: loadData,
   };
 }

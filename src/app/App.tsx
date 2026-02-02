@@ -8,7 +8,7 @@ import { FilterChip } from '@/app/components/FilterChip';
 import { TrustBadges } from '@/app/components/TrustBadges';
 import { ProductCountBadge } from '@/app/components/ProductCountBadge';
 import { EnhancedSearch } from '@/app/components/EnhancedSearch';
-import { ChevronLeft, ArrowRight, Download, Send, CheckCircle, Heart, Search, Star, Shield, Footprints } from 'lucide-react';
+import { ChevronLeft, ArrowRight, Download, Send, CheckCircle, Heart, Search, Star, Shield, Footprints, RefreshCw } from 'lucide-react';
 import { useProductData } from '@/app/hooks/useProductData';
 import { useProductFilter } from '@/app/hooks/useProductFilter';
 import { useWizardState } from '@/app/hooks/useWizardState';
@@ -47,6 +47,7 @@ function WizardApp() {
     duties,
     loading,
     error,
+    refresh,
   } = useProductData();
   
   // Enhanced search state for results page
@@ -654,7 +655,7 @@ function WizardApp() {
           
           <div className="flex gap-4 justify-center">
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => refresh()}
               className="px-8 py-3.5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-bold rounded-xl transition-all shadow-lg hover:shadow-xl"
             >
               Retry Connection
@@ -669,7 +670,7 @@ function WizardApp() {
   if (wizardState.flow === 'medical') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 dark:from-slate-950 dark:via-rose-950 dark:to-purple-950">
-        <Header onReset={handleReset} />
+        <Header onReset={handleReset} onRefresh={refresh} />
 
         {wizardState.step === 1 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
@@ -1017,7 +1018,7 @@ function WizardApp() {
   // Standard flow screens
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-indigo-950 dark:to-purple-950">
-      <Header onReset={handleReset} />
+      <Header onReset={handleReset} onRefresh={refresh} />
 
       {wizardState.step === 0 && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
