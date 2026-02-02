@@ -10,7 +10,7 @@ app.use('*', logger(console.log));
 app.use('*', cors());
 
 // Version tracking to prevent re-initialization on redeploys
-const DB_VERSION = 'v1.5.3'; // Increment this if you want to force a re-seed
+const DB_VERSION = 'v1.6.0'; // Increment this if you want to force a re-seed
 
 // Initialize data on first run ONLY
 // This checks for both the existence of data AND a version flag
@@ -132,7 +132,7 @@ async function initializeData() {
           id: 'varior',
           series: 'Varior',
           technology: 'electrical',
-          duty: 'light',
+          duty: 'medium',
           ip: 'IP20',
           actions: ['variable'],
           material: 'Formed Steel',
@@ -180,7 +180,7 @@ async function initializeData() {
           technology: 'pneumatic',
           duty: 'heavy',
           ip: 'IP20',
-          actions: ['momentary', 'maintained', 'variable'],
+          actions: ['momentary', 'maintained'],
           material: 'Cast Iron',
           description: 'Heavy-duty cast iron pneumatic control.',
           applications: ['industrial', 'automotive'],
