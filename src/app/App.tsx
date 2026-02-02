@@ -589,7 +589,7 @@ function WizardApp() {
     doc.text('Tel: (860) 974-1000 | linemaster.com', 15, footerY + 10);
     
     doc.setTextColor(99, 102, 241);
-    doc.text('Request a quote: linemaster.com/request-a-quote/', 15, footerY + 15);
+    doc.text('Contact us: linemaster.com/contact/', 15, footerY + 15);
 
     doc.save(`linemaster-${wizardState.flow}-specifications-${Date.now()}.pdf`);
   };
@@ -994,7 +994,7 @@ function WizardApp() {
 
                   <button
                     onClick={() =>
-                      window.open('https://linemaster.com/request-a-quote/', '_blank')
+                      window.open('https://linemaster.com/contact/', '_blank')
                     }
                     className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold rounded-xl transition-colors"
                   >
@@ -1238,16 +1238,13 @@ function WizardApp() {
                 ))}
             </div>
 
-            <div className="flex items-center justify-between">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
-              <span className="text-sm text-[#64748b]">Select to continue</span>
-            </div>
+            {duties.every(d => getProductCount(4, d.id) === 0) && (
+              <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-800 dark:text-amber-200">
+                No products match your current selections. Try adjusting your previous choices, or{' '}
+                <a href="https://linemaster.com/contact/" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-amber-900 dark:hover:text-amber-100">contact us</a>{' '}
+                for assistance.
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1280,6 +1277,14 @@ function WizardApp() {
                   />
                 ))}
             </div>
+
+            {materials.every(m => getProductCount(5, m.id) === 0) && (
+              <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-800 dark:text-amber-200">
+                No products match your current selections. Try adjusting your previous choices, or{' '}
+                <a href="https://linemaster.com/contact/" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-amber-900 dark:hover:text-amber-100">contact us</a>{' '}
+                for assistance.
+              </div>
+            )}
 
             <div className="flex items-center justify-between">
               <button
@@ -1329,15 +1334,23 @@ function WizardApp() {
                 ))}
             </div>
 
+            {connections.every(c => getProductCount(6, c.id) === 0) && (
+              <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-800 dark:text-amber-200">
+                No products match your current selections. Try adjusting your previous choices, or{' '}
+                <a href="https://linemaster.com/contact/" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-amber-900 dark:hover:text-amber-100">contact us</a>{' '}
+                for assistance.
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <button
                 onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Back
               </button>
-              <span className="text-sm text-[#64748b]">Select to continue</span>
+              <span className="text-sm text-muted-foreground">Select to continue</span>
             </div>
           </div>
         </div>
@@ -1375,6 +1388,14 @@ function WizardApp() {
                 }}
               />
             </div>
+
+            {getProductCount(7, 'yes') === 0 && getProductCount(7, 'no') === 0 && (
+              <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-800 dark:text-amber-200">
+                No products match your current selections. Try adjusting your previous choices, or{' '}
+                <a href="https://linemaster.com/contact/" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-amber-900 dark:hover:text-amber-100">contact us</a>{' '}
+                for assistance.
+              </div>
+            )}
 
             <div className="flex items-center justify-between">
               <button
@@ -1430,6 +1451,14 @@ function WizardApp() {
                 }}
               />
             </div>
+
+            {getProductCount(8, 'single') === 0 && getProductCount(8, 'twin') === 0 && (
+              <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-800 dark:text-amber-200">
+                No products match your current selections. Try adjusting your previous choices, or{' '}
+                <a href="https://linemaster.com/contact/" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-amber-900 dark:hover:text-amber-100">contact us</a>{' '}
+                for assistance.
+              </div>
+            )}
 
             <div className="flex items-center justify-between">
               <button
@@ -1527,9 +1556,9 @@ function WizardApp() {
                   <div className="text-white/80 text-xs font-bold uppercase tracking-wide mb-3">
                     CUSTOM SPECIFICATIONS
                   </div>
-                  <h1 className="text-3xl font-bold mb-2">Custom Solution Required</h1>
+                  <h1 className="text-3xl font-bold mb-2">No Exact Match Found</h1>
                   <p className="text-white/90">
-                    Your requirements need a custom configuration.
+                    We couldn't find an exact match in our catalog, but our team can help find the right solution for you.
                   </p>
                 </div>
 
@@ -1590,16 +1619,16 @@ function WizardApp() {
 
                     <button
                       onClick={() =>
-                        window.open('https://linemaster.com/request-a-quote/', '_blank')
+                        window.open('https://linemaster.com/contact/', '_blank')
                       }
                       className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold rounded-xl transition-colors"
                     >
                       <Send className="w-5 h-5" />
-                      Submit Quote Request
+                      Contact Us
                     </button>
 
                     <p className="text-xs text-center text-[#64748b] mt-4">
-                      Attach your downloaded PDF to the quote form for faster processing.
+                      Attach your downloaded PDF when reaching out for faster processing.
                     </p>
                   </div>
                 </div>
@@ -1948,14 +1977,14 @@ function WizardApp() {
                               Need help choosing?
                             </h3>
                             <p className="text-sm text-amber-800 mb-4">
-                              We found these alternative products that closely match your requirements. 
-                              Contact our customer service team to discuss which option would work best for your specific application, or explore custom configurations.
+                              We found these alternative products that closely match your requirements.
+                              Contact our team to discuss which option would work best for your specific application.
                             </p>
                             <button
-                              onClick={() => window.open('https://linemaster.com/request-a-quote/', '_blank')}
+                              onClick={() => window.open('https://linemaster.com/contact/', '_blank')}
                               className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition-colors"
                             >
-                              Contact Customer Service
+                              Contact Us
                             </button>
                           </div>
                         </div>
@@ -1964,9 +1993,9 @@ function WizardApp() {
 
                     {/* Footer CTA */}
                     <div className="mt-16 bg-[#1e293b] rounded-3xl p-8 text-white text-center">
-                      <h2 className="text-2xl font-bold mb-2">Need a custom solution?</h2>
+                      <h2 className="text-2xl font-bold mb-2">Can't find what you need?</h2>
                       <p className="text-white/80 mb-6">
-                        Download your specifications and request a custom quote.
+                        Our team can help you find the right foot switch for your application.
                       </p>
                       <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <button
@@ -1977,11 +2006,11 @@ function WizardApp() {
                         </button>
                         <button
                           onClick={() =>
-                            window.open('https://linemaster.com/request-a-quote/', '_blank')
+                            window.open('https://linemaster.com/contact/', '_blank')
                           }
                           className="px-8 py-3 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-semibold rounded-xl transition-colors"
                         >
-                          Request Quote
+                          Contact Us
                         </button>
                       </div>
                     </div>
