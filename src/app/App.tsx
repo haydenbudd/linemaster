@@ -8,7 +8,7 @@ import { FilterChip } from '@/app/components/FilterChip';
 import { TrustBadges } from '@/app/components/TrustBadges';
 import { ProductCountBadge } from '@/app/components/ProductCountBadge';
 import { EnhancedSearch } from '@/app/components/EnhancedSearch';
-import { ChevronLeft, ArrowRight, Download, Send, CheckCircle, Heart, Search, Star } from 'lucide-react';
+import { ChevronLeft, ArrowRight, Download, Send, CheckCircle, Heart, Search, Star, Shield, Footprints } from 'lucide-react';
 import { useProductData } from '@/app/hooks/useProductData';
 import { useProductFilter } from '@/app/hooks/useProductFilter';
 import { useWizardState } from '@/app/hooks/useWizardState';
@@ -116,10 +116,10 @@ function WizardApp() {
 
   const handleViewMedicalProducts = () => {
     wizardState.setFlow('standard');
-    wizardState.setStep(8);
+    wizardState.setStep(10);
 
     // Track analytics
-    trackWizardStep(8, 'standard', {
+    trackWizardStep(10, 'standard', {
       application: wizardState.selectedApplication,
       source: 'medical_bypass'
     });
@@ -151,6 +151,14 @@ function WizardApp() {
       // Filter by Connection
       // Skip connection filter for Air technology as it doesn't apply
       if (state.selectedTechnology !== 'air' && state.selectedConnection && product.connector_type !== state.selectedConnection) return false;
+
+      // Filter by Safety Guard
+      if (state.selectedGuard === 'yes' && !(product.features || []).includes('guard')) return false;
+      if (state.selectedGuard === 'no' && (product.features || []).includes('guard')) return false;
+
+      // Filter by Pedal Configuration
+      if (state.selectedPedalConfig === 'twin' && !(product.features || []).includes('twin')) return false;
+      if (state.selectedPedalConfig === 'single' && (product.features || []).includes('twin')) return false;
 
       // Filter by selected features (if any features are selected)
       if (state.selectedFeatures.length > 0) {
@@ -192,9 +200,25 @@ function WizardApp() {
       }
     }
 
+    // Try relaxing pedal config
+    if (wizardState.selectedPedalConfig) {
+      const withoutPedal = filterProducts({ selectedFeatures: [], selectedPedalConfig: '' });
+      if (withoutPedal.length > 0) {
+        return { products: withoutPedal, relaxed: 'pedalConfig' as const };
+      }
+    }
+
+    // Try relaxing guard
+    if (wizardState.selectedGuard) {
+      const withoutGuard = filterProducts({ selectedFeatures: [], selectedPedalConfig: '', selectedGuard: '' });
+      if (withoutGuard.length > 0) {
+        return { products: withoutGuard, relaxed: 'guard' as const };
+      }
+    }
+
     // Try relaxing material
     if (wizardState.selectedMaterial) {
-      const withoutMaterial = filterProducts({ selectedFeatures: [], selectedMaterial: '' });
+      const withoutMaterial = filterProducts({ selectedFeatures: [], selectedPedalConfig: '', selectedGuard: '', selectedMaterial: '' });
       if (withoutMaterial.length > 0) {
         return { products: withoutMaterial, relaxed: 'material' as const };
       }
@@ -202,7 +226,7 @@ function WizardApp() {
 
     // Try relaxing duty
     if (wizardState.selectedDuty) {
-      const withoutDuty = filterProducts({ selectedFeatures: [], selectedMaterial: '', selectedDuty: '' });
+      const withoutDuty = filterProducts({ selectedFeatures: [], selectedPedalConfig: '', selectedGuard: '', selectedMaterial: '', selectedDuty: '' });
       if (withoutDuty.length > 0) {
         return { products: withoutDuty, relaxed: 'duty' as const };
       }
@@ -327,6 +351,40 @@ function WizardApp() {
         if (wizardState.selectedMaterial && p.material !== wizardState.selectedMaterial) return false;
         return p.connector_type === optionId;
       }).length;
+    } else if (step === 7) {
+      // Guard step
+      return products.filter(p => {
+        if (!p.applications.includes(wizardState.selectedApplication)) return false;
+        if (p.technology !== wizardState.selectedTechnology) return false;
+        if (!p.actions.includes(wizardState.selectedAction)) return false;
+        if (wizardState.selectedEnvironment === 'wet' && p.ip !== 'IP68') return false;
+        if (wizardState.selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(p.ip)) return false;
+        if (wizardState.selectedDuty && p.duty !== wizardState.selectedDuty) return false;
+        if (wizardState.selectedMaterial && p.material !== wizardState.selectedMaterial) return false;
+        if (wizardState.selectedTechnology !== 'air' && wizardState.selectedConnection && p.connector_type !== wizardState.selectedConnection) return false;
+        const hasGuard = (p.features || []).includes('guard');
+        if (optionId === 'yes') return hasGuard;
+        if (optionId === 'no') return !hasGuard;
+        return true;
+      }).length;
+    } else if (step === 8) {
+      // Pedal config step
+      return products.filter(p => {
+        if (!p.applications.includes(wizardState.selectedApplication)) return false;
+        if (p.technology !== wizardState.selectedTechnology) return false;
+        if (!p.actions.includes(wizardState.selectedAction)) return false;
+        if (wizardState.selectedEnvironment === 'wet' && p.ip !== 'IP68') return false;
+        if (wizardState.selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(p.ip)) return false;
+        if (wizardState.selectedDuty && p.duty !== wizardState.selectedDuty) return false;
+        if (wizardState.selectedMaterial && p.material !== wizardState.selectedMaterial) return false;
+        if (wizardState.selectedTechnology !== 'air' && wizardState.selectedConnection && p.connector_type !== wizardState.selectedConnection) return false;
+        if (wizardState.selectedGuard === 'yes' && !(p.features || []).includes('guard')) return false;
+        if (wizardState.selectedGuard === 'no' && (p.features || []).includes('guard')) return false;
+        const hasTwin = (p.features || []).includes('twin');
+        if (optionId === 'twin') return hasTwin;
+        if (optionId === 'single') return !hasTwin;
+        return true;
+      }).length;
     }
     return 0;
   };
@@ -414,6 +472,16 @@ function WizardApp() {
 
       if (wizardState.selectedConnection) {
         doc.text(`Connection: ${wizardState.selectedConnection}`, 20, yPos);
+        yPos += 6;
+      }
+
+      if (wizardState.selectedGuard) {
+        doc.text(`Safety Guard: ${wizardState.selectedGuard === 'yes' ? 'Required' : 'Not needed'}`, 20, yPos);
+        yPos += 6;
+      }
+
+      if (wizardState.selectedPedalConfig) {
+        doc.text(`Pedal Config: ${wizardState.selectedPedalConfig === 'twin' ? 'Twin Pedal' : 'Single Pedal'}`, 20, yPos);
         yPos += 6;
       }
 
@@ -529,7 +597,7 @@ function WizardApp() {
   // Calculate total visible steps dynamically (exclude skipped steps)
   const totalSteps = (() => {
     if (wizardState.flow === 'medical') return 5;
-    let steps = 8; // base: steps 0-8 (9 indices, but step 0 = "step 1 of N")
+    let steps = 10; // base: steps 0-10 (App, Tech, Action, Env, Duty, Material, Connection, Guard, PedalConfig, Features, Results)
     if (wizardState.selectedTechnology === 'air') steps--; // skip Connection
     return steps;
   })();
@@ -1014,12 +1082,12 @@ function WizardApp() {
       {wizardState.step === 1 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={1} totalSteps={totalSteps} />
-          <div className="bg-white rounded-3xl shadow-lg p-8">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
               STEP 2 OF {totalSteps}
             </div>
-            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Technology</h2>
-            <p className="text-sm text-[#64748b] mb-6">Select your technology.</p>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Technology</h2>
+            <p className="text-sm text-muted-foreground mb-6">Select your technology.</p>
 
             <div className="space-y-4 mb-8">
               {technologies
@@ -1058,12 +1126,12 @@ function WizardApp() {
       {wizardState.step === 2 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={2} totalSteps={totalSteps} />
-          <div className="bg-white rounded-3xl shadow-lg p-8">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
               STEP 3 OF {totalSteps}
             </div>
-            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Action</h2>
-            <p className="text-sm text-[#64748b] mb-6">Select switch action.</p>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Action</h2>
+            <p className="text-sm text-muted-foreground mb-6">Select switch action.</p>
 
             <div className="space-y-4 mb-8">
               {actions
@@ -1102,12 +1170,12 @@ function WizardApp() {
       {wizardState.step === 3 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={3} totalSteps={totalSteps} />
-          <div className="bg-white rounded-3xl shadow-lg p-8">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
               STEP 4 OF {totalSteps}
             </div>
-            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">IP Rating</h2>
-            <p className="text-sm text-[#64748b] mb-6">Select Ingress Protection rating.</p>
+            <h2 className="text-2xl font-bold text-foreground mb-2">IP Rating</h2>
+            <p className="text-sm text-muted-foreground mb-6">Select Ingress Protection rating.</p>
 
             <div className="space-y-4 mb-8">
               {environments
@@ -1145,12 +1213,12 @@ function WizardApp() {
       {wizardState.step === 4 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={4} totalSteps={totalSteps} />
-          <div className="bg-white rounded-3xl shadow-lg p-8">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
               STEP 5 OF {totalSteps}
             </div>
-            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Stability & Material</h2>
-            <p className="text-sm text-[#64748b] mb-6">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Stability & Material</h2>
+            <p className="text-sm text-muted-foreground mb-6">
               Do you need a heavy switch that stays stable on the floor, or a lighter, cost-effective option?
             </p>
 
@@ -1187,12 +1255,12 @@ function WizardApp() {
       {wizardState.step === 5 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={5} totalSteps={totalSteps} />
-          <div className="bg-white rounded-3xl shadow-lg p-8">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
               STEP 6 OF {totalSteps}
             </div>
-            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Material</h2>
-            <p className="text-sm text-[#64748b] mb-6">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Material</h2>
+            <p className="text-sm text-muted-foreground mb-6">
               What material do you prefer? This affects weight, corrosion resistance, and cost.
             </p>
 
@@ -1216,12 +1284,20 @@ function WizardApp() {
             <div className="flex items-center justify-between">
               <button
                 onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Back
               </button>
-              <span className="text-sm text-[#64748b]">Select to continue</span>
+              <button
+                onClick={() => {
+                  wizardState.setSelectedMaterial('');
+                  handleContinue();
+                }}
+                className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors underline"
+              >
+                No Preference — Skip
+              </button>
             </div>
           </div>
         </div>
@@ -1230,12 +1306,12 @@ function WizardApp() {
       {wizardState.step === 6 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={6} totalSteps={totalSteps} />
-          <div className="bg-white rounded-3xl shadow-lg p-8">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
               STEP 7 OF {totalSteps}
             </div>
-            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Connection Type</h2>
-            <p className="text-sm text-[#64748b] mb-6">Select connection style.</p>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Connection Type</h2>
+            <p className="text-sm text-muted-foreground mb-6">Select connection style.</p>
 
             <div className="space-y-4 mb-8">
               {connections
@@ -1270,17 +1346,128 @@ function WizardApp() {
       {wizardState.step === 7 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={7} totalSteps={totalSteps} />
-          <div className="bg-white rounded-3xl shadow-lg p-8">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
+            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
+              STEP 8 OF {totalSteps}
+            </div>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Safety Guard</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Do you need a built-in safety guard to prevent accidental activation?
+            </p>
+
+            <div className="space-y-4 mb-8">
+              <OptionCard
+                option={{ id: 'yes', label: 'Yes — Safety Guard', description: 'Includes a protective guard over the pedal to prevent accidental presses.', icon: 'Shield' }}
+                selected={wizardState.selectedGuard === 'yes'}
+                productCount={getProductCount(7, 'yes')}
+                onSelect={() => {
+                  wizardState.setSelectedGuard('yes');
+                  setTimeout(handleContinue, 150);
+                }}
+              />
+              <OptionCard
+                option={{ id: 'no', label: 'No Guard Needed', description: 'Standard open pedal without a protective guard.', icon: 'Footprints' }}
+                selected={wizardState.selectedGuard === 'no'}
+                productCount={getProductCount(7, 'no')}
+                onSelect={() => {
+                  wizardState.setSelectedGuard('no');
+                  setTimeout(handleContinue, 150);
+                }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Back
+              </button>
+              <button
+                onClick={() => {
+                  wizardState.setSelectedGuard('');
+                  handleContinue();
+                }}
+                className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors underline"
+              >
+                No Preference — Skip
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {wizardState.step === 8 && (
+        <div className="max-w-[800px] mx-auto px-6 py-8">
+          <ProgressDots currentStep={8} totalSteps={totalSteps} />
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
+            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
+              STEP 9 OF {totalSteps}
+            </div>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Pedal Configuration</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Do you need a single pedal or a twin (dual) pedal for two-function control?
+            </p>
+
+            <div className="space-y-4 mb-8">
+              <OptionCard
+                option={{ id: 'single', label: 'Single Pedal', description: 'One pedal for single-function operation.', icon: 'Footprints' }}
+                selected={wizardState.selectedPedalConfig === 'single'}
+                productCount={getProductCount(8, 'single')}
+                onSelect={() => {
+                  wizardState.setSelectedPedalConfig('single');
+                  setTimeout(handleContinue, 150);
+                }}
+              />
+              <OptionCard
+                option={{ id: 'twin', label: 'Twin Pedal', description: 'Dual pedals for two-function control (e.g., forward/reverse).', icon: 'Footprints' }}
+                selected={wizardState.selectedPedalConfig === 'twin'}
+                productCount={getProductCount(8, 'twin')}
+                onSelect={() => {
+                  wizardState.setSelectedPedalConfig('twin');
+                  setTimeout(handleContinue, 150);
+                }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Back
+              </button>
+              <button
+                onClick={() => {
+                  wizardState.setSelectedPedalConfig('');
+                  handleContinue();
+                }}
+                className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors underline"
+              >
+                No Preference — Skip
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {wizardState.step === 9 && (
+        <div className="max-w-[800px] mx-auto px-6 py-8">
+          <ProgressDots currentStep={9} totalSteps={totalSteps} />
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
               STEP {totalSteps} OF {totalSteps}
             </div>
-            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Features</h2>
-            <p className="text-sm text-[#64748b] mb-6">Select additional features.</p>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Additional Features</h2>
+            <p className="text-sm text-muted-foreground mb-6">Select any additional features you need.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               {features
                 .filter(
                   (feature) => !feature.hideFor?.includes(wizardState.selectedTechnology)
+                    && feature.id !== 'feature-guard' && feature.id !== 'feature-twin'
                 )
                 .map((option) => (
                   <OptionCard
@@ -1289,9 +1476,9 @@ function WizardApp() {
                     selected={wizardState.selectedFeatures.includes(option.id)}
                     multiSelect
                     productCount={calculateOptionCount(
-                      'selectedFeatures', 
-                      wizardState.selectedFeatures.includes(option.id) 
-                        ? wizardState.selectedFeatures 
+                      'selectedFeatures',
+                      wizardState.selectedFeatures.includes(option.id)
+                        ? wizardState.selectedFeatures
                         : [...wizardState.selectedFeatures, option.id]
                     )}
                     onSelect={() => {
@@ -1308,7 +1495,7 @@ function WizardApp() {
             <div className="flex items-center justify-between">
               <button
                 onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Back
@@ -1325,7 +1512,7 @@ function WizardApp() {
         </div>
       )}
 
-      {wizardState.step === 8 && (
+      {wizardState.step === 10 && (
         <>
           {needsCustomSolution() ? (
             <div className="max-w-[800px] mx-auto px-6 py-8">
@@ -1446,6 +1633,8 @@ function WizardApp() {
 
                 const relaxedMessages: Record<string, string> = {
                   features: 'No exact matches with your selected features, but these products match all other criteria:',
+                  pedalConfig: 'No exact matches for your pedal configuration, but these products match your other criteria:',
+                  guard: 'No exact matches for your guard preference, but these products match your other criteria:',
                   material: 'No exact matches for your material preference, but these products match your other criteria:',
                   duty: 'No exact matches for your duty class, but these products match your other requirements:',
                   environment: 'No exact matches for your environment rating, but these products match your other requirements:',
@@ -1561,6 +1750,26 @@ function WizardApp() {
                             onRemove={() => {
                               wizardState.setSelectedMaterial('');
                               wizardState.setStep(5);
+                            }}
+                          />
+                        )}
+                        {wizardState.selectedGuard && (
+                          <FilterChip
+                            label="Guard"
+                            value={wizardState.selectedGuard === 'yes' ? 'Safety Guard' : 'No Guard'}
+                            onRemove={() => {
+                              wizardState.setSelectedGuard('');
+                              wizardState.setStep(7);
+                            }}
+                          />
+                        )}
+                        {wizardState.selectedPedalConfig && (
+                          <FilterChip
+                            label="Pedal"
+                            value={wizardState.selectedPedalConfig === 'twin' ? 'Twin Pedal' : 'Single Pedal'}
+                            onRemove={() => {
+                              wizardState.setSelectedPedalConfig('');
+                              wizardState.setStep(8);
                             }}
                           />
                         )}
