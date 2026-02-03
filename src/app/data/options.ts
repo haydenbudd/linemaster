@@ -127,6 +127,11 @@ export const environments: Option[] = [
     label: 'Wet / Washdown',
     description: 'IP68 required.',
   },
+  {
+    id: 'any',
+    label: 'No Preference',
+    description: 'Show all IP ratings.',
+  },
 ];
 
 export const features: Option[] = [

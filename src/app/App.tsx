@@ -153,9 +153,9 @@ function WizardApp() {
       // Skip connection filter for Air technology as it doesn't apply
       if (state.selectedTechnology !== 'pneumatic' && state.selectedConnection && product.connector_type !== state.selectedConnection) return false;
 
-      // Filter by Safety Guard
-      if (state.selectedGuard === 'yes' && !(product.features || []).includes('guard')) return false;
-      if (state.selectedGuard === 'no' && (product.features || []).includes('guard')) return false;
+      // Filter by Safety Guard (products store 'shield' in features array)
+      if (state.selectedGuard === 'yes' && !(product.features || []).includes('shield')) return false;
+      if (state.selectedGuard === 'no' && (product.features || []).includes('shield')) return false;
 
       // Filter by Pedal Configuration
       if (state.selectedPedalConfig === 'twin' && !(product.features || []).includes('twin')) return false;
@@ -165,18 +165,14 @@ function WizardApp() {
       if (state.selectedFeatures.length > 0) {
         // Exclude custom cable/connector from this check (those trigger custom solution)
         const hardwareFeatures = state.selectedFeatures.filter(
-          f => f !== 'feature-custom-cable' && f !== 'feature-custom-connector'
+          f => f !== 'custom_cable' && f !== 'custom_connector'
         );
-        
+
         if (hardwareFeatures.length > 0) {
           // Product must have all selected hardware features
           const productFeatures = product.features || [];
           const hasAllFeatures = hardwareFeatures.every(featureId => {
-            // Feature options have IDs like 'feature-shield', 'feature-twin'
-            // But products store features without prefix: ['shield', 'twin']
-            // So we strip the 'feature-' prefix to match
-            const featureValue = featureId.replace('feature-', '');
-            return productFeatures.includes(featureValue);
+            return productFeatures.includes(featureId);
           });
           if (!hasAllFeatures) return false;
         }
@@ -289,8 +285,8 @@ function WizardApp() {
     }
     return (
       filtered.length === 0 ||
-      wizardState.selectedFeatures.includes('feature-custom-cable') ||
-      wizardState.selectedFeatures.includes('feature-custom-connector')
+      wizardState.selectedFeatures.includes('custom_cable') ||
+      wizardState.selectedFeatures.includes('custom_connector')
     );
   };
   
@@ -363,9 +359,9 @@ function WizardApp() {
         if (wizardState.selectedDuty && p.duty !== wizardState.selectedDuty) return false;
         if (wizardState.selectedMaterial && p.material !== wizardState.selectedMaterial) return false;
         if (wizardState.selectedTechnology !== 'pneumatic' && wizardState.selectedConnection && p.connector_type !== wizardState.selectedConnection) return false;
-        const hasGuard = (p.features || []).includes('guard');
-        if (optionId === 'yes') return hasGuard;
-        if (optionId === 'no') return !hasGuard;
+        const hasShield = (p.features || []).includes('shield');
+        if (optionId === 'yes') return hasShield;
+        if (optionId === 'no') return !hasShield;
         return true;
       }).length;
     } else if (step === 8) {
@@ -379,8 +375,8 @@ function WizardApp() {
         if (wizardState.selectedDuty && p.duty !== wizardState.selectedDuty) return false;
         if (wizardState.selectedMaterial && p.material !== wizardState.selectedMaterial) return false;
         if (wizardState.selectedTechnology !== 'pneumatic' && wizardState.selectedConnection && p.connector_type !== wizardState.selectedConnection) return false;
-        if (wizardState.selectedGuard === 'yes' && !(p.features || []).includes('guard')) return false;
-        if (wizardState.selectedGuard === 'no' && (p.features || []).includes('guard')) return false;
+        if (wizardState.selectedGuard === 'yes' && !(p.features || []).includes('shield')) return false;
+        if (wizardState.selectedGuard === 'no' && (p.features || []).includes('shield')) return false;
         const hasTwin = (p.features || []).includes('twin');
         if (optionId === 'twin') return hasTwin;
         if (optionId === 'single') return !hasTwin;
@@ -1246,6 +1242,25 @@ function WizardApp() {
                 for assistance.
               </div>
             )}
+
+            <div className="flex items-center justify-between">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Back
+              </button>
+              <button
+                onClick={() => {
+                  wizardState.setSelectedDuty('');
+                  handleContinue();
+                }}
+                className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors underline"
+              >
+                No Preference — Skip
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1351,7 +1366,15 @@ function WizardApp() {
                 <ChevronLeft className="w-4 h-4" />
                 Back
               </button>
-              <span className="text-sm text-muted-foreground">Select to continue</span>
+              <button
+                onClick={() => {
+                  wizardState.setSelectedConnection('');
+                  handleContinue();
+                }}
+                className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors underline"
+              >
+                No Preference — Skip
+              </button>
             </div>
           </div>
         </div>
@@ -1497,7 +1520,7 @@ function WizardApp() {
               {features
                 .filter(
                   (feature) => !feature.hideFor?.includes(wizardState.selectedTechnology)
-                    && feature.id !== 'feature-guard' && feature.id !== 'feature-twin'
+                    && feature.id !== 'shield' && feature.id !== 'twin'
                 )
                 .map((option) => (
                   <OptionCard
