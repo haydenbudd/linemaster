@@ -53,11 +53,11 @@ export const seedProducts = [
     technology: 'electrical',
     duty: 'medium',
     ip: 'IP68',
-    actions: ['momentary'],
+    actions: ['momentary', 'variable'],
     material: 'Cast Aluminum',
     description: 'Watertight cast aluminum. IP68 sealed.',
     applications: ['industrial', 'automotive'],
-    features: [], // No special features
+    features: ['shield', 'twin'], // Available guarded and twin versions
     flagship: false,
     image: 'https://linemaster.com/cdn/images/products/110/110-a-shadow@1200.png',
     link: 'https://linemaster.com/product/112/classic-iv/',
@@ -67,7 +67,7 @@ export const seedProducts = [
     series: 'Dolphin',
     technology: 'electrical',
     duty: 'light',
-    ip: 'IP20',
+    ip: 'IP68',
     actions: ['momentary'],
     material: 'Polymeric',
     description: 'Omni-directional. Popular for tattoo artists.',

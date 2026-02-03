@@ -10,7 +10,7 @@ app.use('*', logger(console.log));
 app.use('*', cors());
 
 // Version tracking to prevent re-initialization on redeploys
-const DB_VERSION = 'v1.6.0'; // Increment this if you want to force a re-seed
+const DB_VERSION = 'v1.7.0'; // Increment this if you want to force a re-seed
 
 // Initialize data on first run ONLY
 // This checks for both the existence of data AND a version flag
@@ -86,12 +86,12 @@ async function initializeData() {
           technology: 'electrical',
           duty: 'medium',
           ip: 'IP68',
-          actions: ['momentary'],
+          actions: ['momentary', 'variable'],
           material: 'Cast Aluminum',
           description: 'Watertight cast aluminum. IP68 sealed.',
           applications: ['industrial', 'automotive'],
-          features: [],
-          connection: 'phone-plug',
+          features: ['shield', 'twin'],
+          connection: 'flying-leads',
           flagship: false,
           image: 'https://linemaster.com/wp-content/uploads/2025/04/classic-iv.png',
           link: 'https://linemaster.com/product/112/classic-iv/',
@@ -101,7 +101,7 @@ async function initializeData() {
           series: 'Dolphin',
           technology: 'electrical',
           duty: 'light',
-          ip: 'IP20',
+          ip: 'IP68',
           actions: ['momentary'],
           material: 'Polymeric',
           description: 'Omni-directional. Popular for tattoo artists.',
