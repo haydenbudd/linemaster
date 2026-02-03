@@ -252,6 +252,7 @@ async function initializeData() {
         { id: 'dry', category: 'environment', label: 'Dry / Indoor', description: 'IP20 sufficient.', icon: 'Home', sortOrder: 1 },
         { id: 'damp', category: 'environment', label: 'Damp / Splash', description: 'IP56 recommended.', icon: 'CloudRain', sortOrder: 2 },
         { id: 'wet', category: 'environment', label: 'Wet / Washdown', description: 'IP68 required.', icon: 'Droplets', sortOrder: 3 },
+        { id: 'any', category: 'environment', label: 'No Preference', description: 'Show all IP ratings.', icon: 'List', sortOrder: 4 },
         
         // Connector Types (Electrical only)
         { id: 'screw-terminal', category: 'connector', label: 'Screw Terminals', description: 'Wire to screw terminal connections.', icon: 'Wrench', availableFor: ['electrical'], sortOrder: 1 },

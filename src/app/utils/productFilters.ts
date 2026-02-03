@@ -62,6 +62,7 @@ export const filterProductsByConnection = (products: Product[], cordedFilter: 'a
 
 export const isProductEnvironmentMatch = (product: Product, selectedEnvironment?: string) => {
   if (!selectedEnvironment) return false;
+  if (selectedEnvironment === 'any') return true; // No preference — all products match
   if (selectedEnvironment === 'dry') return product.ip === 'IP20';
   if (selectedEnvironment === 'damp') return ['IP56', 'IP68'].includes(product.ip);
   if (selectedEnvironment === 'wet') return product.ip === 'IP68';
