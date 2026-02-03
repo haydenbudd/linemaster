@@ -88,7 +88,7 @@ function WizardApp() {
     } else {
       let prevStep = wizardState.step - 1;
       // Skip Connection Type step (index 6) for Air/pneumatic technology
-      if (prevStep === 6 && wizardState.selectedTechnology === 'air') {
+      if (prevStep === 6 && wizardState.selectedTechnology === 'pneumatic') {
         prevStep--;
       }
       wizardState.setStep(prevStep);
@@ -99,7 +99,7 @@ function WizardApp() {
     let newStep = wizardState.step + 1;
 
     // Skip Connection Type step (index 6) for Air/pneumatic technology
-    if (newStep === 6 && wizardState.selectedTechnology === 'air') {
+    if (newStep === 6 && wizardState.selectedTechnology === 'pneumatic') {
       newStep++;
     }
 
@@ -151,7 +151,7 @@ function WizardApp() {
 
       // Filter by Connection
       // Skip connection filter for Air technology as it doesn't apply
-      if (state.selectedTechnology !== 'air' && state.selectedConnection && product.connector_type !== state.selectedConnection) return false;
+      if (state.selectedTechnology !== 'pneumatic' && state.selectedConnection && product.connector_type !== state.selectedConnection) return false;
 
       // Filter by Safety Guard
       if (state.selectedGuard === 'yes' && !(product.features || []).includes('guard')) return false;
@@ -362,7 +362,7 @@ function WizardApp() {
         if (wizardState.selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(p.ip)) return false;
         if (wizardState.selectedDuty && p.duty !== wizardState.selectedDuty) return false;
         if (wizardState.selectedMaterial && p.material !== wizardState.selectedMaterial) return false;
-        if (wizardState.selectedTechnology !== 'air' && wizardState.selectedConnection && p.connector_type !== wizardState.selectedConnection) return false;
+        if (wizardState.selectedTechnology !== 'pneumatic' && wizardState.selectedConnection && p.connector_type !== wizardState.selectedConnection) return false;
         const hasGuard = (p.features || []).includes('guard');
         if (optionId === 'yes') return hasGuard;
         if (optionId === 'no') return !hasGuard;
@@ -378,7 +378,7 @@ function WizardApp() {
         if (wizardState.selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(p.ip)) return false;
         if (wizardState.selectedDuty && p.duty !== wizardState.selectedDuty) return false;
         if (wizardState.selectedMaterial && p.material !== wizardState.selectedMaterial) return false;
-        if (wizardState.selectedTechnology !== 'air' && wizardState.selectedConnection && p.connector_type !== wizardState.selectedConnection) return false;
+        if (wizardState.selectedTechnology !== 'pneumatic' && wizardState.selectedConnection && p.connector_type !== wizardState.selectedConnection) return false;
         if (wizardState.selectedGuard === 'yes' && !(p.features || []).includes('guard')) return false;
         if (wizardState.selectedGuard === 'no' && (p.features || []).includes('guard')) return false;
         const hasTwin = (p.features || []).includes('twin');
@@ -599,7 +599,7 @@ function WizardApp() {
   const totalSteps = (() => {
     if (wizardState.flow === 'medical') return 5;
     let steps = 10; // base: steps 0-10 (App, Tech, Action, Env, Duty, Material, Connection, Guard, PedalConfig, Features, Results)
-    if (wizardState.selectedTechnology === 'air') steps--; // skip Connection
+    if (wizardState.selectedTechnology === 'pneumatic') steps--; // skip Connection
     return steps;
   })();
 
