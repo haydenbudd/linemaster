@@ -40,18 +40,16 @@ export const filterProductsByConnection = (products: Product[], cordedFilter: 'a
     // Normalize connector_type value to lowercase for comparison
     const connection = p.connector_type.toLowerCase();
 
-    // Pre-wired products have plugs that come pre-attached
-    // These include: 3-prong, phone-plug, din-plug, npt-conduit
+    // Pre-wired products come with a cord attached, ready to connect
     const hasPrewiredCord =
+      connection.includes('pre-wired') ||
       connection.includes('prong') ||
-      connection.includes('plug') ||
-      connection.includes('npt') ||
-      connection.includes('conduit');
+      connection.includes('plug');
 
-    // Not pre-wired (customer must wire) are: flying-leads, terminal-strip, terminals
+    // Not pre-wired (customer must wire): screw terminals, quick-connect terminals
     const isNotPrewired =
-      connection.includes('flying') ||
-      connection.includes('lead') ||
+      connection.includes('screw') ||
+      connection.includes('quick') ||
       connection.includes('terminal');
 
     if (cordedFilter === 'corded') {

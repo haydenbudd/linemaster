@@ -10,7 +10,7 @@ app.use('*', logger(console.log));
 app.use('*', cors());
 
 // Version tracking to prevent re-initialization on redeploys
-const DB_VERSION = 'v1.5.3'; // Increment this if you want to force a re-seed
+const DB_VERSION = 'v1.8.0'; // Increment this if you want to force a re-seed
 
 // Initialize data on first run ONLY
 // This checks for both the existence of data AND a version flag
@@ -43,7 +43,7 @@ async function initializeData() {
           description: 'The ultimate heavy-duty industrial footswitch.',
           applications: ['industrial', 'automotive', 'woodworking', 'general'],
           features: ['shield'],
-          connection: '3-prong',
+          connection: 'screw-terminal',
           flagship: true,
           image: 'https://linemaster.com/wp-content/uploads/2025/04/hercules-full-shield.png',
           link: 'https://linemaster.com/product/167/hercules-full-shield/',
@@ -59,7 +59,7 @@ async function initializeData() {
           description: 'Fully sealed IP68 heavy-duty switch.',
           applications: ['industrial', 'automotive'],
           features: ['shield'],
-          connection: 'flying-leads',
+          connection: 'screw-terminal',
           flagship: false,
           image: 'https://linemaster.com/wp-content/uploads/2025/04/atlas.png',
           link: 'https://linemaster.com/product/77/atlas-full-shield/',
@@ -75,7 +75,7 @@ async function initializeData() {
           description: 'The industry standard. Classic cast iron.',
           applications: ['industrial', 'woodworking', 'automotive', 'general'],
           features: ['twin'],
-          connection: '3-prong',
+          connection: 'screw-terminal',
           flagship: true,
           image: 'https://linemaster.com/wp-content/uploads/2025/04/clipper_duo.png',
           link: 'https://linemaster.com/product/115/clipper-single-momentary/',
@@ -86,12 +86,12 @@ async function initializeData() {
           technology: 'electrical',
           duty: 'medium',
           ip: 'IP68',
-          actions: ['momentary'],
+          actions: ['momentary', 'variable'],
           material: 'Cast Aluminum',
           description: 'Watertight cast aluminum. IP68 sealed.',
           applications: ['industrial', 'automotive'],
-          features: [],
-          connection: 'phone-plug',
+          features: ['shield', 'twin'],
+          connection: 'quick-connect',
           flagship: false,
           image: 'https://linemaster.com/wp-content/uploads/2025/04/classic-iv.png',
           link: 'https://linemaster.com/product/112/classic-iv/',
@@ -101,13 +101,13 @@ async function initializeData() {
           series: 'Dolphin',
           technology: 'electrical',
           duty: 'light',
-          ip: 'IP20',
+          ip: 'IP68',
           actions: ['momentary'],
           material: 'Polymeric',
           description: 'Omni-directional. Popular for tattoo artists.',
           applications: ['general', 'tattoo', 'medical'],
           features: [],
-          connection: 'flying-leads',
+          connection: 'pre-wired',
           flagship: false,
           image: 'https://linemaster.com/wp-content/uploads/2025/04/dolphin-2.png',
           link: 'https://linemaster.com/product/129/dolphin/',
@@ -123,7 +123,7 @@ async function initializeData() {
           description: 'Round omni-directional design.',
           applications: ['general', 'tattoo', 'medical'],
           features: [],
-          connection: 'phone-plug',
+          connection: 'pre-wired',
           flagship: false,
           image: 'https://linemaster.com/wp-content/uploads/2025/04/gem.png',
           link: 'https://linemaster.com/product/162/gem-v/',
@@ -132,14 +132,14 @@ async function initializeData() {
           id: 'varior',
           series: 'Varior',
           technology: 'electrical',
-          duty: 'light',
+          duty: 'medium',
           ip: 'IP20',
           actions: ['variable'],
           material: 'Formed Steel',
           description: 'Foot-operated potentiometer for variable speed.',
           applications: ['industrial', 'automotive', 'woodworking', 'general'],
           features: [],
-          connection: '3-prong',
+          connection: 'pre-wired',
           flagship: false,
           image: 'https://linemaster.com/wp-content/uploads/2025/04/varior-potentiometer.png',
           link: 'https://linemaster.com/product/407/varior-potentiometer/',
@@ -180,7 +180,7 @@ async function initializeData() {
           technology: 'pneumatic',
           duty: 'heavy',
           ip: 'IP20',
-          actions: ['momentary', 'maintained', 'variable'],
+          actions: ['momentary', 'maintained'],
           material: 'Cast Iron',
           description: 'Heavy-duty cast iron pneumatic control.',
           applications: ['industrial', 'automotive'],
@@ -204,13 +204,13 @@ async function initializeData() {
       if (needsConnectionMigration) {
         console.log('Adding connection field to electrical products...');
         const connectionMap: Record<string, string> = {
-          'hercules': '3-prong',
-          'atlas': 'flying-leads',
-          'clipper': '3-prong',
-          'classic-iv': 'phone-plug',
-          'dolphin': 'flying-leads',
-          'gem-v': 'phone-plug',
-          'varior': '3-prong',
+          'hercules': 'screw-terminal',
+          'atlas': 'screw-terminal',
+          'clipper': 'screw-terminal',
+          'classic-iv': 'quick-connect',
+          'dolphin': 'pre-wired',
+          'gem-v': 'pre-wired',
+          'varior': 'pre-wired',
         };
         
         const updatedProducts = existingProducts.map((p: any) => {
@@ -254,9 +254,9 @@ async function initializeData() {
         { id: 'wet', category: 'environment', label: 'Wet / Washdown', description: 'IP68 required.', icon: 'Droplets', sortOrder: 3 },
         
         // Connector Types (Electrical only)
-        { id: '3-prong', category: 'connector', label: '3-Prong Plug', description: 'Standard household plug.', icon: 'Plug', availableFor: ['electrical'], sortOrder: 1 },
-        { id: 'flying-leads', category: 'connector', label: 'Flying Leads', description: 'Bare wire ends for custom wiring.', icon: 'Cable', availableFor: ['electrical'], sortOrder: 2 },
-        { id: 'phone-plug', category: 'connector', label: 'Phone Plug (1/4\")', description: '1/4 inch phone jack.', icon: 'Phone', availableFor: ['electrical'], sortOrder: 3 },
+        { id: 'screw-terminal', category: 'connector', label: 'Screw Terminals', description: 'Wire to screw terminal connections.', icon: 'Wrench', availableFor: ['electrical'], sortOrder: 1 },
+        { id: 'quick-connect', category: 'connector', label: 'Quick-Connect Terminals', description: 'Push-on blade terminal connections.', icon: 'Plug', availableFor: ['electrical'], sortOrder: 2 },
+        { id: 'pre-wired', category: 'connector', label: 'Pre-Wired (Cord Attached)', description: 'Comes with cord attached, ready to connect.', icon: 'Cable', availableFor: ['electrical'], sortOrder: 3 },
         
         // Features
         { id: 'feature-shield', category: 'feature', label: 'Safety Guard/Shield', description: 'Prevents accidental activation.', sortOrder: 1 },
@@ -297,9 +297,9 @@ async function initializeData() {
       if (!hasConnectorOptions) {
         console.log('Adding missing connector options...');
         const connectorOptions = [
-          { id: '3-prong', category: 'connector', label: '3-Prong Plug', description: 'Standard household plug.', icon: 'Plug', availableFor: ['electrical'], sortOrder: 1 },
-          { id: 'flying-leads', category: 'connector', label: 'Flying Leads', description: 'Bare wire ends for custom wiring.', icon: 'Cable', availableFor: ['electrical'], sortOrder: 2 },
-          { id: 'phone-plug', category: 'connector', label: 'Phone Plug (1/4\")', description: '1/4 inch phone jack.', icon: 'Phone', availableFor: ['electrical'], sortOrder: 3 },
+          { id: 'screw-terminal', category: 'connector', label: 'Screw Terminals', description: 'Wire to screw terminal connections.', icon: 'Wrench', availableFor: ['electrical'], sortOrder: 1 },
+          { id: 'quick-connect', category: 'connector', label: 'Quick-Connect Terminals', description: 'Push-on blade terminal connections.', icon: 'Plug', availableFor: ['electrical'], sortOrder: 2 },
+          { id: 'pre-wired', category: 'connector', label: 'Pre-Wired (Cord Attached)', description: 'Comes with cord attached, ready to connect.', icon: 'Cable', availableFor: ['electrical'], sortOrder: 3 },
         ];
         const updatedOptions = [...existingOptions, ...connectorOptions];
         await kv.set('options', updatedOptions);
@@ -535,9 +535,9 @@ app.get('/make-server-a6e7a38d/migrate-connectors', async (c) => {
     
     // Add the 3 connector options
     const connectorOptions = [
-      { id: '3-prong', category: 'connector', label: '3-Prong Plug', description: 'Standard household plug.', icon: 'Plug', availableFor: ['electrical'], sortOrder: 1 },
-      { id: 'flying-leads', category: 'connector', label: 'Flying Leads', description: 'Bare wire ends for custom wiring.', icon: 'Cable', availableFor: ['electrical'], sortOrder: 2 },
-      { id: 'phone-plug', category: 'connector', label: 'Phone Plug (1/4")', description: '1/4 inch phone jack.', icon: 'Phone', availableFor: ['electrical'], sortOrder: 3 },
+      { id: 'screw-terminal', category: 'connector', label: 'Screw Terminals', description: 'Wire to screw terminal connections.', icon: 'Wrench', availableFor: ['electrical'], sortOrder: 1 },
+      { id: 'quick-connect', category: 'connector', label: 'Quick-Connect Terminals', description: 'Push-on blade terminal connections.', icon: 'Plug', availableFor: ['electrical'], sortOrder: 2 },
+      { id: 'pre-wired', category: 'connector', label: 'Pre-Wired (Cord Attached)', description: 'Comes with cord attached, ready to connect.', icon: 'Cable', availableFor: ['electrical'], sortOrder: 3 },
     ];
     
     const updatedOptions = [...options, ...connectorOptions];

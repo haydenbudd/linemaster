@@ -79,7 +79,7 @@ export interface Product {
   potentiometer?: string;    // "Potentiometer"
   color?: string;            // "Color"
 
-  connector_type?: string; // Connection type from database: '3-Prong Plug', 'Flying Leads', 'NPT Conduit Entry', 'Terminals Only'
+  connector_type?: string; // Wiring connection type: 'screw-terminal', 'quick-connect', 'pre-wired'
   certifications?: string; // e.g. "UL, CSA, IEC"
   voltage?: string; // e.g. "120V - 240V"
   amperage?: string; // e.g. "10A - 15A"

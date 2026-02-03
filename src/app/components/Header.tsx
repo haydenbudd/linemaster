@@ -1,11 +1,12 @@
-import { RotateCcw, Settings, Moon, Sun } from 'lucide-react';
+import { RotateCcw, Settings, Moon, Sun, RefreshCw } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface HeaderProps {
   onReset: () => void;
+  onRefresh?: () => void;
 }
 
-export function Header({ onReset }: HeaderProps) {
+export function Header({ onReset, onRefresh }: HeaderProps) {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -37,7 +38,7 @@ export function Header({ onReset }: HeaderProps) {
             <img
               src="https://linemaster.com/wp-content/uploads/2024/10/linemaster-logo.jpg"
               alt="Linemaster"
-              className="h-9"
+              className="h-9 dark:brightness-0 dark:invert"
             />
             <div className="hidden sm:block h-6 w-px bg-border" />
             <span className="hidden sm:block text-sm font-semibold text-muted-foreground">
@@ -58,6 +59,15 @@ export function Header({ onReset }: HeaderProps) {
                 <Moon className="w-5 h-5 text-foreground" />
               )}
             </button>
+            {onRefresh && (
+              <button
+                onClick={onRefresh}
+                className="p-2 rounded-lg hover:bg-accent transition-colors"
+                title="Refresh product data"
+              >
+                <RefreshCw className="w-5 h-5 text-foreground" />
+              </button>
+            )}
             <a
               href="#/admin"
               className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors"

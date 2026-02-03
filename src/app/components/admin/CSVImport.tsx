@@ -255,18 +255,17 @@ hercules-heavy,Hercules,electrical,heavy,IP56,"momentary,maintained",Cast Iron,H
           const switchQty = getValue(values, 'microswitchqty', 'switchqty');
           if (switchQty) baseProduct.microswitch_qty = parseInt(switchQty);
 
-          // "Air" Logic
+          // Pneumatic/Air detection
           const fullText = [
-            baseProduct.technology, 
-            baseProduct.description, 
+            baseProduct.technology,
+            baseProduct.description,
             baseProduct.series
           ].join(' ').toLowerCase();
 
-          const isAir = fullText.includes('pneumatic') || fullText.includes('air ') || fullText.includes(' air');
-          
-          if (isAir) {
-            baseProduct.technology = 'air';
-            // Do not clear connector_type - preserving values like "NPT Conduit Entry"
+          const isPneumatic = fullText.includes('pneumatic') || fullText.includes('air ') || fullText.includes(' air');
+
+          if (isPneumatic) {
+            baseProduct.technology = 'pneumatic';
           }
 
           if (fullText.includes('wireless') || fullText.includes('rf ')) {

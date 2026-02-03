@@ -42,12 +42,10 @@ export function ProductCard({ product, matchReasons }: ProductCardProps) {
 
   const connectionLabel = formatConnection(product.connector_type);
   
-  // Determine if pre-wired (logic matches App.tsx)
+  // Determine if pre-wired (comes with cord attached)
   const isPreWired = connectionLabel && (
-    connectionLabel.toLowerCase().includes('prong') ||
-    connectionLabel.toLowerCase().includes('plug') ||
-    connectionLabel.toLowerCase().includes('npt') ||
-    connectionLabel.toLowerCase().includes('conduit')
+    connectionLabel.toLowerCase().includes('pre-wired') ||
+    connectionLabel.toLowerCase().includes('pre wired')
   );
 
   return (

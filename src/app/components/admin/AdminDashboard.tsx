@@ -226,6 +226,20 @@ export function AdminDashboard({ onLogout, sessionWarning }: AdminDashboardProps
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center gap-3">
+              <div className="bg-cyan-100 p-3 rounded-lg">
+                <Package className="w-6 h-6 text-cyan-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Pneumatic</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {products.filter(p => p.technology === 'pneumatic').length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center gap-3">
               <div className="bg-purple-100 p-3 rounded-lg">
                 <Package className="w-6 h-6 text-purple-600" />
               </div>
