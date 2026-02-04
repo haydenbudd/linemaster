@@ -70,6 +70,10 @@ export function Header({ onReset, onRefresh }: HeaderProps) {
             )}
             <a
               href="#/admin"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.hash = '/admin';
+              }}
               className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
               title="Admin Panel"
             >
