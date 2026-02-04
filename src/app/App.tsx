@@ -1171,8 +1171,8 @@ function WizardApp() {
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
               STEP 4 OF {totalSteps}
             </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">IP Rating</h2>
-            <p className="text-sm text-muted-foreground mb-6">Select Ingress Protection rating.</p>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Environment</h2>
+            <p className="text-sm text-muted-foreground mb-6">What conditions will the switch operate in?</p>
 
             <div className="space-y-4 mb-8">
               {environments
@@ -1214,13 +1214,14 @@ function WizardApp() {
             <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
               STEP 5 OF {totalSteps}
             </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Stability & Material</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Weight Class</h2>
             <p className="text-sm text-muted-foreground mb-6">
-              Do you need a heavy switch that stays stable on the floor, or a lighter, cost-effective option?
+              How heavy and stable does the switch need to be?
             </p>
 
             <div className="space-y-4 mb-8">
               {duties
+                .filter((d) => getProductCount(4, d.id) > 0)
                 .map((option) => (
                   <OptionCard
                     key={option.id}
@@ -1336,6 +1337,7 @@ function WizardApp() {
 
             <div className="space-y-4 mb-8">
               {connections
+                .filter((c) => getProductCount(6, c.id) > 0)
                 .map((option) => (
                   <OptionCard
                     key={option.id}

@@ -104,8 +104,13 @@ export function useProductData(): ProductData {
       .sort((a, b) => (materialMeta[a.id]?.order ?? 99) - (materialMeta[b.id]?.order ?? 99));
   })();
 
-  // Derive unique connection types from product data
+  // Derive unique connection types from product data with user-friendly descriptions
   const connections: OptionWithIcon[] = (() => {
+    const connectionMeta: Record<string, { label: string; description: string; icon: string; order: number }> = {
+      'screw-terminal': { label: 'Screw Terminals', description: 'Wire stripped and secured to screw terminals. Most versatile wiring option.', icon: 'Wrench', order: 0 },
+      'quick-connect': { label: 'Quick-Connect Terminals', description: 'Push-on blade terminal connections. Fast installation and removal.', icon: 'Plug', order: 1 },
+      'pre-wired': { label: 'Pre-Wired Cable', description: 'Factory-attached cord ready to connect. Simplest setup.', icon: 'Cable', order: 2 },
+    };
     const seen = new Set<string>();
     return products
       .filter(p => p.connector_type && p.connector_type !== 'undefined')
@@ -117,9 +122,11 @@ export function useProductData(): ProductData {
       .map(p => ({
         id: p.connector_type!,
         category: 'connection',
-        label: p.connector_type!.replace(/-/g, ' '),
-        description: '',
-      }));
+        label: connectionMeta[p.connector_type!]?.label || p.connector_type!.replace(/-/g, ' '),
+        description: connectionMeta[p.connector_type!]?.description || '',
+        icon: connectionMeta[p.connector_type!]?.icon,
+      }))
+      .sort((a, b) => (connectionMeta[a.id]?.order ?? 99) - (connectionMeta[b.id]?.order ?? 99));
   })();
 
   // Derive unique duty ratings with user-friendly descriptions
