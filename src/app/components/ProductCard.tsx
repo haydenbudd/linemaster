@@ -2,6 +2,7 @@ import { ArrowRight, Sparkles, CheckCircle, Plug } from 'lucide-react';
 import { Product } from '@/app/lib/api';
 import { ImageWithFallback } from '@/app/components/figma/ImageWithFallback';
 import { getProxiedImageUrl } from '@/app/utils/imageProxy';
+import LiquidGlass from 'liquid-glass-react';
 
 interface ProductCardProps {
   product: Product;
@@ -14,97 +15,89 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, matchReasons }: ProductCardProps) {
-  const dutyColors = {
-    heavy: { 
-      bg: 'from-slate-100 to-slate-50 dark:from-slate-900 dark:to-slate-800', 
-      badgeBg: 'bg-slate-700 dark:bg-slate-600',
-      text: 'text-white'
-    },
-    medium: { 
-      bg: 'from-slate-100 to-slate-50 dark:from-slate-900 dark:to-slate-800', 
-      badgeBg: 'bg-blue-700 dark:bg-blue-600',
-      text: 'text-white'
-    },
-    light: { 
-      bg: 'from-slate-100 to-slate-50 dark:from-slate-900 dark:to-slate-800', 
-      badgeBg: 'bg-teal-700 dark:bg-teal-600',
-      text: 'text-white'
-    },
+  const dutyColors: Record<string, { badge: string }> = {
+    heavy: { badge: 'bg-[#1d1d1f] dark:bg-[#f5f5f7] text-white dark:text-[#1d1d1f]' },
+    medium: { badge: 'bg-primary text-primary-foreground' },
+    light: { badge: 'bg-[#34c759] text-white' },
   };
 
-  const dutyColor = dutyColors[product.duty];
-  
-  // Format connection type for display
+  const dutyColor = dutyColors[product.duty] || dutyColors.medium;
+
   const formatConnection = (type?: string) => {
     if (!type || type === 'undefined') return null;
-    return type.replace(/-/g, ' '); // Replace dashes with spaces
+    return type.replace(/-/g, ' ');
   };
 
   const connectionLabel = formatConnection(product.connector_type);
-  
-  // Determine if pre-wired (comes with cord attached)
+
   const isPreWired = connectionLabel && (
     connectionLabel.toLowerCase().includes('pre-wired') ||
     connectionLabel.toLowerCase().includes('pre wired')
   );
 
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] overflow-hidden group flex flex-col h-full">
+    <LiquidGlass
+      cornerRadius={22}
+      padding="0"
+      blurAmount={0.15}
+      saturation={140}
+      displacementScale={40}
+      overLight
+      className="flex flex-col h-full group"
+    >
       {/* Badges */}
-      <div className="flex gap-2 p-4 bg-gradient-to-r from-accent/50 to-transparent min-h-[60px] items-start">
+      <div className="flex gap-2 p-4 min-h-[52px] items-start">
         {product.flagship && (
-          <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-md">
-            <Sparkles className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-1 px-2.5 py-1 bg-[#ff9500] text-white text-[10px] font-semibold uppercase tracking-wider rounded-full">
+            <Sparkles className="w-3 h-3" />
             Flagship
           </div>
         )}
-        <div className="flex items-center justify-center px-3 py-1.5 bg-gradient-to-r from-primary/10 to-primary/5 text-primary text-xs font-bold uppercase tracking-wider rounded-full border border-primary/20">
+        <div className="flex items-center px-2.5 py-1 bg-primary/8 text-primary text-[10px] font-semibold uppercase tracking-wider rounded-full border border-primary/15">
           {product.ip}
         </div>
       </div>
 
       {/* Product Image */}
-      <div
-        className={`h-64 flex items-center justify-center p-8 bg-gradient-to-br ${dutyColor.bg}`}
-      >
+      <div className="h-56 flex items-center justify-center p-6 bg-black/[0.02] dark:bg-white/[0.02]">
         <ImageWithFallback
           src={getProxiedImageUrl(product.image)}
           alt={product.series}
-          className="w-full h-full object-contain transition-all duration-500 group-hover:scale-110"
+          className="w-full h-full object-contain transition-all duration-700 group-hover:scale-105"
         />
       </div>
 
       {/* Content */}
-      <div className="p-6 flex flex-col flex-grow">
-        <div className="mb-2 min-h-[32px] flex flex-wrap items-baseline gap-2">
-          <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
+      <div className="p-5 flex flex-col flex-grow">
+        <div className="mb-1.5 min-h-[28px] flex flex-wrap items-baseline gap-2">
+          <h3 className="text-lg font-semibold text-foreground tracking-tight group-hover:text-primary transition-colors">
             {product.series}
           </h3>
           {product.part_number || product.id ? (
-            <span className="text-sm font-medium text-muted-foreground bg-muted/50 px-2 py-0.5 rounded border border-border/50">
-              # {product.part_number || product.id.toUpperCase()}
+            <span className="text-xs font-medium text-muted-foreground">
+              #{product.part_number || product.id.toUpperCase()}
             </span>
           ) : null}
         </div>
-        <p className="text-sm text-muted-foreground mb-4 leading-relaxed min-h-[44px]">
+        <p className="text-sm text-muted-foreground mb-4 leading-relaxed min-h-[40px]">
           {product.description}
         </p>
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-2 mb-6 min-h-[38px]">
-          <span className={`flex items-center justify-center px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full ${dutyColor.badgeBg} ${dutyColor.text}`}>
+        <div className="flex flex-wrap gap-1.5 mb-5 min-h-[32px]">
+          <span className={`flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full ${dutyColor.badge}`}>
             {product.duty}
           </span>
-          <span className="flex items-center justify-center px-3 py-1.5 bg-accent text-accent-foreground text-xs font-bold uppercase tracking-wider rounded-full">
+          <span className="flex items-center px-2.5 py-1 bg-black/[0.04] dark:bg-white/[0.06] text-foreground text-[10px] font-semibold uppercase tracking-wider rounded-full">
             {product.material}
           </span>
           {connectionLabel && (
-            <span className={`flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full ${
-              isPreWired 
-                ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300' 
-                : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+            <span className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full ${
+              isPreWired
+                ? 'bg-[#af52de]/10 text-[#af52de]'
+                : 'bg-[#ff9500]/10 text-[#ff9500]'
             }`}>
-              <Plug className="w-3 h-3" />
+              <Plug className="w-2.5 h-2.5" />
               {connectionLabel}
             </span>
           )}
@@ -112,28 +105,28 @@ export function ProductCard({ product, matchReasons }: ProductCardProps) {
 
         {/* Technical Specs */}
         {(product.voltage || product.amperage || product.certifications || product.circuitry) && (
-          <div className="mb-4 grid grid-cols-2 gap-y-2 text-xs text-muted-foreground border-t border-b border-border/50 py-3">
+          <div className="mb-4 grid grid-cols-2 gap-y-2 text-xs text-muted-foreground border-t border-foreground/5 py-3">
              {product.voltage && (
                <div className="flex flex-col">
-                 <span className="font-semibold text-foreground">Voltage</span>
+                 <span className="font-semibold text-foreground text-[11px]">Voltage</span>
                  <span>{product.voltage}</span>
                </div>
              )}
              {product.amperage && (
                <div className="flex flex-col">
-                 <span className="font-semibold text-foreground">Amperage</span>
+                 <span className="font-semibold text-foreground text-[11px]">Amperage</span>
                  <span>{product.amperage}</span>
                </div>
              )}
              {product.circuitry && (
                <div className="flex flex-col">
-                 <span className="font-semibold text-foreground">Circuitry</span>
+                 <span className="font-semibold text-foreground text-[11px]">Circuitry</span>
                  <span>{product.circuitry}</span>
                </div>
              )}
              {product.certifications && (
                <div className="col-span-2 flex flex-col mt-1">
-                 <span className="font-semibold text-foreground">Certifications</span>
+                 <span className="font-semibold text-foreground text-[11px]">Certifications</span>
                  <span>{product.certifications}</span>
                </div>
              )}
@@ -142,59 +135,59 @@ export function ProductCard({ product, matchReasons }: ProductCardProps) {
 
         {/* Match Reasons */}
         {matchReasons && (
-          <div className="mb-6 p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-xl border border-green-200 dark:border-green-800">
-            <div className="flex items-center gap-2 mb-3">
-              <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-              <span className="text-xs font-bold uppercase tracking-wider text-green-900 dark:text-green-300">
+          <div className="mb-5 p-3.5 rounded-xl bg-[#34c759]/6 border border-[#34c759]/12">
+            <div className="flex items-center gap-1.5 mb-2">
+              <CheckCircle className="w-3.5 h-3.5 text-[#34c759]" />
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#34c759]">
                 Why This Product
               </span>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               {matchReasons.technology && (
-                <div className="flex items-start gap-2 text-xs text-green-700 dark:text-green-300">
-                  <span className="text-green-600 dark:text-green-400 mt-0.5">✓</span>
-                  <span>Matches your <strong>{matchReasons.technology}</strong> technology</span>
+                <div className="flex items-start gap-1.5 text-xs text-foreground/70">
+                  <span className="text-[#34c759] mt-0.5 text-[10px]">&#10003;</span>
+                  <span>Matches <strong className="text-foreground">{matchReasons.technology}</strong></span>
                 </div>
               )}
               {matchReasons.action && (
-                <div className="flex items-start gap-2 text-xs text-green-700 dark:text-green-300">
-                  <span className="text-green-600 dark:text-green-400 mt-0.5">✓</span>
-                  <span>Supports <strong>{matchReasons.action}</strong> action</span>
+                <div className="flex items-start gap-1.5 text-xs text-foreground/70">
+                  <span className="text-[#34c759] mt-0.5 text-[10px]">&#10003;</span>
+                  <span>Supports <strong className="text-foreground">{matchReasons.action}</strong></span>
                 </div>
               )}
               {matchReasons.environment && (
-                <div className="flex items-start gap-2 text-xs text-green-700 dark:text-green-300">
-                  <span className="text-green-600 dark:text-green-400 mt-0.5">✓</span>
-                  <span>Rated for <strong>{matchReasons.environment}</strong> environments</span>
+                <div className="flex items-start gap-1.5 text-xs text-foreground/70">
+                  <span className="text-[#34c759] mt-0.5 text-[10px]">&#10003;</span>
+                  <span>Rated for <strong className="text-foreground">{matchReasons.environment}</strong></span>
                 </div>
               )}
               {matchReasons.features && matchReasons.features.length > 0 && (
-                <div className="flex items-start gap-2 text-xs text-green-700 dark:text-green-300">
-                  <span className="text-green-600 dark:text-green-400 mt-0.5">✓</span>
-                  <span>Includes <strong>{matchReasons.features.join(', ')}</strong></span>
+                <div className="flex items-start gap-1.5 text-xs text-foreground/70">
+                  <span className="text-[#34c759] mt-0.5 text-[10px]">&#10003;</span>
+                  <span>Includes <strong className="text-foreground">{matchReasons.features.join(', ')}</strong></span>
                 </div>
               )}
               {product.flagship && (
-                <div className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-300">
-                  <span className="text-amber-500 dark:text-amber-400 mt-0.5">⭐</span>
-                  <span><strong>Flagship Product</strong> - Our most popular choice</span>
+                <div className="flex items-start gap-1.5 text-xs text-[#ff9500]">
+                  <span className="mt-0.5 text-[10px]">&#9733;</span>
+                  <span><strong>Flagship</strong> - Most popular choice</span>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* Button - pushed to bottom */}
+        {/* Button */}
         <a
           href={product.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-bold rounded-xl transition-all shadow-md hover:shadow-xl group mt-auto"
+          className="flex items-center justify-center gap-2 w-full px-5 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl transition-all duration-200 mt-auto text-sm"
         >
           <span>View Details</span>
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </a>
       </div>
-    </div>
+    </LiquidGlass>
   );
 }

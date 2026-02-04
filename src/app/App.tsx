@@ -16,9 +16,10 @@ import { trackWizardStep, trackProductView, trackPDFDownload, trackQuoteRequest,
 import { getProxiedImageUrl } from '@/app/utils/imageProxy';
 import { getProcessedProducts, isProductEnvironmentMatch } from '@/app/utils/productFilters';
 import jsPDF from 'jspdf';
+import LiquidGlass from 'liquid-glass-react';
 
 // Lazy load admin panel
-const AdminContainer = lazy(() => 
+const AdminContainer = lazy(() =>
   import('@/app/components/admin/AdminContainer').then(module => ({
     default: module.AdminContainer
   }))
@@ -29,7 +30,7 @@ type FlowType = 'standard' | 'medical';
 function WizardApp() {
   // Use custom hook for session persistence and state management
   const wizardState = useWizardState();
-  
+
   // Use custom hook for data fetching
   const {
     products,
@@ -49,7 +50,7 @@ function WizardApp() {
     error,
     refresh,
   } = useProductData();
-  
+
   // Enhanced search state for results page
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'relevance' | 'duty' | 'ip'>('relevance');
@@ -74,7 +75,7 @@ function WizardApp() {
       wizardState.setFlow('standard');
       setTimeout(() => wizardState.setStep(1), 150);
     }
-    
+
     // Track analytics
     trackWizardStep(0, app?.isMedical ? 'medical' : 'standard', { application: id });
   };
@@ -104,7 +105,7 @@ function WizardApp() {
     }
 
     wizardState.setStep(newStep);
-    
+
     // Track analytics
     trackWizardStep(newStep, wizardState.flow, {
       application: wizardState.selectedApplication,
@@ -142,7 +143,7 @@ function WizardApp() {
       if (state.selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(product.ip))
         return false;
       // For 'dry' environment, accept any IP rating (no filter needed)
-      
+
       // Filter by Duty Class
       if (state.selectedDuty && product.duty !== state.selectedDuty) return false;
 
@@ -177,7 +178,7 @@ function WizardApp() {
           if (!hasAllFeatures) return false;
         }
       }
-      
+
       return true;
     });
   };
@@ -289,7 +290,7 @@ function WizardApp() {
       wizardState.selectedFeatures.includes('custom_connector')
     );
   };
-  
+
   // Dynamic filtering: Calculate product counts for each step
   const getProductCount = (step: number, optionId?: string) => {
     if (step === 1) {
@@ -394,7 +395,7 @@ function WizardApp() {
       environment: wizardState.selectedEnvironment,
       features: wizardState.selectedFeatures,
     });
-    
+
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -405,12 +406,12 @@ function WizardApp() {
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
     doc.text('LINEMASTER', 15, 12);
-    
+
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
     const subtitle = wizardState.flow === 'medical' ? 'Medical Product Specifications' : 'Product Finder Results';
     doc.text(subtitle, 15, 20);
-    
+
     // Add date
     const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     doc.setFontSize(9);
@@ -424,7 +425,7 @@ function WizardApp() {
     doc.setFont('helvetica', 'bold');
     doc.text('Your Requirements', 15, yPos);
     yPos += 8;
-    
+
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
 
@@ -446,7 +447,7 @@ function WizardApp() {
       const techLabel = technologies.find(t => t.id === wizardState.selectedTechnology)?.label || wizardState.selectedTechnology;
       const actionLabel = actions.find(a => a.id === wizardState.selectedAction)?.label || wizardState.selectedAction;
       const envLabel = environments.find(e => e.id === wizardState.selectedEnvironment)?.label || wizardState.selectedEnvironment;
-      
+
       doc.text(`Application: ${appLabel}`, 20, yPos);
       yPos += 6;
       doc.text(`Technology: ${techLabel}`, 20, yPos);
@@ -455,7 +456,7 @@ function WizardApp() {
       yPos += 6;
       doc.text(`Environment: ${envLabel}`, 20, yPos);
       yPos += 6;
-      
+
       if (wizardState.selectedDuty) {
         const dutyLabel = duties.find(d => d.id === wizardState.selectedDuty)?.label || wizardState.selectedDuty;
         doc.text(`Duty Class: ${dutyLabel}`, 20, yPos);
@@ -494,7 +495,7 @@ function WizardApp() {
     // Matched Products Section
     yPos += 5;
     const matchedProducts = filterProducts();
-    
+
     if (matchedProducts.length > 0) {
       doc.setFillColor(240, 245, 255);
       doc.rect(15, yPos, pageWidth - 30, 8, 'F');
@@ -503,27 +504,27 @@ function WizardApp() {
       doc.setTextColor(99, 102, 241);
       doc.text(`Recommended Products (${matchedProducts.length})`, 20, yPos + 5.5);
       yPos += 12;
-      
+
       doc.setTextColor(0, 0, 0);
       doc.setFont('helvetica', 'normal');
-      
+
       matchedProducts.slice(0, 5).forEach((product, idx) => {
         if (yPos > 250) {
           doc.addPage();
           yPos = 20;
         }
-        
+
         doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
         const title = product.part_number ? `${product.series} (#${product.part_number})` : product.series;
         doc.text(`${idx + 1}. ${title}`, 20, yPos);
         yPos += 5;
-        
+
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
         doc.text(`${product.description}`, 25, yPos);
         yPos += 5;
-        
+
         // Specifications in columns
         doc.text(`IP Rating: ${product.ip}`, 25, yPos);
         doc.text(`Duty: ${product.duty}`, 80, yPos);
@@ -534,18 +535,18 @@ function WizardApp() {
           doc.text(`Connection: ${product.connector_type.replace(/-/g, ' ')}`, 25, yPos);
           yPos += 5;
         }
-        
+
         if (product.features && product.features.length > 0) {
           doc.text(`Features: ${product.features.join(', ')}`, 25, yPos);
           yPos += 5;
         }
-        
+
         doc.setTextColor(99, 102, 241);
         doc.text(`Learn more: ${product.link}`, 25, yPos);
         doc.setTextColor(0, 0, 0);
         yPos += 8;
       });
-      
+
       if (matchedProducts.length > 5) {
         doc.setFontSize(9);
         doc.setTextColor(100, 100, 100);
@@ -576,15 +577,15 @@ function WizardApp() {
     const footerY = 280;
     doc.setFillColor(245, 245, 245);
     doc.rect(0, footerY, pageWidth, 17, 'F');
-    
+
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(60, 60, 60);
     doc.text('Linemaster Switch Corporation', 15, footerY + 5);
-    
+
     doc.setFont('helvetica', 'normal');
     doc.text('Tel: (860) 974-1000 | linemaster.com', 15, footerY + 10);
-    
+
     doc.setTextColor(99, 102, 241);
     doc.text('Contact us: linemaster.com/contact/', 15, footerY + 15);
 
@@ -602,7 +603,7 @@ function WizardApp() {
   // Show loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-indigo-950 dark:to-purple-950 flex items-center justify-center p-4">
+      <div className="min-h-screen mesh-gradient-light flex items-center justify-center p-4">
         <div className="text-center">
           <div className="relative w-16 h-16 mx-auto mb-6">
             <div className="absolute inset-0 rounded-full border-4 border-primary/20"></div>
@@ -618,16 +619,16 @@ function WizardApp() {
   // Show error state
   if (error) {
     const isBackendError = error.includes('Failed to fetch') || error.includes('backend') || error.includes('timeout');
-    
+
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 dark:from-slate-950 dark:via-red-950 dark:to-orange-950 flex items-center justify-center p-4">
-        <div className="max-w-2xl mx-auto p-8 bg-card/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-border">
+      <div className="min-h-screen mesh-gradient-light flex items-center justify-center p-4">
+        <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="max-w-2xl mx-auto w-full">
           <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
             <span className="text-4xl">⚠️</span>
           </div>
           <h2 className="text-2xl font-bold text-foreground mb-3 text-center">Backend Connection Error</h2>
           <p className="text-muted-foreground mb-6 leading-relaxed text-center">{error}</p>
-          
+
           {isBackendError && (
             <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-6 mb-6 text-left">
               <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
@@ -648,16 +649,16 @@ function WizardApp() {
               </p>
             </div>
           )}
-          
+
           <div className="flex gap-4 justify-center">
             <button
               onClick={() => refresh()}
-              className="px-8 py-3.5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-bold rounded-xl transition-all shadow-lg hover:shadow-xl"
+              className="px-8 py-3.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-all shadow-lg hover:shadow-xl"
             >
               Retry Connection
             </button>
           </div>
-        </div>
+        </LiquidGlass>
       </div>
     );
   }
@@ -665,12 +666,12 @@ function WizardApp() {
   // Render different screens based on step and flow
   if (wizardState.flow === 'medical') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 dark:from-slate-950 dark:via-rose-950 dark:to-purple-950">
+      <div className="min-h-screen mesh-gradient-medical">
         <Header onReset={handleReset} onRefresh={refresh} />
 
         {wizardState.step === 1 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
-            <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+            <LiquidGlass cornerRadius={28} padding="0" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full overflow-hidden">
               {/* Banner */}
               <div
                 className="p-8 text-white"
@@ -696,9 +697,9 @@ function WizardApp() {
                   'Wireless RF Technology',
                   'Custom Enclosure Design',
                 ].map((feature) => (
-                  <div key={feature} className="flex items-center gap-3 p-4 bg-[#fff1f2] rounded-xl">
-                    <CheckCircle className="w-6 h-6 text-[#e11d48] flex-shrink-0" />
-                    <span className="text-sm font-semibold text-[#0f172a]">{feature}</span>
+                  <div key={feature} className="flex items-center gap-3 p-4 bg-[#ff2d55]/10 rounded-xl">
+                    <CheckCircle className="w-6 h-6 text-[#ff2d55] flex-shrink-0" />
+                    <span className="text-sm font-semibold text-foreground">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -707,7 +708,7 @@ function WizardApp() {
               <div className="flex items-center justify-between px-8 pb-8">
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   Back
@@ -715,32 +716,32 @@ function WizardApp() {
                 <div className="flex gap-3">
                   <button
                     onClick={handleViewMedicalProducts}
-                    className="px-6 py-3 text-[#e11d48] font-semibold hover:bg-rose-50 rounded-xl transition-colors"
+                    className="px-6 py-3 text-[#ff2d55] font-semibold hover:bg-[#ff2d55]/10 rounded-xl transition-colors"
                   >
                     View Standard Products
                   </button>
                   <button
                     onClick={handleContinue}
-                    className="flex items-center gap-2 px-8 py-3 bg-[#e11d48] hover:bg-[#be123c] text-white font-semibold rounded-xl transition-colors"
+                    className="flex items-center gap-2 px-8 py-3 bg-[#ff2d55] hover:bg-[#ff2d55]/90 text-white font-semibold rounded-xl transition-colors"
                   >
                     Continue
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-            </div>
+            </LiquidGlass>
           </div>
         )}
 
         {wizardState.step === 2 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={1} totalSteps={totalSteps} isMedical />
-            <div className="bg-white rounded-3xl shadow-lg p-8">
-              <div className="text-[#e11d48] text-xs font-bold uppercase tracking-wide mb-2">
+            <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+              <div className="text-[#ff2d55] text-xs font-semibold uppercase tracking-wider mb-2">
                 STEP 2 OF 5
               </div>
-              <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Console Style</h2>
-              <p className="text-sm text-[#64748b] mb-6">Select your preferred platform.</p>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Console Style</h2>
+              <p className="text-sm text-muted-foreground mb-6">Select your preferred platform.</p>
 
               <div className="mb-6">
                 <img
@@ -767,25 +768,25 @@ function WizardApp() {
               <div className="flex items-center justify-between">
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   Back
                 </button>
-                <span className="text-sm text-[#64748b]">Select to continue</span>
+                <span className="text-sm text-muted-foreground">Select to continue</span>
               </div>
-            </div>
+            </LiquidGlass>
           </div>
         )}
 
         {wizardState.step === 3 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={2} totalSteps={totalSteps} isMedical />
-            <div className="bg-white rounded-3xl shadow-lg p-8">
-              <div className="text-[#e11d48] text-xs font-bold uppercase tracking-wide mb-2">
+            <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+              <div className="text-[#ff2d55] text-xs font-semibold uppercase tracking-wider mb-2">
                 STEP 3 OF 5
               </div>
-              <h2 className="text-2xl font-bold text-[#0f172a] mb-6">Pedal Count</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-6">Pedal Count</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 {pedalCounts.map((option) => (
@@ -804,26 +805,26 @@ function WizardApp() {
               <div className="flex items-center justify-between">
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   Back
                 </button>
-                <span className="text-sm text-[#64748b]">Select to continue</span>
+                <span className="text-sm text-muted-foreground">Select to continue</span>
               </div>
-            </div>
+            </LiquidGlass>
           </div>
         )}
 
         {wizardState.step === 4 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={3} totalSteps={totalSteps} isMedical />
-            <div className="bg-white rounded-3xl shadow-lg p-8">
-              <div className="text-[#e11d48] text-xs font-bold uppercase tracking-wide mb-2">
+            <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+              <div className="text-[#ff2d55] text-xs font-semibold uppercase tracking-wider mb-2">
                 STEP 4 OF 5
               </div>
-              <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Technical Features</h2>
-              <p className="text-sm text-[#64748b] mb-6">Select all that apply.</p>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Technical Features</h2>
+              <p className="text-sm text-muted-foreground mb-6">Select all that apply.</p>
 
               <div className="space-y-4 mb-8">
                 {medicalTechnicalFeatures.map((option) => (
@@ -846,32 +847,32 @@ function WizardApp() {
               <div className="flex items-center justify-between">
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   Back
                 </button>
                 <button
                   onClick={handleContinue}
-                  className="flex items-center gap-2 px-8 py-3 bg-[#e11d48] hover:bg-[#be123c] text-white font-semibold rounded-xl transition-colors"
+                  className="flex items-center gap-2 px-8 py-3 bg-[#ff2d55] hover:bg-[#ff2d55]/90 text-white font-semibold rounded-xl transition-colors"
                 >
                   Continue
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
-            </div>
+            </LiquidGlass>
           </div>
         )}
 
         {wizardState.step === 5 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={4} totalSteps={totalSteps} isMedical />
-            <div className="bg-white rounded-3xl shadow-lg p-8">
-              <div className="text-[#e11d48] text-xs font-bold uppercase tracking-wide mb-2">
+            <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+              <div className="text-[#ff2d55] text-xs font-semibold uppercase tracking-wider mb-2">
                 STEP 5 OF 5
               </div>
-              <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Accessories & Add-ons</h2>
-              <p className="text-sm text-[#64748b] mb-6">Select all that apply.</p>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Accessories & Add-ons</h2>
+              <p className="text-sm text-muted-foreground mb-6">Select all that apply.</p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 {accessories.map((option) => (
@@ -894,26 +895,26 @@ function WizardApp() {
               <div className="flex items-center justify-between">
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   Back
                 </button>
                 <button
                   onClick={handleContinue}
-                  className="flex items-center gap-2 px-8 py-3 bg-[#e11d48] hover:bg-[#be123c] text-white font-semibold rounded-xl transition-colors"
+                  className="flex items-center gap-2 px-8 py-3 bg-[#ff2d55] hover:bg-[#ff2d55]/90 text-white font-semibold rounded-xl transition-colors"
                 >
                   See Results
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
-            </div>
+            </LiquidGlass>
           </div>
         )}
 
         {wizardState.step === 6 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
-            <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+            <LiquidGlass cornerRadius={28} padding="0" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full overflow-hidden">
               {/* Banner */}
               <div
                 className="p-8 text-white"
@@ -933,27 +934,27 @@ function WizardApp() {
 
               {/* Summary */}
               <div className="p-8">
-                <div className="divide-y divide-[#e2e8f0]">
+                <div className="divide-y divide-foreground/5">
                   <div className="flex justify-between py-4">
-                    <span className="text-sm text-[#64748b]">Console Style</span>
-                    <span className="text-sm font-semibold text-[#0f172a]">
+                    <span className="text-sm text-muted-foreground">Console Style</span>
+                    <span className="text-sm font-semibold text-foreground">
                       {consoleStyles.find(c => c.id === wizardState.selectedConsoleStyle)?.label || wizardState.selectedConsoleStyle}
                     </span>
                   </div>
                   <div className="flex justify-between py-4">
-                    <span className="text-sm text-[#64748b]">Pedal Configuration</span>
-                    <span className="text-sm font-semibold text-[#0f172a]">
+                    <span className="text-sm text-muted-foreground">Pedal Configuration</span>
+                    <span className="text-sm font-semibold text-foreground">
                       {pedalCounts.find(p => p.id === wizardState.selectedPedalCount)?.label || wizardState.selectedPedalCount}
                     </span>
                   </div>
                   {wizardState.selectedMedicalFeatures.length > 0 && (
                     <div className="flex justify-between py-4">
-                      <span className="text-sm text-[#64748b]">Technical Features</span>
+                      <span className="text-sm text-muted-foreground">Technical Features</span>
                       <div className="flex flex-wrap gap-2 justify-end">
                         {wizardState.selectedMedicalFeatures.map((feature) => (
                           <span
                             key={feature}
-                            className="px-3 py-1 bg-[#2563eb] text-white text-xs font-bold uppercase tracking-wide rounded-full"
+                            className="px-3 py-1 bg-primary text-white text-xs font-bold uppercase tracking-wide rounded-full"
                           >
                             {medicalTechnicalFeatures.find(f => f.id === feature)?.label || feature}
                           </span>
@@ -963,7 +964,7 @@ function WizardApp() {
                   )}
                   {wizardState.selectedAccessories.length > 0 && (
                     <div className="flex justify-between py-4">
-                      <span className="text-sm text-[#64748b]">Accessories</span>
+                      <span className="text-sm text-muted-foreground">Accessories</span>
                       <div className="flex flex-wrap gap-2 justify-end">
                         {wizardState.selectedAccessories.map((accessory) => (
                           <span
@@ -987,24 +988,24 @@ function WizardApp() {
                     Download Specifications PDF
                   </button>
 
-                  <div className="text-center text-sm text-[#64748b] py-2">then</div>
+                  <div className="text-center text-sm text-muted-foreground py-2">then</div>
 
                   <button
                     onClick={() =>
                       window.open('https://linemaster.com/contact/', '_blank')
                     }
-                    className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold rounded-xl transition-colors"
+                    className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-[#ff9500] hover:bg-[#ff9500]/90 text-white font-semibold rounded-xl transition-colors"
                   >
                     <Send className="w-5 h-5" />
                     Submit Quote Request
                   </button>
 
-                  <p className="text-xs text-center text-[#64748b] mt-4">
+                  <p className="text-xs text-center text-muted-foreground mt-4">
                     Attach your downloaded PDF to the quote form for faster processing.
                   </p>
                 </div>
               </div>
-            </div>
+            </LiquidGlass>
           </div>
         )}
       </div>
@@ -1013,16 +1014,16 @@ function WizardApp() {
 
   // Standard flow screens
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-indigo-950 dark:to-purple-950">
+    <div className="min-h-screen mesh-gradient-light">
       <Header onReset={handleReset} onRefresh={refresh} />
 
       {wizardState.step === 0 && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <ProgressDots currentStep={0} totalSteps={totalSteps} />
-          
+
           {/* Hero Section */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400">
+            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
               Find Your Perfect Foot Switch
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -1030,11 +1031,11 @@ function WizardApp() {
             </p>
           </div>
 
-          <div className="bg-card/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-border">
+          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="flex items-center gap-3 mb-6">
               <div className="h-10 w-1 bg-gradient-to-b from-primary to-purple-500 rounded-full"></div>
               <div>
-                <div className="text-primary text-xs font-bold uppercase tracking-wider mb-1">
+                <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-1">
                   Step 1 of {totalSteps}
                 </div>
                 <h2 className="text-2xl font-bold text-foreground">
@@ -1057,7 +1058,7 @@ function WizardApp() {
                 ))}
             </div>
 
-            <div className="flex items-center justify-between pt-6 border-t border-border">
+            <div className="flex items-center justify-between pt-6 border-t border-foreground/5">
               <button
                 disabled
                 className="flex items-center gap-2 px-6 py-3 text-muted-foreground/50 cursor-not-allowed"
@@ -1072,15 +1073,15 @@ function WizardApp() {
             </div>
 
             <TrustBadges />
-          </div>
+          </LiquidGlass>
         </div>
       )}
 
       {wizardState.step === 1 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={1} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
+          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+            <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP 2 OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Technology</h2>
@@ -1109,22 +1110,22 @@ function WizardApp() {
             <div className="flex items-center justify-between">
               <button
                 onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Back
               </button>
-              <span className="text-sm text-[#64748b]">Select to continue</span>
+              <span className="text-sm text-muted-foreground">Select to continue</span>
             </div>
-          </div>
+          </LiquidGlass>
         </div>
       )}
 
       {wizardState.step === 2 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={2} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
+          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+            <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP 3 OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Action</h2>
@@ -1153,22 +1154,22 @@ function WizardApp() {
             <div className="flex items-center justify-between">
               <button
                 onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Back
               </button>
-              <span className="text-sm text-[#64748b]">Select to continue</span>
+              <span className="text-sm text-muted-foreground">Select to continue</span>
             </div>
-          </div>
+          </LiquidGlass>
         </div>
       )}
 
       {wizardState.step === 3 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={3} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
+          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+            <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP 4 OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">IP Rating</h2>
@@ -1196,22 +1197,22 @@ function WizardApp() {
             <div className="flex items-center justify-between">
               <button
                 onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Back
               </button>
-              <span className="text-sm text-[#64748b]">Select to continue</span>
+              <span className="text-sm text-muted-foreground">Select to continue</span>
             </div>
-          </div>
+          </LiquidGlass>
         </div>
       )}
 
       {wizardState.step === 4 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={4} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
+          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+            <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP 5 OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Stability & Material</h2>
@@ -1261,15 +1262,15 @@ function WizardApp() {
                 No Preference — Skip
               </button>
             </div>
-          </div>
+          </LiquidGlass>
         </div>
       )}
 
       {wizardState.step === 5 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={5} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
+          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+            <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP 6 OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Material</h2>
@@ -1320,15 +1321,15 @@ function WizardApp() {
                 No Preference — Skip
               </button>
             </div>
-          </div>
+          </LiquidGlass>
         </div>
       )}
 
       {wizardState.step === 6 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={6} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
+          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+            <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP 7 OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Connection Type</h2>
@@ -1376,15 +1377,15 @@ function WizardApp() {
                 No Preference — Skip
               </button>
             </div>
-          </div>
+          </LiquidGlass>
         </div>
       )}
 
       {wizardState.step === 7 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={7} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
+          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+            <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP 8 OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Safety Guard</h2>
@@ -1439,15 +1440,15 @@ function WizardApp() {
                 No Preference — Skip
               </button>
             </div>
-          </div>
+          </LiquidGlass>
         </div>
       )}
 
       {wizardState.step === 8 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={8} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
+          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+            <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP 9 OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Pedal Configuration</h2>
@@ -1502,15 +1503,15 @@ function WizardApp() {
                 No Preference — Skip
               </button>
             </div>
-          </div>
+          </LiquidGlass>
         </div>
       )}
 
       {wizardState.step === 9 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={9} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
+          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+            <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP {totalSteps} OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Additional Features</h2>
@@ -1555,13 +1556,13 @@ function WizardApp() {
               </button>
               <button
                 onClick={handleContinue}
-                className="flex items-center gap-2 px-8 py-3 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-semibold rounded-xl transition-colors"
+                className="flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-colors"
               >
                 See Results
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-          </div>
+          </LiquidGlass>
         </div>
       )}
 
@@ -1569,12 +1570,12 @@ function WizardApp() {
         <>
           {needsCustomSolution() ? (
             <div className="max-w-[800px] mx-auto px-6 py-8">
-              <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+              <LiquidGlass cornerRadius={28} padding="0" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full overflow-hidden">
                 {/* Banner */}
                 <div
                   className="p-8 text-white"
                   style={{
-                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                    background: 'linear-gradient(135deg, #007aff 0%, #005ecb 100%)',
                   }}
                 >
                   <div className="text-white/80 text-xs font-bold uppercase tracking-wide mb-3">
@@ -1588,39 +1589,39 @@ function WizardApp() {
 
                 {/* Summary */}
                 <div className="p-8">
-                  <div className="divide-y divide-[#e2e8f0]">
+                  <div className="divide-y divide-foreground/5">
                     <div className="flex justify-between py-4">
-                      <span className="text-sm text-[#64748b]">Application</span>
-                      <span className="text-sm font-semibold text-[#0f172a]">
+                      <span className="text-sm text-muted-foreground">Application</span>
+                      <span className="text-sm font-semibold text-foreground">
                         {applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication}
                       </span>
                     </div>
                     <div className="flex justify-between py-4">
-                      <span className="text-sm text-[#64748b]">Technology</span>
-                      <span className="text-sm font-semibold text-[#0f172a]">
+                      <span className="text-sm text-muted-foreground">Technology</span>
+                      <span className="text-sm font-semibold text-foreground">
                         {technologies.find(t => t.id === wizardState.selectedTechnology)?.label || wizardState.selectedTechnology}
                       </span>
                     </div>
                     <div className="flex justify-between py-4">
-                      <span className="text-sm text-[#64748b]">Switch Action</span>
-                      <span className="text-sm font-semibold text-[#0f172a]">
+                      <span className="text-sm text-muted-foreground">Switch Action</span>
+                      <span className="text-sm font-semibold text-foreground">
                         {actions.find(a => a.id === wizardState.selectedAction)?.label || wizardState.selectedAction}
                       </span>
                     </div>
                     <div className="flex justify-between py-4">
-                      <span className="text-sm text-[#64748b]">Environment</span>
-                      <span className="text-sm font-semibold text-[#0f172a]">
+                      <span className="text-sm text-muted-foreground">Environment</span>
+                      <span className="text-sm font-semibold text-foreground">
                         {environments.find(e => e.id === wizardState.selectedEnvironment)?.label || wizardState.selectedEnvironment}
                       </span>
                     </div>
                     {wizardState.selectedFeatures.length > 0 && (
                       <div className="flex justify-between py-4">
-                        <span className="text-sm text-[#64748b]">Features</span>
+                        <span className="text-sm text-muted-foreground">Features</span>
                         <div className="flex flex-wrap gap-2 justify-end">
                           {wizardState.selectedFeatures.map((feature) => (
                             <span
                               key={feature}
-                              className="px-3 py-1 bg-[#2563eb] text-white text-xs font-bold uppercase tracking-wide rounded-full"
+                              className="px-3 py-1 bg-primary text-white text-xs font-bold uppercase tracking-wide rounded-full"
                             >
                               {features.find(f => f.id === feature)?.label || feature}
                             </span>
@@ -1639,24 +1640,24 @@ function WizardApp() {
                       Download Specifications PDF
                     </button>
 
-                    <div className="text-center text-sm text-[#64748b] py-2">then</div>
+                    <div className="text-center text-sm text-muted-foreground py-2">then</div>
 
                     <button
                       onClick={() =>
                         window.open('https://linemaster.com/contact/', '_blank')
                       }
-                      className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold rounded-xl transition-colors"
+                      className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-[#ff9500] hover:bg-[#ff9500]/90 text-white font-semibold rounded-xl transition-colors"
                     >
                       <Send className="w-5 h-5" />
                       Contact Us
                     </button>
 
-                    <p className="text-xs text-center text-[#64748b] mt-4">
+                    <p className="text-xs text-center text-muted-foreground mt-4">
                       Attach your downloaded PDF when reaching out for faster processing.
                     </p>
                   </div>
                 </div>
-              </div>
+              </LiquidGlass>
             </div>
           ) : (
             <div className="max-w-[1200px] mx-auto px-6 py-8">
@@ -1699,33 +1700,33 @@ function WizardApp() {
                 return (
                   <>
                     <div className="text-center mb-12">
-                      <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-bold uppercase tracking-widest mb-4">
+                      <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-bold uppercase tracking-widest mb-4">
                         <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/60 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                         </span>
                         Analyzed 300+ Products
                       </div>
-                      
+
                       {hasExactMatches ? (
                         <>
-                          <h1 className="text-4xl md:text-5xl font-extrabold text-[#0f172a] dark:text-white mb-4 tracking-tight">
-                            We Found <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">The One.</span>
+                          <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4 tracking-tight">
+                            We Found <span className="text-primary">The One.</span>
                           </h1>
-                          <p className="text-lg text-[#64748b] dark:text-gray-400 max-w-2xl mx-auto">
+                          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                             Based on your requirements, this is the exact switch you need.
                           </p>
                         </>
                       ) : (
                         <>
-                          <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-900 rounded-full text-sm font-semibold mb-4">
+                          <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#ff9500]/10 text-[#ff9500] rounded-full text-sm font-semibold mb-4">
                             <span className="text-lg">💡</span>
                             Alternative Suggestions
                           </div>
-                          <h1 className="text-3xl font-bold text-[#0f172a] dark:text-white mb-2">
+                          <h1 className="text-3xl font-bold text-foreground mb-2">
                             No Exact Matches Found
                           </h1>
-                          <p className="text--[#64748b] dark:text-gray-400 max-w-2xl mx-auto">
+                          <p className="text-muted-foreground max-w-2xl mx-auto">
                             {alternatives && relaxedMessages[alternatives.relaxed]}
                           </p>
                         </>
@@ -1733,14 +1734,14 @@ function WizardApp() {
                     </div>
 
                     {/* Filter Summary Bar */}
-                    <div className="mb-12 p-6 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm rounded-2xl border border-indigo-200 dark:border-indigo-800">
+                    <LiquidGlass cornerRadius={20} padding="24px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="mb-12 w-full">
                       <div className="flex items-center gap-3 mb-4">
-                        <span className="text-sm font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider">
+                        <span className="text-sm font-bold text-foreground uppercase tracking-wider">
                           Active Filters:
                         </span>
                         <button
                           onClick={handleReset}
-                          className="ml-auto text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 font-semibold underline transition-colors"
+                          className="ml-auto text-xs text-primary hover:text-primary/80 font-semibold underline transition-colors"
                         >
                           Clear All & Start Over
                         </button>
@@ -1837,78 +1838,78 @@ function WizardApp() {
                           />
                         ))}
                       </div>
-                    </div>
+                    </LiquidGlass>
 
                     {/* Best Match Highlight */}
                     {bestMatch && (
                       <div className="mb-16 transform hover:scale-[1.01] transition-transform duration-500">
-                        <div className="relative bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden border border-indigo-100 dark:border-indigo-900">
+                        <LiquidGlass cornerRadius={32} padding="0" blurAmount={0.25} saturation={150} displacementScale={50} overLight className="w-full overflow-hidden">
                            <div className="grid grid-cols-1 lg:grid-cols-2">
-                             <div className="p-12 flex flex-col justify-center relative overflow-hidden bg-[rgba(161,73,206,0)]">
+                             <div className="p-12 flex flex-col justify-center relative overflow-hidden">
                                <div className="relative z-10">
                                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-bold uppercase tracking-wider mb-6">
                                     <Star className="w-4 h-4 fill-green-700" />
                                     Top Recommendation
                                  </div>
-                                 <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-4 leading-tight flex flex-wrap items-baseline gap-3">
+                                 <h2 className="text-4xl font-bold text-foreground mb-4 leading-tight flex flex-wrap items-baseline gap-3">
                                    {bestMatch.series}
                                    {(bestMatch.part_number || bestMatch.id) && (
-                                     <span className="text-2xl font-medium text-slate-500 dark:text-slate-400">
+                                     <span className="text-2xl font-medium text-muted-foreground">
                                        # {bestMatch.part_number || bestMatch.id.toUpperCase()}
                                      </span>
                                    )}
                                  </h2>
-                                 <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed">
+                                 <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
                                    {bestMatch.description}
                                  </p>
-                                 
+
                                  <div className="grid grid-cols-2 gap-6 mb-10">
                                    <div>
-                                     <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">IP Rating</div>
-                                     <div className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                                     <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">IP Rating</div>
+                                     <div className="font-medium text-foreground flex items-center gap-2">
                                        {bestMatch.ip}
-                                       {bestMatch.ip === 'IP68' && <CheckCircle className="w-4 h-4 text-blue-500" />}
+                                       {bestMatch.ip === 'IP68' && <CheckCircle className="w-4 h-4 text-primary" />}
                                      </div>
                                    </div>
                                    <div>
-                                     <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Duty Rating</div>
-                                     <div className="font-medium text-slate-900 dark:text-white">{bestMatch.duty.charAt(0).toUpperCase() + bestMatch.duty.slice(1)}</div>
+                                     <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Duty Rating</div>
+                                     <div className="font-medium text-foreground">{bestMatch.duty.charAt(0).toUpperCase() + bestMatch.duty.slice(1)}</div>
                                    </div>
                                    <div>
-                                      <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Material</div>
-                                      <div className="font-medium text-slate-900 dark:text-white">{bestMatch.material}</div>
+                                      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Material</div>
+                                      <div className="font-medium text-foreground">{bestMatch.material}</div>
                                    </div>
                                    <div>
-                                      <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Action</div>
-                                      <div className="font-medium text-slate-900 dark:text-white">{bestMatch.actions.join(', ')}</div>
+                                      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Action</div>
+                                      <div className="font-medium text-foreground">{bestMatch.actions.join(', ')}</div>
                                    </div>
                                    {bestMatch.voltage && (
                                      <div>
-                                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Voltage</div>
-                                        <div className="font-medium text-slate-900 dark:text-white">{bestMatch.voltage}</div>
+                                        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Voltage</div>
+                                        <div className="font-medium text-foreground">{bestMatch.voltage}</div>
                                      </div>
                                    )}
                                    {bestMatch.certifications && (
                                      <div>
-                                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Certifications</div>
-                                        <div className="font-medium text-slate-900 dark:text-white">{bestMatch.certifications}</div>
+                                        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Certifications</div>
+                                        <div className="font-medium text-foreground">{bestMatch.certifications}</div>
                                      </div>
                                    )}
                                  </div>
 
                                  <div className="flex flex-col sm:flex-row gap-4">
-                                   <a 
-                                     href={bestMatch.link} 
-                                     target="_blank" 
+                                   <a
+                                     href={bestMatch.link}
+                                     target="_blank"
                                      rel="noopener noreferrer"
-                                     className="flex-1 inline-flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-blue-500/30"
+                                     className="flex-1 inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-primary/30"
                                    >
                                      View Full Specifications
                                      <ArrowRight className="w-5 h-5" />
                                    </a>
-                                   <button 
+                                   <button
                                       onClick={generatePDF}
-                                      className="flex-1 inline-flex items-center justify-center gap-2 px-8 py-4 bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold rounded-xl transition-colors"
+                                      className="flex-1 inline-flex items-center justify-center gap-2 px-8 py-4 bg-foreground/5 hover:bg-foreground/10 text-foreground font-bold rounded-xl transition-colors"
                                    >
                                      <Download className="w-5 h-5" />
                                      Download PDF
@@ -1916,24 +1917,24 @@ function WizardApp() {
                                  </div>
                                </div>
                              </div>
-                             <div className="bg-slate-50 dark:bg-slate-800/50 p-12 flex items-center justify-center relative">
+                             <div className="bg-foreground/[0.03] p-12 flex items-center justify-center relative">
                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent dark:from-slate-800 opacity-60"></div>
-                               <img 
-                                 src={getProxiedImageUrl(bestMatch.image)} 
-                                 alt={bestMatch.series} 
+                               <img
+                                 src={getProxiedImageUrl(bestMatch.image)}
+                                 alt={bestMatch.series}
                                  className="w-full max-w-md object-contain drop-shadow-2xl relative z-10 transform hover:scale-105 transition-transform duration-500"
                                />
                              </div>
                            </div>
-                        </div>
+                        </LiquidGlass>
                       </div>
                     )}
 
                     {/* Enhanced Search and Filter */}
                     <div className="mb-8">
-                       <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                       <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
                          {bestMatch ? 'Other Compatible Options' : 'Available Products'}
-                         <span className="text-sm font-normal text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                         <span className="text-sm font-normal text-muted-foreground bg-foreground/5 px-3 py-1 rounded-full">
                            {hasExactMatches ? exactMatches.length - 1 + (alternatives?.products.length || 0) : alternatives?.products.length || 0}
                          </span>
                        </h3>
@@ -1963,7 +1964,7 @@ function WizardApp() {
                         sortBy,
                         selectedEnvironment: wizardState.selectedEnvironment,
                       });
-                      
+
                       return (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
                           {filteredProducts.map((product) => {
@@ -1991,53 +1992,55 @@ function WizardApp() {
 
                     {/* Alternative products notice */}
                     {!hasExactMatches && alternatives && (
-                      <div className="mb-12 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-6">
+                      <LiquidGlass cornerRadius={20} padding="24px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="mb-12 w-full">
                         <div className="flex items-start gap-4">
-                          <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 text-2xl">
+                          <div className="w-12 h-12 bg-[#ff9500] rounded-full flex items-center justify-center flex-shrink-0 text-2xl">
                             ℹ️
                           </div>
                           <div>
-                            <h3 className="text-lg font-bold text-amber-900 mb-2">
+                            <h3 className="text-lg font-bold text-foreground mb-2">
                               Need help choosing?
                             </h3>
-                            <p className="text-sm text-amber-800 mb-4">
+                            <p className="text-sm text-muted-foreground mb-4">
                               We found these alternative products that closely match your requirements.
                               Contact our team to discuss which option would work best for your specific application.
                             </p>
                             <button
                               onClick={() => window.open('https://linemaster.com/contact/', '_blank')}
-                              className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition-colors"
+                              className="px-6 py-2.5 bg-[#ff9500] hover:bg-[#ff9500]/90 text-white font-semibold rounded-lg transition-colors"
                             >
                               Contact Us
                             </button>
                           </div>
                         </div>
-                      </div>
+                      </LiquidGlass>
                     )}
 
                     {/* Footer CTA */}
-                    <div className="mt-16 bg-[#1e293b] rounded-3xl p-8 text-white text-center">
-                      <h2 className="text-2xl font-bold mb-2">Can't find what you need?</h2>
-                      <p className="text-white/80 mb-6">
-                        Our team can help you find the right foot switch for your application.
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button
-                          onClick={generatePDF}
-                          className="px-8 py-3 bg-white hover:bg-gray-100 text-[#1e293b] font-semibold rounded-xl transition-colors"
-                        >
-                          Download Specs PDF
-                        </button>
-                        <button
-                          onClick={() =>
-                            window.open('https://linemaster.com/contact/', '_blank')
-                          }
-                          className="px-8 py-3 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-semibold rounded-xl transition-colors"
-                        >
-                          Contact Us
-                        </button>
+                    <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} className="mt-16 w-full bg-[#1e293b]">
+                      <div className="text-white text-center">
+                        <h2 className="text-2xl font-bold mb-2">Can't find what you need?</h2>
+                        <p className="text-white/80 mb-6">
+                          Our team can help you find the right foot switch for your application.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                          <button
+                            onClick={generatePDF}
+                            className="px-8 py-3 bg-white hover:bg-gray-100 text-[#1e293b] font-semibold rounded-xl transition-colors"
+                          >
+                            Download Specs PDF
+                          </button>
+                          <button
+                            onClick={() =>
+                              window.open('https://linemaster.com/contact/', '_blank')
+                            }
+                            className="px-8 py-3 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-colors"
+                          >
+                            Contact Us
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    </LiquidGlass>
                   </>
                 );
               })()}
@@ -2059,7 +2062,7 @@ export default function App() {
             <AdminContainer />
           </Suspense>;
         }
-        
+
         // Default to wizard app
         return <WizardApp />;
       }}
