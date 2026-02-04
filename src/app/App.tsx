@@ -12,7 +12,7 @@ import { ChevronLeft, ArrowRight, Download, Send, CheckCircle, Heart, Search, St
 import { useProductData } from '@/app/hooks/useProductData';
 import { useProductFilter } from '@/app/hooks/useProductFilter';
 import { useWizardState } from '@/app/hooks/useWizardState';
-import { categories, applications as staticApplications, technologies as staticTechnologies, actions as staticActions } from '@/app/data/options';
+import { categories, applications as staticApplications, technologies as staticTechnologies, actions as staticActions, environments as staticEnvironments } from '@/app/data/options';
 import { trackWizardStep, trackProductView, trackPDFDownload, trackQuoteRequest, trackNoResults } from '@/app/utils/analytics';
 import { getProxiedImageUrl } from '@/app/utils/imageProxy';
 import { getProcessedProducts, isProductEnvironmentMatch } from '@/app/utils/productFilters';
@@ -1322,7 +1322,7 @@ function WizardApp() {
             <p className="text-sm text-muted-foreground mb-6">What conditions will the switch operate in?</p>
 
             <div className="space-y-4 mb-8">
-              {environments
+              {(environments.length >= staticEnvironments.length ? environments : staticEnvironments)
                 .map((option) => {
                 return (
                   <div key={option.id}>
