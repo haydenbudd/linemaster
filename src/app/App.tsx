@@ -1229,7 +1229,7 @@ function WizardApp() {
             <p className="text-sm text-muted-foreground mb-6">Select your technology.</p>
 
             <div className="space-y-4 mb-8">
-              {technologies
+              {(technologies.length >= staticTechnologies.length ? technologies : staticTechnologies)
                 .filter((tech) => {
                   // Use static options for availableFor (Supabase may not have new sub-category IDs yet)
                   const staticTech = staticTechnologies.find(t => t.id === tech.id);
