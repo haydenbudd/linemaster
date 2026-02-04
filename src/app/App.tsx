@@ -12,6 +12,7 @@ import { ChevronLeft, ArrowRight, Download, Send, CheckCircle, Heart, Search, St
 import { useProductData } from '@/app/hooks/useProductData';
 import { useProductFilter } from '@/app/hooks/useProductFilter';
 import { useWizardState } from '@/app/hooks/useWizardState';
+import { categories, applications as staticApplications } from '@/app/data/options';
 import { trackWizardStep, trackProductView, trackPDFDownload, trackQuoteRequest, trackNoResults } from '@/app/utils/analytics';
 import { getProxiedImageUrl } from '@/app/utils/imageProxy';
 import { getProcessedProducts, isProductEnvironmentMatch } from '@/app/utils/productFilters';
@@ -64,25 +65,40 @@ function WizardApp() {
     setCordedFilter('all');
   };
 
-  const handleApplicationSelect = (id: string) => {
-    wizardState.setSelectedApplication(id);
-    const app = applications.find((a) => a.id === id);
-    if (app?.isMedical) {
+  const handleCategorySelect = (categoryId: string) => {
+    const cat = categories.find((c) => c.id === categoryId);
+    if (cat?.isMedical) {
+      // Medical category bypasses sub-categories — go straight to medical flow
+      wizardState.setSelectedCategory('medical');
+      wizardState.setSelectedApplication('medical');
       wizardState.setFlow('medical');
       setTimeout(() => wizardState.setStep(1), 150);
+      trackWizardStep(0, 'medical', { application: 'medical' });
     } else {
-      wizardState.setFlow('standard');
-      setTimeout(() => wizardState.setStep(1), 150);
+      // Show sub-categories for this category
+      wizardState.setSelectedCategory(categoryId);
     }
-    
+  };
+
+  const handleApplicationSelect = (id: string) => {
+    wizardState.setSelectedApplication(id);
+    wizardState.setFlow('standard');
+    setTimeout(() => wizardState.setStep(1), 150);
+
     // Track analytics
-    trackWizardStep(0, app?.isMedical ? 'medical' : 'standard', { application: id });
+    trackWizardStep(0, 'standard', { category: wizardState.selectedCategory, application: id });
   };
 
   const handleBack = () => {
     if (wizardState.step === 0) return;
     if (wizardState.flow === 'medical' && wizardState.step === 1) {
+      // Back from medical flow step 1 → return to category picker
       wizardState.setFlow('standard');
+      wizardState.setStep(0);
+      wizardState.setSelectedCategory('');
+      wizardState.setSelectedApplication('');
+    } else if (wizardState.step === 1) {
+      // Back from Technology (step 1) → return to sub-category picker (step 0 with category set)
       wizardState.setStep(0);
       wizardState.setSelectedApplication('');
     } else {
@@ -442,7 +458,7 @@ function WizardApp() {
         yPos += 6;
       }
     } else {
-      const appLabel = applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication;
+      const appLabel = staticApplications.find(a => a.id === wizardState.selectedApplication)?.label || applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication;
       const techLabel = technologies.find(t => t.id === wizardState.selectedTechnology)?.label || wizardState.selectedTechnology;
       const actionLabel = actions.find(a => a.id === wizardState.selectedAction)?.label || wizardState.selectedAction;
       const envLabel = environments.find(e => e.id === wizardState.selectedEnvironment)?.label || wizardState.selectedEnvironment;
@@ -1016,10 +1032,10 @@ function WizardApp() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-indigo-950 dark:to-purple-950">
       <Header onReset={handleReset} onRefresh={refresh} />
 
-      {wizardState.step === 0 && (
+      {wizardState.step === 0 && !wizardState.selectedCategory && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <ProgressDots currentStep={0} totalSteps={totalSteps} />
-          
+
           {/* Hero Section */}
           <div className="text-center mb-12">
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400">
@@ -1038,29 +1054,155 @@ function WizardApp() {
                   Step 1 of {totalSteps}
                 </div>
                 <h2 className="text-2xl font-bold text-foreground">
-                  What's your application?
+                  What type of application?
                 </h2>
               </div>
             </div>
-            <p className="text-muted-foreground mb-8">Select the industry or use case that best describes your needs.</p>
+            <p className="text-muted-foreground mb-8">Choose the category that best describes your use case.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              {applications
-                .map((option) => (
-                  <OptionCard
-                    key={option.id}
-                    option={option}
-                    selected={wizardState.selectedApplication === option.id}
-                    productCount={calculateOptionCount('selectedApplication', option.id)}
-                    onSelect={() => handleApplicationSelect(option.id)}
-                  />
-                ))}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              {categories.map((cat) => {
+                const IconComponent = cat.icon;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleCategorySelect(cat.id)}
+                    className={`
+                      group relative w-full p-6 rounded-2xl border-2 text-left transition-all duration-300
+                      hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]
+                      border-border bg-card hover:border-primary/50 dark:hover:bg-card/80
+                      ${cat.isMedical ? 'ring-2 ring-rose-500/30 ring-offset-2 dark:ring-offset-background' : ''}
+                    `}
+                  >
+                    {cat.isMedical && (
+                      <div className="absolute -top-3 right-4 px-3 py-1.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-lg">
+                        ISO CERTIFIED
+                      </div>
+                    )}
+                    <div className="flex flex-col items-center text-center gap-3">
+                      <div className="w-14 h-14 flex items-center justify-center rounded-xl bg-accent text-primary group-hover:bg-primary/10 transition-all">
+                        <IconComponent className="w-7 h-7" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-foreground text-lg mb-1">{cat.label}</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{cat.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
 
             <div className="flex items-center justify-between pt-6 border-t border-border">
               <button
                 disabled
                 className="flex items-center gap-2 px-6 py-3 text-muted-foreground/50 cursor-not-allowed"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span className="font-semibold">Back</span>
+              </button>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                <span>Select a category to continue</span>
+              </div>
+            </div>
+
+            <TrustBadges />
+          </div>
+        </div>
+      )}
+
+      {wizardState.step === 0 && wizardState.selectedCategory && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <ProgressDots currentStep={0} totalSteps={totalSteps} />
+
+          <div className="text-center mb-12">
+            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400">
+              Find Your Perfect Foot Switch
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Answer a few questions and we'll recommend the best product for your needs
+            </p>
+          </div>
+
+          <div className="bg-card/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-border">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-10 w-1 bg-gradient-to-b from-primary to-purple-500 rounded-full"></div>
+              <div>
+                <div className="text-primary text-xs font-bold uppercase tracking-wider mb-1">
+                  Step 1 of {totalSteps}
+                </div>
+                <h2 className="text-2xl font-bold text-foreground">
+                  {wizardState.selectedCategory === 'industrial' ? 'What industry?' : 'What application?'}
+                </h2>
+              </div>
+            </div>
+            <p className="text-muted-foreground mb-8">
+              {wizardState.selectedCategory === 'industrial'
+                ? 'Select the industry that best matches your application.'
+                : 'Select the use case that best describes your needs.'}
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              {staticApplications
+                .filter((app) => app.parentCategory === wizardState.selectedCategory)
+                .map((app) => {
+                  const IconComponent = app.icon;
+                  return (
+                    <button
+                      key={app.id}
+                      onClick={() => handleApplicationSelect(app.id)}
+                      className={`
+                        group relative w-full p-6 rounded-2xl border-2 text-left transition-all duration-300
+                        hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]
+                        ${
+                          wizardState.selectedApplication === app.id
+                            ? 'border-primary bg-gradient-to-br from-primary/10 via-primary/5 to-transparent shadow-lg ring-2 ring-primary/20'
+                            : 'border-border bg-card hover:border-primary/50 dark:hover:bg-card/80'
+                        }
+                      `}
+                    >
+                      <div className="flex items-start gap-4">
+                        {IconComponent && (
+                          <div className={`flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl transition-all ${
+                            wizardState.selectedApplication === app.id
+                              ? 'bg-primary text-primary-foreground scale-110'
+                              : 'bg-accent text-primary group-hover:bg-primary/10'
+                          }`}>
+                            <IconComponent className="w-6 h-6" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-foreground mb-1.5 text-lg">{app.label}</h3>
+                          <p className="text-sm text-muted-foreground leading-relaxed">{app.description}</p>
+                          <span className="mt-1 inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full bg-primary/10 text-primary">
+                            {calculateOptionCount('selectedApplication', app.id)} products
+                          </span>
+                        </div>
+                        <div className="flex-shrink-0 ml-2">
+                          <div
+                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                              wizardState.selectedApplication === app.id
+                                ? 'border-primary bg-primary scale-110'
+                                : 'border-muted-foreground/30 bg-transparent group-hover:border-primary'
+                            }`}
+                          >
+                            {wizardState.selectedApplication === app.id && <div className="w-2.5 h-2.5 rounded-full bg-primary-foreground" />}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+            </div>
+
+            <div className="flex items-center justify-between pt-6 border-t border-border">
+              <button
+                onClick={() => {
+                  wizardState.setSelectedCategory('');
+                  wizardState.setSelectedApplication('');
+                }}
+                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span className="font-semibold">Back</span>
@@ -1594,7 +1736,7 @@ function WizardApp() {
                     <div className="flex justify-between py-4">
                       <span className="text-sm text-[#64748b]">Application</span>
                       <span className="text-sm font-semibold text-[#0f172a]">
-                        {applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication}
+                        {staticApplications.find(a => a.id === wizardState.selectedApplication)?.label || applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication}
                       </span>
                     </div>
                     <div className="flex justify-between py-4">
@@ -1751,8 +1893,9 @@ function WizardApp() {
                         {wizardState.selectedApplication && (
                           <FilterChip
                             label="Application"
-                            value={applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication}
+                            value={staticApplications.find(a => a.id === wizardState.selectedApplication)?.label || applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication}
                             onRemove={() => {
+                              wizardState.setSelectedCategory('');
                               wizardState.setSelectedApplication('');
                               wizardState.setStep(0);
                             }}

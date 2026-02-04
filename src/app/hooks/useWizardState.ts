@@ -5,6 +5,7 @@ type FlowType = 'standard' | 'medical';
 export interface WizardState {
   flow: FlowType;
   step: number;
+  selectedCategory: string;
   selectedApplication: string;
   selectedTechnology: string;
   selectedAction: string;
@@ -23,6 +24,7 @@ export interface WizardState {
   // Setters
   setFlow: (flow: FlowType) => void;
   setStep: (step: number) => void;
+  setSelectedCategory: (id: string) => void;
   setSelectedApplication: (id: string) => void;
   setSelectedTechnology: (id: string) => void;
   setSelectedAction: (id: string) => void;
@@ -43,6 +45,7 @@ export interface WizardState {
 export function useWizardState(): WizardState {
   const [flow, setFlow] = useState<FlowType>('standard');
   const [step, setStep] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedApplication, setSelectedApplication] = useState('');
   const [selectedTechnology, setSelectedTechnology] = useState('');
   const [selectedAction, setSelectedAction] = useState('');
@@ -62,6 +65,7 @@ export function useWizardState(): WizardState {
   const resetWizard = useCallback(() => {
     setFlow('standard');
     setStep(0);
+    setSelectedCategory('');
     setSelectedApplication('');
     setSelectedTechnology('');
     setSelectedAction('');
@@ -81,6 +85,7 @@ export function useWizardState(): WizardState {
   return {
     flow,
     step,
+    selectedCategory,
     selectedApplication,
     selectedTechnology,
     selectedAction,
@@ -97,6 +102,7 @@ export function useWizardState(): WizardState {
     selectedAccessories,
     setFlow,
     setStep,
+    setSelectedCategory,
     setSelectedApplication,
     setSelectedTechnology,
     setSelectedAction,

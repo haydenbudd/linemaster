@@ -2,7 +2,6 @@ import {
   Factory,
   Heart,
   Car,
-  Hammer,
   Palette,
   Coffee,
   Zap,
@@ -11,6 +10,12 @@ import {
   CircleDot,
   ToggleLeft,
   Gauge,
+  Wrench,
+  HardHat,
+  Plug,
+  Wheat,
+  ShieldCheck,
+  Store,
 } from 'lucide-react';
 
 export interface Option {
@@ -21,45 +26,106 @@ export interface Option {
   isMedical?: boolean;
   availableFor?: string[];
   hideFor?: string[];
+  parentCategory?: string;
 }
 
-export const applications: Option[] = [
+export interface Category {
+  id: string;
+  label: string;
+  icon: any;
+  description: string;
+  isMedical?: boolean;
+}
+
+export const categories: Category[] = [
   {
     id: 'industrial',
-    label: 'Industrial & Manufacturing',
+    label: 'Industrial',
     icon: Factory,
-    description: 'Heavy machinery, CNC, assembly',
+    description: 'Manufacturing, automotive, construction, and heavy-duty applications.',
   },
+  {
+    id: 'medical',
+    label: 'Medical',
+    icon: Heart,
+    description: 'Surgical, diagnostic, and patient care equipment.',
+    isMedical: true,
+  },
+  {
+    id: 'commercial',
+    label: 'Commercial',
+    icon: Store,
+    description: 'Light-duty commercial and specialty applications.',
+  },
+];
+
+export const applications: Option[] = [
+  // Industrial sub-categories
+  {
+    id: 'industrial',
+    label: 'Manufacturing & Metalworking',
+    icon: Wrench,
+    description: 'Welding (TIG/MIG), CNC machining, assembly lines, and industrial presses.',
+    parentCategory: 'industrial',
+  },
+  {
+    id: 'automotive',
+    label: 'Automotive & Equipment Repair',
+    icon: Car,
+    description: 'Vehicle lifts, tire changers, paint booths, and shop maintenance tools.',
+    parentCategory: 'industrial',
+  },
+  {
+    id: 'construction',
+    label: 'Construction & Material Handling',
+    icon: HardHat,
+    description: 'Scissor lifts, booms, road pavers, and earth-moving equipment.',
+    parentCategory: 'industrial',
+  },
+  {
+    id: 'utilities',
+    label: 'Utilities & Environmental Services',
+    icon: Plug,
+    description: 'Sewer and waste management systems, utility infrastructure maintenance.',
+    parentCategory: 'industrial',
+  },
+  {
+    id: 'agriculture',
+    label: 'Agriculture & Food Services',
+    icon: Wheat,
+    description: 'Farming machinery, commercial food processing, and preparation equipment.',
+    parentCategory: 'industrial',
+  },
+  {
+    id: 'defense',
+    label: 'Defense & Communications',
+    icon: ShieldCheck,
+    description: 'Military-grade equipment and hands-free communication devices.',
+    parentCategory: 'industrial',
+  },
+  // Medical (no sub-categories — triggers medical flow directly)
   {
     id: 'medical',
     label: 'Medical & Healthcare',
     icon: Heart,
     description: 'Surgical, diagnostic, patient care',
     isMedical: true,
+    parentCategory: 'medical',
   },
-  {
-    id: 'automotive',
-    label: 'Automotive & Repair',
-    icon: Car,
-    description: 'Lifts, paint booths, tire changers',
-  },
-  {
-    id: 'woodworking',
-    label: 'Woodworking',
-    icon: Hammer,
-    description: 'Saws, lathes, routers',
-  },
+  // Commercial sub-categories
   {
     id: 'tattoo',
     label: 'Tattoo & Body Art',
     icon: Palette,
-    description: 'Precision control for artists',
+    description: 'Precision control for artists.',
+    parentCategory: 'commercial',
   },
   {
     id: 'general',
     label: 'General / Other',
     icon: Coffee,
-    description: 'Office, consumer, specialty',
+    description: 'Office, consumer, and specialty applications.',
+    parentCategory: 'commercial',
   },
 ];
 
@@ -69,21 +135,21 @@ export const technologies: Option[] = [
     label: 'Electrical',
     icon: Zap,
     description: 'Standard wired connection.',
-    availableFor: ['industrial', 'automotive', 'woodworking', 'tattoo', 'general'],
+    availableFor: ['industrial', 'automotive', 'construction', 'utilities', 'agriculture', 'defense', 'woodworking', 'tattoo', 'general'],
   },
   {
     id: 'pneumatic',
     label: 'Pneumatic (Air)',
     icon: Wind,
     description: 'Uses compressed air.',
-    availableFor: ['industrial', 'automotive', 'woodworking', 'general'],
+    availableFor: ['industrial', 'automotive', 'construction', 'utilities', 'agriculture', 'defense', 'woodworking', 'general'],
   },
   {
     id: 'wireless',
     label: 'RF Wireless',
     icon: Radio,
     description: 'Cord-free operation.',
-    availableFor: ['industrial', 'automotive', 'general'],
+    availableFor: ['industrial', 'automotive', 'construction', 'utilities', 'agriculture', 'defense', 'general'],
   },
 ];
 
