@@ -10,7 +10,7 @@ app.use('*', logger(console.log));
 app.use('*', cors());
 
 // Version tracking to prevent re-initialization on redeploys
-const DB_VERSION = 'v1.8.0'; // Increment this if you want to force a re-seed
+const DB_VERSION = 'v2.0.0'; // Increment this if you want to force a re-seed
 
 // Initialize data on first run ONLY
 // This checks for both the existence of data AND a version flag
@@ -41,7 +41,7 @@ async function initializeData() {
           actions: ['momentary', 'maintained'],
           material: 'Cast Iron',
           description: 'The ultimate heavy-duty industrial footswitch.',
-          applications: ['industrial', 'automotive', 'woodworking', 'general'],
+          applications: ['industrial', 'automotive', 'construction', 'utilities', 'agriculture', 'defense', 'general'],
           features: ['shield'],
           connection: 'screw-terminal',
           flagship: true,
@@ -57,7 +57,7 @@ async function initializeData() {
           actions: ['momentary'],
           material: 'Cast Aluminum',
           description: 'Fully sealed IP68 heavy-duty switch.',
-          applications: ['industrial', 'automotive'],
+          applications: ['industrial', 'automotive', 'construction', 'defense'],
           features: ['shield'],
           connection: 'screw-terminal',
           flagship: false,
@@ -73,7 +73,7 @@ async function initializeData() {
           actions: ['momentary', 'maintained'],
           material: 'Cast Iron',
           description: 'The industry standard. Classic cast iron.',
-          applications: ['industrial', 'woodworking', 'automotive', 'general'],
+          applications: ['industrial', 'automotive', 'construction', 'utilities', 'agriculture', 'general'],
           features: ['twin'],
           connection: 'screw-terminal',
           flagship: true,
@@ -89,7 +89,7 @@ async function initializeData() {
           actions: ['momentary', 'variable'],
           material: 'Cast Aluminum',
           description: 'Watertight cast aluminum. IP68 sealed.',
-          applications: ['industrial', 'automotive'],
+          applications: ['industrial', 'automotive', 'agriculture'],
           features: ['shield', 'twin'],
           connection: 'quick-connect',
           flagship: false,
@@ -137,7 +137,7 @@ async function initializeData() {
           actions: ['variable'],
           material: 'Formed Steel',
           description: 'Foot-operated potentiometer for variable speed.',
-          applications: ['industrial', 'automotive', 'woodworking', 'general'],
+          applications: ['industrial', 'automotive', 'general'],
           features: [],
           connection: 'pre-wired',
           flagship: false,
@@ -153,7 +153,7 @@ async function initializeData() {
           actions: ['momentary'],
           material: 'Cast Iron',
           description: 'RF Wireless. Eliminates trip hazards.',
-          applications: ['industrial', 'automotive', 'medical', 'general'],
+          applications: ['industrial', 'automotive', 'construction', 'utilities', 'defense', 'medical', 'general'],
           features: ['shield'],
           flagship: true,
           image: 'https://linemaster.com/wp-content/uploads/2025/04/rf-hercules.png',
@@ -168,7 +168,7 @@ async function initializeData() {
           actions: ['momentary', 'maintained'],
           material: 'Formed Steel',
           description: 'Air-actuated electrical switch.',
-          applications: ['industrial', 'general', 'medical'],
+          applications: ['industrial', 'agriculture', 'general', 'medical'],
           features: [],
           flagship: false,
           image: 'https://linemaster.com/wp-content/uploads/2025/03/air_seal.png',
@@ -183,7 +183,7 @@ async function initializeData() {
           actions: ['momentary', 'maintained'],
           material: 'Cast Iron',
           description: 'Heavy-duty cast iron pneumatic control.',
-          applications: ['industrial', 'automotive'],
+          applications: ['industrial', 'automotive', 'construction'],
           features: ['shield', 'twin'],
           flagship: false,
           image: 'https://linemaster.com/wp-content/uploads/2025/03/airval-hercules-duo_optimized.png',
@@ -231,17 +231,20 @@ async function initializeData() {
       // Initialize with default options
       const defaultOptions = [
         // Applications
-        { id: 'industrial', category: 'application', label: 'Industrial & Manufacturing', icon: 'Factory', description: 'Heavy machinery, CNC, assembly', sortOrder: 1 },
-        { id: 'medical', category: 'application', label: 'Medical & Healthcare', icon: 'Heart', description: 'Surgical, diagnostic, patient care', isMedical: true, sortOrder: 2 },
-        { id: 'automotive', category: 'application', label: 'Automotive & Repair', icon: 'Car', description: 'Lifts, paint booths, tire changers', sortOrder: 3 },
-        { id: 'woodworking', category: 'application', label: 'Woodworking', icon: 'Hammer', description: 'Saws, lathes, routers', sortOrder: 4 },
-        { id: 'tattoo', category: 'application', label: 'Tattoo & Body Art', icon: 'Palette', description: 'Precision control for artists', sortOrder: 5 },
-        { id: 'general', category: 'application', label: 'General / Other', icon: 'Coffee', description: 'Office, consumer, specialty', sortOrder: 6 },
+        { id: 'industrial', category: 'application', label: 'Manufacturing & Metalworking', icon: 'Factory', description: 'Heavy machinery, CNC, assembly', parentCategory: 'industrial', sortOrder: 1 },
+        { id: 'automotive', category: 'application', label: 'Automotive & Equipment Repair', icon: 'Car', description: 'Lifts, paint booths, tire changers', parentCategory: 'industrial', sortOrder: 2 },
+        { id: 'construction', category: 'application', label: 'Construction & Material Handling', icon: 'HardHat', description: 'Cranes, conveyors, heavy equipment', parentCategory: 'industrial', sortOrder: 3 },
+        { id: 'utilities', category: 'application', label: 'Utilities & Environmental Services', icon: 'Zap', description: 'Power, water, waste management', parentCategory: 'industrial', sortOrder: 4 },
+        { id: 'agriculture', category: 'application', label: 'Agriculture & Food Services', icon: 'Wheat', description: 'Farming, food processing, packaging', parentCategory: 'industrial', sortOrder: 5 },
+        { id: 'defense', category: 'application', label: 'Defense & Communications', icon: 'Shield', description: 'Military, aerospace, telecom', parentCategory: 'industrial', sortOrder: 6 },
+        { id: 'medical', category: 'application', label: 'Medical & Healthcare', icon: 'Heart', description: 'Surgical, diagnostic, patient care', isMedical: true, parentCategory: 'medical', sortOrder: 7 },
+        { id: 'tattoo', category: 'application', label: 'Tattoo & Body Art', icon: 'Palette', description: 'Precision control for artists', parentCategory: 'commercial', sortOrder: 8 },
+        { id: 'general', category: 'application', label: 'General / Other', icon: 'Coffee', description: 'Office, consumer, specialty', parentCategory: 'commercial', sortOrder: 9 },
         
         // Technologies
-        { id: 'electrical', category: 'technology', label: 'Electrical', icon: 'Zap', description: 'Standard wired connection.', availableFor: ['industrial', 'automotive', 'woodworking', 'tattoo', 'general'], sortOrder: 1 },
-        { id: 'pneumatic', category: 'technology', label: 'Pneumatic (Air)', icon: 'Wind', description: 'Uses compressed air.', availableFor: ['industrial', 'automotive', 'woodworking', 'general'], sortOrder: 2 },
-        { id: 'wireless', category: 'technology', label: 'RF Wireless', icon: 'Radio', description: 'Cord-free operation.', availableFor: ['industrial', 'automotive', 'general'], sortOrder: 3 },
+        { id: 'electrical', category: 'technology', label: 'Electrical', icon: 'Zap', description: 'Standard wired connection.', availableFor: ['industrial', 'automotive', 'construction', 'utilities', 'agriculture', 'defense', 'tattoo', 'general'], sortOrder: 1 },
+        { id: 'pneumatic', category: 'technology', label: 'Pneumatic (Air)', icon: 'Wind', description: 'Uses compressed air.', availableFor: ['industrial', 'automotive', 'construction', 'utilities', 'agriculture', 'defense', 'general'], sortOrder: 2 },
+        { id: 'wireless', category: 'technology', label: 'RF Wireless', icon: 'Radio', description: 'Cord-free operation.', availableFor: ['industrial', 'automotive', 'construction', 'utilities', 'agriculture', 'defense', 'general'], sortOrder: 3 },
         
         // Actions
         { id: 'momentary', category: 'action', label: 'Momentary', icon: 'CircleDot', description: 'Active while pressed.', availableFor: ['electrical', 'pneumatic', 'wireless'], sortOrder: 1 },
@@ -434,6 +437,48 @@ app.post('/make-server-a6e7a38d/reset-products', async (c) => {
     return c.json({ success: true, message: 'All products have been deleted' });
   } catch (error) {
     return c.json({ error: 'Failed' }, 500);
+  }
+});
+
+// Image proxy - serves external images through the edge function to avoid
+// CORS/CSP restrictions in embedded iframe contexts (Figma Make)
+app.get('/make-server-a6e7a38d/image-proxy', async (c) => {
+  try {
+    const url = c.req.query('url');
+    if (!url) {
+      return c.json({ error: 'Missing url parameter' }, 400);
+    }
+
+    // Only proxy images from linemaster.com for security
+    const parsed = new URL(url);
+    if (!parsed.hostname.endsWith('linemaster.com')) {
+      return c.json({ error: 'Only linemaster.com images allowed' }, 403);
+    }
+
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Linemaster-Product-Finder/1.0',
+        'Accept': 'image/*',
+      },
+    });
+
+    if (!response.ok) {
+      return c.json({ error: `Image fetch failed: ${response.status}` }, response.status);
+    }
+
+    const contentType = response.headers.get('content-type') || 'image/png';
+    const body = await response.arrayBuffer();
+
+    return new Response(body, {
+      headers: {
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=86400',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+  } catch (error) {
+    console.error('Image proxy error:', error);
+    return c.json({ error: 'Failed to proxy image' }, 500);
   }
 });
 

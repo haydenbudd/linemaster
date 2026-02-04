@@ -143,7 +143,12 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
                 required
               >
                 <option value="IP20">IP20 (Indoor)</option>
+                <option value="IP40">IP40 (Dust Protected)</option>
+                <option value="IP54">IP54 (Dust/Splash)</option>
                 <option value="IP56">IP56 (Splash Resistant)</option>
+                <option value="IP65">IP65 (Dust Tight / Water Jet)</option>
+                <option value="IP66">IP66 (Dust Tight / High Pressure)</option>
+                <option value="IP67">IP67 (Dust Tight / Immersion)</option>
                 <option value="IP68">IP68 (Fully Sealed)</option>
               </select>
             </div>

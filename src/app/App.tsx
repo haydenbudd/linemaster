@@ -1,4 +1,4 @@
-import { useState, Suspense, lazy, useMemo } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Router } from '@/app/components/Router';
 import { Header } from '@/app/components/Header';
 import { ProgressDots } from '@/app/components/ProgressDots';
@@ -12,6 +12,7 @@ import { ChevronLeft, ArrowRight, Download, Send, CheckCircle, Heart, Search, St
 import { useProductData } from '@/app/hooks/useProductData';
 import { useProductFilter } from '@/app/hooks/useProductFilter';
 import { useWizardState } from '@/app/hooks/useWizardState';
+import { categories, applications as staticApplications, technologies as staticTechnologies, actions as staticActions, environments as staticEnvironments } from '@/app/data/options';
 import { trackWizardStep, trackProductView, trackPDFDownload, trackQuoteRequest, trackNoResults } from '@/app/utils/analytics';
 import { getProxiedImageUrl } from '@/app/utils/imageProxy';
 import { getProcessedProducts, isProductEnvironmentMatch } from '@/app/utils/productFilters';
@@ -49,7 +50,7 @@ function WizardApp() {
     error,
     refresh,
   } = useProductData();
-  
+
   // Enhanced search state for results page
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'relevance' | 'duty' | 'ip'>('relevance');
@@ -64,25 +65,40 @@ function WizardApp() {
     setCordedFilter('all');
   };
 
-  const handleApplicationSelect = (id: string) => {
-    wizardState.setSelectedApplication(id);
-    const app = applications.find((a) => a.id === id);
-    if (app?.isMedical) {
+  const handleCategorySelect = (categoryId: string) => {
+    const cat = categories.find((c) => c.id === categoryId);
+    if (cat?.isMedical) {
+      // Medical category bypasses sub-categories — go straight to medical flow
+      wizardState.setSelectedCategory('medical');
+      wizardState.setSelectedApplication('medical');
       wizardState.setFlow('medical');
       setTimeout(() => wizardState.setStep(1), 150);
+      trackWizardStep(0, 'medical', { application: 'medical' });
     } else {
-      wizardState.setFlow('standard');
-      setTimeout(() => wizardState.setStep(1), 150);
+      // Show sub-categories for this category
+      wizardState.setSelectedCategory(categoryId);
     }
-    
+  };
+
+  const handleApplicationSelect = (id: string) => {
+    wizardState.setSelectedApplication(id);
+    wizardState.setFlow('standard');
+    setTimeout(() => wizardState.setStep(1), 150);
+
     // Track analytics
-    trackWizardStep(0, app?.isMedical ? 'medical' : 'standard', { application: id });
+    trackWizardStep(0, 'standard', { category: wizardState.selectedCategory, application: id });
   };
 
   const handleBack = () => {
     if (wizardState.step === 0) return;
     if (wizardState.flow === 'medical' && wizardState.step === 1) {
+      // Back from medical flow step 1 → return to category picker
       wizardState.setFlow('standard');
+      wizardState.setStep(0);
+      wizardState.setSelectedCategory('');
+      wizardState.setSelectedApplication('');
+    } else if (wizardState.step === 1) {
+      // Back from Technology (step 1) → return to sub-category picker (step 0 with category set)
       wizardState.setStep(0);
       wizardState.setSelectedApplication('');
     } else {
@@ -442,7 +458,7 @@ function WizardApp() {
         yPos += 6;
       }
     } else {
-      const appLabel = applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication;
+      const appLabel = staticApplications.find(a => a.id === wizardState.selectedApplication)?.label || applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication;
       const techLabel = technologies.find(t => t.id === wizardState.selectedTechnology)?.label || wizardState.selectedTechnology;
       const actionLabel = actions.find(a => a.id === wizardState.selectedAction)?.label || wizardState.selectedAction;
       const envLabel = environments.find(e => e.id === wizardState.selectedEnvironment)?.label || wizardState.selectedEnvironment;
@@ -602,7 +618,7 @@ function WizardApp() {
   // Show loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-indigo-950 dark:to-purple-950 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
           <div className="relative w-16 h-16 mx-auto mb-6">
             <div className="absolute inset-0 rounded-full border-4 border-primary/20"></div>
@@ -620,8 +636,8 @@ function WizardApp() {
     const isBackendError = error.includes('Failed to fetch') || error.includes('backend') || error.includes('timeout');
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 dark:from-slate-950 dark:via-red-950 dark:to-orange-950 flex items-center justify-center p-4">
-        <div className="max-w-2xl mx-auto p-8 bg-card/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-border">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="max-w-2xl mx-auto p-8 bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20">
           <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
             <span className="text-4xl">⚠️</span>
           </div>
@@ -665,12 +681,12 @@ function WizardApp() {
   // Render different screens based on step and flow
   if (wizardState.flow === 'medical') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 dark:from-slate-950 dark:via-rose-950 dark:to-purple-950">
+      <div className="min-h-screen">
         <Header onReset={handleReset} onRefresh={refresh} />
 
         {wizardState.step === 1 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
-            <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+            <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden">
               {/* Banner */}
               <div
                 className="p-8 text-white"
@@ -735,7 +751,7 @@ function WizardApp() {
         {wizardState.step === 2 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={1} totalSteps={totalSteps} isMedical />
-            <div className="bg-white rounded-3xl shadow-lg p-8">
+            <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 p-6 md:p-12">
               <div className="text-[#e11d48] text-xs font-bold uppercase tracking-wide mb-2">
                 STEP 2 OF 5
               </div>
@@ -781,7 +797,7 @@ function WizardApp() {
         {wizardState.step === 3 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={2} totalSteps={totalSteps} isMedical />
-            <div className="bg-white rounded-3xl shadow-lg p-8">
+            <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 p-6 md:p-12">
               <div className="text-[#e11d48] text-xs font-bold uppercase tracking-wide mb-2">
                 STEP 3 OF 5
               </div>
@@ -818,7 +834,7 @@ function WizardApp() {
         {wizardState.step === 4 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={3} totalSteps={totalSteps} isMedical />
-            <div className="bg-white rounded-3xl shadow-lg p-8">
+            <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 p-6 md:p-12">
               <div className="text-[#e11d48] text-xs font-bold uppercase tracking-wide mb-2">
                 STEP 4 OF 5
               </div>
@@ -866,7 +882,7 @@ function WizardApp() {
         {wizardState.step === 5 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={4} totalSteps={totalSteps} isMedical />
-            <div className="bg-white rounded-3xl shadow-lg p-8">
+            <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 p-6 md:p-12">
               <div className="text-[#e11d48] text-xs font-bold uppercase tracking-wide mb-2">
                 STEP 5 OF 5
               </div>
@@ -913,7 +929,7 @@ function WizardApp() {
 
         {wizardState.step === 6 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
-            <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+            <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden">
               {/* Banner */}
               <div
                 className="p-8 text-white"
@@ -1013,13 +1029,13 @@ function WizardApp() {
 
   // Standard flow screens
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-indigo-950 dark:to-purple-950">
+    <div className="min-h-screen">
       <Header onReset={handleReset} onRefresh={refresh} />
 
-      {wizardState.step === 0 && (
+      {wizardState.step === 0 && !wizardState.selectedCategory && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <ProgressDots currentStep={0} totalSteps={totalSteps} />
-          
+
           {/* Hero Section */}
           <div className="text-center mb-12">
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400">
@@ -1030,34 +1046,45 @@ function WizardApp() {
             </p>
           </div>
 
-          <div className="bg-card/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-border">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-10 w-1 bg-gradient-to-b from-primary to-purple-500 rounded-full"></div>
-              <div>
-                <div className="text-primary text-xs font-bold uppercase tracking-wider mb-1">
-                  Step 1 of {totalSteps}
-                </div>
-                <h2 className="text-2xl font-bold text-foreground">
-                  What's your application?
-                </h2>
-              </div>
-            </div>
-            <p className="text-muted-foreground mb-8">Select the industry or use case that best describes your needs.</p>
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
+            <div className="p-6 md:p-12">
+            <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 1 OF {totalSteps}</span></div>
+            <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">What type of application?</h2><p className="text-muted-foreground">Choose the category that best describes your use case.</p></div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              {applications
-                .map((option) => (
-                  <OptionCard
-                    key={option.id}
-                    option={option}
-                    selected={wizardState.selectedApplication === option.id}
-                    productCount={calculateOptionCount('selectedApplication', option.id)}
-                    onSelect={() => handleApplicationSelect(option.id)}
-                  />
-                ))}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              {categories.map((cat) => {
+                const IconComponent = cat.icon;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleCategorySelect(cat.id)}
+                    className={`
+                      group relative w-full p-6 rounded-2xl border-2 text-left transition-all duration-300
+                      hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]
+                      border-border bg-card hover:border-primary/50 dark:hover:bg-card/80
+                      ${cat.isMedical ? 'ring-2 ring-rose-500/30 ring-offset-2 dark:ring-offset-background' : ''}
+                    `}
+                  >
+                    {cat.isMedical && (
+                      <div className="absolute -top-3 right-4 px-3 py-1.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-lg">
+                        ISO CERTIFIED
+                      </div>
+                    )}
+                    <div className="flex flex-col items-center text-center gap-3">
+                      <div className="w-14 h-14 flex items-center justify-center rounded-xl bg-accent text-primary group-hover:bg-primary/10 transition-all">
+                        <IconComponent className="w-7 h-7" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-foreground text-lg mb-1">{cat.label}</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{cat.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="flex items-center justify-between pt-6 border-t border-border">
+            <div className="flex items-center justify-between mt-8 pt-8 border-t border-border/50">
               <button
                 disabled
                 className="flex items-center gap-2 px-6 py-3 text-muted-foreground/50 cursor-not-allowed"
@@ -1065,13 +1092,112 @@ function WizardApp() {
                 <ChevronLeft className="w-4 h-4" />
                 <span className="font-semibold">Back</span>
               </button>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground italic">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                <span>Select a category to continue</span>
+              </div>
+            </div>
+
+            <TrustBadges />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {wizardState.step === 0 && wizardState.selectedCategory && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <ProgressDots currentStep={0} totalSteps={totalSteps} />
+
+          <div className="text-center mb-12">
+            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400">
+              Find Your Perfect Foot Switch
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Answer a few questions and we'll recommend the best product for your needs
+            </p>
+          </div>
+
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
+            <div className="p-6 md:p-12">
+            <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 1 OF {totalSteps}</span></div>
+            <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{wizardState.selectedCategory === 'industrial' ? 'What industry?' : 'What application?'}</h2><p className="text-muted-foreground">
+              {wizardState.selectedCategory === 'industrial'
+                ? 'Select the industry that best matches your application.'
+                : 'Select the use case that best describes your needs.'}
+            </p></div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              {staticApplications
+                .filter((app) => app.parentCategory === wizardState.selectedCategory)
+                .map((app) => {
+                  const IconComponent = app.icon;
+                  return (
+                    <button
+                      key={app.id}
+                      onClick={() => handleApplicationSelect(app.id)}
+                      className={`
+                        group relative w-full p-6 rounded-2xl border-2 text-left transition-all duration-300
+                        hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]
+                        ${
+                          wizardState.selectedApplication === app.id
+                            ? 'border-primary bg-gradient-to-br from-primary/10 via-primary/5 to-transparent shadow-lg ring-2 ring-primary/20'
+                            : 'border-border bg-card hover:border-primary/50 dark:hover:bg-card/80'
+                        }
+                      `}
+                    >
+                      <div className="flex items-start gap-4">
+                        {IconComponent && (
+                          <div className={`flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl transition-all ${
+                            wizardState.selectedApplication === app.id
+                              ? 'bg-primary text-primary-foreground scale-110'
+                              : 'bg-accent text-primary group-hover:bg-primary/10'
+                          }`}>
+                            <IconComponent className="w-6 h-6" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-foreground mb-1.5 text-lg">{app.label}</h3>
+                          <p className="text-sm text-muted-foreground leading-relaxed">{app.description}</p>
+                          <span className="mt-1 inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full bg-primary/10 text-primary">
+                            {calculateOptionCount('selectedApplication', app.id)} products
+                          </span>
+                        </div>
+                        <div className="flex-shrink-0 ml-2">
+                          <div
+                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                              wizardState.selectedApplication === app.id
+                                ? 'border-primary bg-primary scale-110'
+                                : 'border-muted-foreground/30 bg-transparent group-hover:border-primary'
+                            }`}
+                          >
+                            {wizardState.selectedApplication === app.id && <div className="w-2.5 h-2.5 rounded-full bg-primary-foreground" />}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+            </div>
+
+            <div className="flex items-center justify-between mt-8 pt-8 border-t border-border/50">
+              <button
+                onClick={() => {
+                  wizardState.setSelectedCategory('');
+                  wizardState.setSelectedApplication('');
+                }}
+                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span className="font-semibold">Back</span>
+              </button>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground italic">
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
                 <span>Select an option to continue</span>
               </div>
             </div>
 
             <TrustBadges />
+            </div>
           </div>
         </div>
       )}
@@ -1079,16 +1205,17 @@ function WizardApp() {
       {wizardState.step === 1 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={1} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 2 OF {totalSteps}
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Technology</h2>
-            <p className="text-sm text-muted-foreground mb-6">Select your technology.</p>
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
+            <div className="p-6 md:p-12">
+            <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 2 OF {totalSteps}</span></div>
+            <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Technology</h2><p className="text-muted-foreground">Select your technology.</p></div>
 
             <div className="space-y-4 mb-8">
-              {technologies
-                .filter((tech) => tech.availableFor?.includes(wizardState.selectedApplication))
+              {staticTechnologies
+                .filter((tech) => {
+                  const availableFor = tech.availableFor || [];
+                  return availableFor.includes(wizardState.selectedApplication);
+                })
                 .map((option) => {
                   return (
                     <div key={option.id}>
@@ -1106,15 +1233,16 @@ function WizardApp() {
                 })}
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-8 pt-8 border-t border-border/50">
               <button
                 onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Back
               </button>
-              <span className="text-sm text-[#64748b]">Select to continue</span>
+              <span className="text-sm text-muted-foreground italic">Select to continue</span>
+            </div>
             </div>
           </div>
         </div>
@@ -1123,15 +1251,13 @@ function WizardApp() {
       {wizardState.step === 2 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={2} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 3 OF {totalSteps}
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Action</h2>
-            <p className="text-sm text-muted-foreground mb-6">Select switch action.</p>
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
+            <div className="p-6 md:p-12">
+            <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 3 OF {totalSteps}</span></div>
+            <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Action</h2><p className="text-muted-foreground">Select switch action.</p></div>
 
             <div className="space-y-4 mb-8">
-              {actions
+              {staticActions
                 .filter((action) => action.availableFor?.includes(wizardState.selectedTechnology))
                 .map((option) => {
                   return (
@@ -1150,15 +1276,16 @@ function WizardApp() {
                 })}
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-8 pt-8 border-t border-border/50">
               <button
                 onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Back
               </button>
-              <span className="text-sm text-[#64748b]">Select to continue</span>
+              <span className="text-sm text-muted-foreground italic">Select to continue</span>
+            </div>
             </div>
           </div>
         </div>
@@ -1167,15 +1294,13 @@ function WizardApp() {
       {wizardState.step === 3 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={3} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 4 OF {totalSteps}
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">IP Rating</h2>
-            <p className="text-sm text-muted-foreground mb-6">Select Ingress Protection rating.</p>
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
+            <div className="p-6 md:p-12">
+            <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 4 OF {totalSteps}</span></div>
+            <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Environment</h2><p className="text-muted-foreground">What conditions will the switch operate in?</p></div>
 
             <div className="space-y-4 mb-8">
-              {environments
+              {staticEnvironments
                 .map((option) => {
                 return (
                   <div key={option.id}>
@@ -1193,15 +1318,16 @@ function WizardApp() {
               })}
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-8 pt-8 border-t border-border/50">
               <button
                 onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Back
               </button>
-              <span className="text-sm text-[#64748b]">Select to continue</span>
+              <span className="text-sm text-muted-foreground italic">Select to continue</span>
+            </div>
             </div>
           </div>
         </div>
@@ -1210,17 +1336,14 @@ function WizardApp() {
       {wizardState.step === 4 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={4} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 5 OF {totalSteps}
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Stability & Material</h2>
-            <p className="text-sm text-muted-foreground mb-6">
-              Do you need a heavy switch that stays stable on the floor, or a lighter, cost-effective option?
-            </p>
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
+            <div className="p-6 md:p-12">
+            <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 5 OF {totalSteps}</span></div>
+            <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Weight Class</h2><p className="text-muted-foreground">How heavy and stable does the switch need to be?</p></div>
 
             <div className="space-y-4 mb-8">
               {duties
+                .filter((d) => getProductCount(4, d.id) > 0)
                 .map((option) => (
                   <OptionCard
                     key={option.id}
@@ -1243,7 +1366,7 @@ function WizardApp() {
               </div>
             )}
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-8 pt-8 border-t border-border/50">
               <button
                 onClick={handleBack}
                 className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
@@ -1261,6 +1384,7 @@ function WizardApp() {
                 No Preference — Skip
               </button>
             </div>
+            </div>
           </div>
         </div>
       )}
@@ -1268,14 +1392,10 @@ function WizardApp() {
       {wizardState.step === 5 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={5} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 6 OF {totalSteps}
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Material</h2>
-            <p className="text-sm text-muted-foreground mb-6">
-              What material do you prefer? This affects weight, corrosion resistance, and cost.
-            </p>
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
+            <div className="p-6 md:p-12">
+            <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 6 OF {totalSteps}</span></div>
+            <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Material</h2><p className="text-muted-foreground">What material do you prefer? This affects weight, corrosion resistance, and cost.</p></div>
 
             <div className="space-y-4 mb-8">
               {materials
@@ -1302,7 +1422,7 @@ function WizardApp() {
               </div>
             )}
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-8 pt-8 border-t border-border/50">
               <button
                 onClick={handleBack}
                 className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
@@ -1320,6 +1440,7 @@ function WizardApp() {
                 No Preference — Skip
               </button>
             </div>
+            </div>
           </div>
         </div>
       )}
@@ -1327,15 +1448,14 @@ function WizardApp() {
       {wizardState.step === 6 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={6} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 7 OF {totalSteps}
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Connection Type</h2>
-            <p className="text-sm text-muted-foreground mb-6">Select connection style.</p>
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
+            <div className="p-6 md:p-12">
+            <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 7 OF {totalSteps}</span></div>
+            <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Connection Type</h2><p className="text-muted-foreground">Select connection style.</p></div>
 
             <div className="space-y-4 mb-8">
               {connections
+                .filter((c) => getProductCount(6, c.id) > 0)
                 .map((option) => (
                   <OptionCard
                     key={option.id}
@@ -1358,7 +1478,7 @@ function WizardApp() {
               </div>
             )}
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-8 pt-8 border-t border-border/50">
               <button
                 onClick={handleBack}
                 className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
@@ -1376,6 +1496,7 @@ function WizardApp() {
                 No Preference — Skip
               </button>
             </div>
+            </div>
           </div>
         </div>
       )}
@@ -1383,14 +1504,10 @@ function WizardApp() {
       {wizardState.step === 7 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={7} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 8 OF {totalSteps}
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Safety Guard</h2>
-            <p className="text-sm text-muted-foreground mb-6">
-              Do you need a built-in safety guard to prevent accidental activation?
-            </p>
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
+            <div className="p-6 md:p-12">
+            <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 8 OF {totalSteps}</span></div>
+            <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Safety Guard</h2><p className="text-muted-foreground">Do you need a built-in safety guard to prevent accidental activation?</p></div>
 
             <div className="space-y-4 mb-8">
               <OptionCard
@@ -1421,7 +1538,7 @@ function WizardApp() {
               </div>
             )}
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-8 pt-8 border-t border-border/50">
               <button
                 onClick={handleBack}
                 className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
@@ -1439,6 +1556,7 @@ function WizardApp() {
                 No Preference — Skip
               </button>
             </div>
+            </div>
           </div>
         </div>
       )}
@@ -1446,14 +1564,10 @@ function WizardApp() {
       {wizardState.step === 8 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={8} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP 9 OF {totalSteps}
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Pedal Configuration</h2>
-            <p className="text-sm text-muted-foreground mb-6">
-              Do you need a single pedal or a twin (dual) pedal for two-function control?
-            </p>
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
+            <div className="p-6 md:p-12">
+            <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 9 OF {totalSteps}</span></div>
+            <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Pedal Configuration</h2><p className="text-muted-foreground">Do you need a single pedal or a twin (dual) pedal for two-function control?</p></div>
 
             <div className="space-y-4 mb-8">
               <OptionCard
@@ -1484,7 +1598,7 @@ function WizardApp() {
               </div>
             )}
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-8 pt-8 border-t border-border/50">
               <button
                 onClick={handleBack}
                 className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
@@ -1502,6 +1616,7 @@ function WizardApp() {
                 No Preference — Skip
               </button>
             </div>
+            </div>
           </div>
         </div>
       )}
@@ -1509,12 +1624,10 @@ function WizardApp() {
       {wizardState.step === 9 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={9} totalSteps={totalSteps} />
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-            <div className="text-[#2563eb] text-xs font-bold uppercase tracking-wide mb-2">
-              STEP {totalSteps} OF {totalSteps}
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Additional Features</h2>
-            <p className="text-sm text-muted-foreground mb-6">Select any additional features you need.</p>
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
+            <div className="p-6 md:p-12">
+            <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP {totalSteps} OF {totalSteps}</span></div>
+            <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Additional Features</h2><p className="text-muted-foreground">Select any additional features you need.</p></div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               {features
@@ -1545,7 +1658,7 @@ function WizardApp() {
                 ))}
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-8 pt-8 border-t border-border/50">
               <button
                 onClick={handleBack}
                 className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
@@ -1561,6 +1674,7 @@ function WizardApp() {
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
+            </div>
           </div>
         </div>
       )}
@@ -1569,7 +1683,7 @@ function WizardApp() {
         <>
           {needsCustomSolution() ? (
             <div className="max-w-[800px] mx-auto px-6 py-8">
-              <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+              <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden">
                 {/* Banner */}
                 <div
                   className="p-8 text-white"
@@ -1592,7 +1706,7 @@ function WizardApp() {
                     <div className="flex justify-between py-4">
                       <span className="text-sm text-[#64748b]">Application</span>
                       <span className="text-sm font-semibold text-[#0f172a]">
-                        {applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication}
+                        {staticApplications.find(a => a.id === wizardState.selectedApplication)?.label || applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication}
                       </span>
                     </div>
                     <div className="flex justify-between py-4">
@@ -1749,8 +1863,9 @@ function WizardApp() {
                         {wizardState.selectedApplication && (
                           <FilterChip
                             label="Application"
-                            value={applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication}
+                            value={staticApplications.find(a => a.id === wizardState.selectedApplication)?.label || applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication}
                             onRemove={() => {
+                              wizardState.setSelectedCategory('');
                               wizardState.setSelectedApplication('');
                               wizardState.setStep(0);
                             }}
@@ -1842,7 +1957,7 @@ function WizardApp() {
                     {/* Best Match Highlight */}
                     {bestMatch && (
                       <div className="mb-16 transform hover:scale-[1.01] transition-transform duration-500">
-                        <div className="relative bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden border border-indigo-100 dark:border-indigo-900">
+                        <div className="relative bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] overflow-hidden border border-white/20">
                            <div className="grid grid-cols-1 lg:grid-cols-2">
                              <div className="p-12 flex flex-col justify-center relative overflow-hidden bg-[rgba(161,73,206,0)]">
                                <div className="relative z-10">
@@ -2049,20 +2164,58 @@ function WizardApp() {
   );
 }
 
+class AdminErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: Error | null }> {
+  state = { error: null as Error | null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error, info: React.ErrorInfo) { console.error('Admin panel error:', error, info); }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+          <div className="bg-white rounded-lg shadow p-6 max-w-lg">
+            <h2 className="text-xl font-bold text-red-600 mb-2">Admin Panel Error</h2>
+            <p className="text-gray-700 mb-4">{this.state.error.message}</p>
+            <button onClick={() => { window.location.hash = '/'; }} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+              Return to Wizard
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+import { OrbBackground } from '@/app/components/OrbBackground';
+
 export default function App() {
   return (
-    <Router>
+    <>
+      <OrbBackground />
+      <Router>
       {(path, navigate) => {
         // If accessing admin route
         if (path.startsWith('/admin')) {
-          return <Suspense fallback={<div>Loading...</div>}>
-            <AdminContainer />
-          </Suspense>;
+          return (
+            <AdminErrorBoundary>
+              <Suspense fallback={
+                <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading Admin Panel...</p>
+                  </div>
+                </div>
+              }>
+                <AdminContainer />
+              </Suspense>
+            </AdminErrorBoundary>
+          );
         }
-        
+
         // Default to wizard app
         return <WizardApp />;
       }}
     </Router>
+    </>
   );
 }
