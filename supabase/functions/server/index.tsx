@@ -10,7 +10,7 @@ app.use('*', logger(console.log));
 app.use('*', cors());
 
 // Version tracking to prevent re-initialization on redeploys
-const DB_VERSION = 'v1.8.0'; // Increment this if you want to force a re-seed
+const DB_VERSION = 'v2.0.0'; // Increment this if you want to force a re-seed
 
 // Initialize data on first run ONLY
 // This checks for both the existence of data AND a version flag
