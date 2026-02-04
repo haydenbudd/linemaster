@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchProducts, fetchOptions, Product, Option } from '@/app/lib/api';
+import { products as staticProducts } from '@/app/data/products';
 
 interface OptionWithIcon extends Option {
   icon?: string;
@@ -43,7 +44,16 @@ export function useProductData(): ProductData {
         fetchOptions(),
       ]);
 
-      setProducts(productsData);
+      // Merge static application tags onto Supabase products so filtering works
+      // even when Supabase hasn't been re-seeded with new sub-category IDs
+      const mergedProducts = productsData.map((p: Product) => {
+        const staticProduct = staticProducts.find(sp => sp.id === p.id || sp.series === p.series);
+        if (staticProduct) {
+          return { ...p, applications: staticProduct.applications };
+        }
+        return p;
+      });
+      setProducts(mergedProducts);
 
       // Map options from Supabase, using the 'value' field as 'id' for backward compatibility
       const mapped: OptionWithIcon[] = optionsData.map((opt: any) => ({

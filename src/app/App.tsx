@@ -1,4 +1,4 @@
-import React, { useState, Suspense, lazy, useMemo } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Router } from '@/app/components/Router';
 import { Header } from '@/app/components/Header';
 import { ProgressDots } from '@/app/components/ProgressDots';
@@ -13,7 +13,6 @@ import { useProductData } from '@/app/hooks/useProductData';
 import { useProductFilter } from '@/app/hooks/useProductFilter';
 import { useWizardState } from '@/app/hooks/useWizardState';
 import { categories, applications as staticApplications, technologies as staticTechnologies, actions as staticActions, environments as staticEnvironments } from '@/app/data/options';
-import { products as staticProducts } from '@/app/data/products';
 import { trackWizardStep, trackProductView, trackPDFDownload, trackQuoteRequest, trackNoResults } from '@/app/utils/analytics';
 import { getProxiedImageUrl } from '@/app/utils/imageProxy';
 import { getProcessedProducts, isProductEnvironmentMatch } from '@/app/utils/productFilters';
@@ -34,7 +33,7 @@ function WizardApp() {
   
   // Use custom hook for data fetching
   const {
-    products: supabaseProducts,
+    products,
     applications,
     technologies,
     actions,
@@ -51,18 +50,6 @@ function WizardApp() {
     error,
     refresh,
   } = useProductData();
-
-  // Merge static application tags onto Supabase products so filtering works
-  // even when Supabase hasn't been re-seeded with new sub-category IDs
-  const products = useMemo(() => {
-    return supabaseProducts.map(p => {
-      const staticProduct = staticProducts.find(sp => sp.id === p.id || sp.series === p.series);
-      if (staticProduct) {
-        return { ...p, applications: staticProduct.applications };
-      }
-      return p;
-    });
-  }, [supabaseProducts]);
 
   // Enhanced search state for results page
   const [searchTerm, setSearchTerm] = useState('');
