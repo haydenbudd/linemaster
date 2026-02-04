@@ -440,6 +440,48 @@ app.post('/make-server-a6e7a38d/reset-products', async (c) => {
   }
 });
 
+// Image proxy - serves external images through the edge function to avoid
+// CORS/CSP restrictions in embedded iframe contexts (Figma Make)
+app.get('/make-server-a6e7a38d/image-proxy', async (c) => {
+  try {
+    const url = c.req.query('url');
+    if (!url) {
+      return c.json({ error: 'Missing url parameter' }, 400);
+    }
+
+    // Only proxy images from linemaster.com for security
+    const parsed = new URL(url);
+    if (!parsed.hostname.endsWith('linemaster.com')) {
+      return c.json({ error: 'Only linemaster.com images allowed' }, 403);
+    }
+
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Linemaster-Product-Finder/1.0',
+        'Accept': 'image/*',
+      },
+    });
+
+    if (!response.ok) {
+      return c.json({ error: `Image fetch failed: ${response.status}` }, response.status);
+    }
+
+    const contentType = response.headers.get('content-type') || 'image/png';
+    const body = await response.arrayBuffer();
+
+    return new Response(body, {
+      headers: {
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=86400',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+  } catch (error) {
+    console.error('Image proxy error:', error);
+    return c.json({ error: 'Failed to proxy image' }, 500);
+  }
+});
+
 // FORCE DELETE ALL (GET) - Emergency fallback
 app.get('/make-server-a6e7a38d/nuke-everything', async (c) => {
   try {
