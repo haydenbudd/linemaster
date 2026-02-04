@@ -12,7 +12,7 @@ import { ChevronLeft, ArrowRight, Download, Send, CheckCircle, Heart, Search, St
 import { useProductData } from '@/app/hooks/useProductData';
 import { useProductFilter } from '@/app/hooks/useProductFilter';
 import { useWizardState } from '@/app/hooks/useWizardState';
-import { categories, applications as staticApplications } from '@/app/data/options';
+import { categories, applications as staticApplications, technologies as staticTechnologies, actions as staticActions } from '@/app/data/options';
 import { trackWizardStep, trackProductView, trackPDFDownload, trackQuoteRequest, trackNoResults } from '@/app/utils/analytics';
 import { getProxiedImageUrl } from '@/app/utils/imageProxy';
 import { getProcessedProducts, isProductEnvironmentMatch } from '@/app/utils/productFilters';
@@ -1230,7 +1230,12 @@ function WizardApp() {
 
             <div className="space-y-4 mb-8">
               {technologies
-                .filter((tech) => tech.availableFor?.includes(wizardState.selectedApplication))
+                .filter((tech) => {
+                  // Use static options for availableFor (Supabase may not have new sub-category IDs yet)
+                  const staticTech = staticTechnologies.find(t => t.id === tech.id);
+                  const availableFor = staticTech?.availableFor || tech.availableFor || [];
+                  return availableFor.includes(wizardState.selectedApplication);
+                })
                 .map((option) => {
                   return (
                     <div key={option.id}>
