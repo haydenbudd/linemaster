@@ -1,5 +1,6 @@
 import { RotateCcw, Settings, Moon, Sun, RefreshCw } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import linemasterLogo from "figma:asset/f61515edbde507df56dd31bdb42bf6609dc78ea0.png";
 
 interface HeaderProps {
   onReset: () => void;
@@ -30,17 +31,17 @@ export function Header({ onReset, onRefresh }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-black/80 border-b border-border shadow-sm">
+    <header className="sticky top-0 z-50 backdrop-blur-xl bg-card/60 border-b border-white/10 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center gap-3">
             <img
-              src="https://linemaster.com/wp-content/uploads/2024/10/linemaster-logo.jpg"
+              src={linemasterLogo}
               alt="Linemaster"
-              className="h-9 dark:brightness-0 dark:invert"
+              className="h-9"
             />
-            <div className="hidden sm:block h-6 w-px bg-border" />
+            <div className="hidden sm:block h-6 w-px bg-border/50" />
             <span className="hidden sm:block text-sm font-semibold text-muted-foreground">
               Product Finder
             </span>
@@ -50,7 +51,7 @@ export function Header({ onReset, onRefresh }: HeaderProps) {
           <div className="flex items-center gap-2">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-accent transition-colors"
+              className="p-2 rounded-lg hover:bg-secondary/50 transition-colors"
               title={isDark ? 'Light mode' : 'Dark mode'}
             >
               {isDark ? (
@@ -62,19 +63,15 @@ export function Header({ onReset, onRefresh }: HeaderProps) {
             {onRefresh && (
               <button
                 onClick={onRefresh}
-                className="p-2 rounded-lg hover:bg-accent transition-colors"
-                title="Refresh product data"
+                className="p-2 rounded-lg hover:bg-secondary/50 transition-colors"
+                title="Refresh Data"
               >
                 <RefreshCw className="w-5 h-5 text-foreground" />
               </button>
             )}
             <a
               href="#/admin"
-              onClick={(e) => {
-                e.preventDefault();
-                window.location.hash = '/admin';
-              }}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary/50 transition-colors"
               title="Admin Panel"
             >
               <Settings className="w-5 h-5 text-foreground" />
@@ -82,7 +79,7 @@ export function Header({ onReset, onRefresh }: HeaderProps) {
             </a>
             <button
               onClick={onReset}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold"
+              className="flex items-center gap-2 px-4 py-2 rounded-[var(--radius-button)] bg-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold shadow-lg shadow-primary/20"
             >
               <RotateCcw className="w-4 h-4" />
               <span className="text-sm">Reset</span>
