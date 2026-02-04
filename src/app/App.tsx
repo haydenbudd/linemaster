@@ -637,7 +637,7 @@ function WizardApp() {
     
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-2xl mx-auto p-8 bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20">
+        <div className="max-w-2xl mx-auto p-8 bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20">
           <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
             <span className="text-4xl">⚠️</span>
           </div>
@@ -686,7 +686,7 @@ function WizardApp() {
 
         {wizardState.step === 1 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
-            <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+            <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden">
               {/* Banner */}
               <div
                 className="p-8 text-white"
@@ -751,7 +751,7 @@ function WizardApp() {
         {wizardState.step === 2 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={1} totalSteps={totalSteps} isMedical />
-            <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 p-6 md:p-12">
+            <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 p-6 md:p-12">
               <div className="text-[#e11d48] text-xs font-bold uppercase tracking-wide mb-2">
                 STEP 2 OF 5
               </div>
@@ -797,7 +797,7 @@ function WizardApp() {
         {wizardState.step === 3 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={2} totalSteps={totalSteps} isMedical />
-            <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 p-6 md:p-12">
+            <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 p-6 md:p-12">
               <div className="text-[#e11d48] text-xs font-bold uppercase tracking-wide mb-2">
                 STEP 3 OF 5
               </div>
@@ -834,7 +834,7 @@ function WizardApp() {
         {wizardState.step === 4 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={3} totalSteps={totalSteps} isMedical />
-            <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 p-6 md:p-12">
+            <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 p-6 md:p-12">
               <div className="text-[#e11d48] text-xs font-bold uppercase tracking-wide mb-2">
                 STEP 4 OF 5
               </div>
@@ -882,7 +882,7 @@ function WizardApp() {
         {wizardState.step === 5 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={4} totalSteps={totalSteps} isMedical />
-            <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 p-6 md:p-12">
+            <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 p-6 md:p-12">
               <div className="text-[#e11d48] text-xs font-bold uppercase tracking-wide mb-2">
                 STEP 5 OF 5
               </div>
@@ -929,7 +929,7 @@ function WizardApp() {
 
         {wizardState.step === 6 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
-            <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+            <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden">
               {/* Banner */}
               <div
                 className="p-8 text-white"
@@ -1046,7 +1046,7 @@ function WizardApp() {
             </p>
           </div>
 
-          <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden relative">
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
             <div className="p-6 md:p-12">
             <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 1 OF {totalSteps}</span></div>
             <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">What type of application?</h2><p className="text-muted-foreground">Choose the category that best describes your use case.</p></div>
@@ -1117,7 +1117,7 @@ function WizardApp() {
             </p>
           </div>
 
-          <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden relative">
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
             <div className="p-6 md:p-12">
             <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 1 OF {totalSteps}</span></div>
             <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{wizardState.selectedCategory === 'industrial' ? 'What industry?' : 'What application?'}</h2><p className="text-muted-foreground">
@@ -1205,7 +1205,7 @@ function WizardApp() {
       {wizardState.step === 1 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={1} totalSteps={totalSteps} />
-          <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden relative">
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
             <div className="p-6 md:p-12">
             <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 2 OF {totalSteps}</span></div>
             <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Technology</h2><p className="text-muted-foreground">Select your technology.</p></div>
@@ -1251,7 +1251,7 @@ function WizardApp() {
       {wizardState.step === 2 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={2} totalSteps={totalSteps} />
-          <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden relative">
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
             <div className="p-6 md:p-12">
             <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 3 OF {totalSteps}</span></div>
             <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Action</h2><p className="text-muted-foreground">Select switch action.</p></div>
@@ -1294,7 +1294,7 @@ function WizardApp() {
       {wizardState.step === 3 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={3} totalSteps={totalSteps} />
-          <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden relative">
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
             <div className="p-6 md:p-12">
             <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 4 OF {totalSteps}</span></div>
             <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Environment</h2><p className="text-muted-foreground">What conditions will the switch operate in?</p></div>
@@ -1336,7 +1336,7 @@ function WizardApp() {
       {wizardState.step === 4 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={4} totalSteps={totalSteps} />
-          <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden relative">
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
             <div className="p-6 md:p-12">
             <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 5 OF {totalSteps}</span></div>
             <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Weight Class</h2><p className="text-muted-foreground">How heavy and stable does the switch need to be?</p></div>
@@ -1392,7 +1392,7 @@ function WizardApp() {
       {wizardState.step === 5 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={5} totalSteps={totalSteps} />
-          <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden relative">
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
             <div className="p-6 md:p-12">
             <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 6 OF {totalSteps}</span></div>
             <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Material</h2><p className="text-muted-foreground">What material do you prefer? This affects weight, corrosion resistance, and cost.</p></div>
@@ -1448,7 +1448,7 @@ function WizardApp() {
       {wizardState.step === 6 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={6} totalSteps={totalSteps} />
-          <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden relative">
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
             <div className="p-6 md:p-12">
             <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 7 OF {totalSteps}</span></div>
             <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Connection Type</h2><p className="text-muted-foreground">Select connection style.</p></div>
@@ -1504,7 +1504,7 @@ function WizardApp() {
       {wizardState.step === 7 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={7} totalSteps={totalSteps} />
-          <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden relative">
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
             <div className="p-6 md:p-12">
             <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 8 OF {totalSteps}</span></div>
             <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Safety Guard</h2><p className="text-muted-foreground">Do you need a built-in safety guard to prevent accidental activation?</p></div>
@@ -1564,7 +1564,7 @@ function WizardApp() {
       {wizardState.step === 8 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={8} totalSteps={totalSteps} />
-          <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden relative">
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
             <div className="p-6 md:p-12">
             <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP 9 OF {totalSteps}</span></div>
             <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Pedal Configuration</h2><p className="text-muted-foreground">Do you need a single pedal or a twin (dual) pedal for two-function control?</p></div>
@@ -1624,7 +1624,7 @@ function WizardApp() {
       {wizardState.step === 9 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={9} totalSteps={totalSteps} />
-          <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden relative">
+          <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden relative">
             <div className="p-6 md:p-12">
             <div className="mb-6"><span className="text-xs md:text-sm font-bold text-primary tracking-widest uppercase">STEP {totalSteps} OF {totalSteps}</span></div>
             <div className="mb-8"><h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Additional Features</h2><p className="text-muted-foreground">Select any additional features you need.</p></div>
@@ -1683,7 +1683,7 @@ function WizardApp() {
         <>
           {needsCustomSolution() ? (
             <div className="max-w-[800px] mx-auto px-6 py-8">
-              <div className="bg-card/40 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+              <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 overflow-hidden">
                 {/* Banner */}
                 <div
                   className="p-8 text-white"
@@ -1957,7 +1957,7 @@ function WizardApp() {
                     {/* Best Match Highlight */}
                     {bestMatch && (
                       <div className="mb-16 transform hover:scale-[1.01] transition-transform duration-500">
-                        <div className="relative bg-card/40 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/20">
+                        <div className="relative bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] overflow-hidden border border-white/20">
                            <div className="grid grid-cols-1 lg:grid-cols-2">
                              <div className="p-12 flex flex-col justify-center relative overflow-hidden bg-[rgba(161,73,206,0)]">
                                <div className="relative z-10">

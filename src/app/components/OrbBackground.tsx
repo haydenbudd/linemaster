@@ -1,8 +1,51 @@
+import { useEffect, useRef, useCallback } from 'react';
 import { motion } from 'motion/react';
 
 export function OrbBackground() {
+  const mouseOrbRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number>(0);
+  const mousePos = useRef({ x: 0, y: 0 });
+  const currentPos = useRef({ x: 0, y: 0 });
+
+  const animate = useCallback(() => {
+    // Elastic easing toward mouse position
+    const ease = 0.08;
+    currentPos.current.x += (mousePos.current.x - currentPos.current.x) * ease;
+    currentPos.current.y += (mousePos.current.y - currentPos.current.y) * ease;
+
+    if (mouseOrbRef.current) {
+      mouseOrbRef.current.style.transform = `translate(${currentPos.current.x - 250}px, ${currentPos.current.y - 250}px)`;
+    }
+
+    rafRef.current = requestAnimationFrame(animate);
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      mousePos.current = { x: e.clientX, y: e.clientY };
+    };
+
+    // Start centered
+    mousePos.current = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    currentPos.current = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    rafRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [animate]);
+
   return (
     <div className="fixed inset-0 z-[-1] overflow-hidden bg-background pointer-events-none">
+      {/* Mouse-following orb - soft glow that tracks cursor */}
+      <div
+        ref={mouseOrbRef}
+        className="absolute w-[500px] h-[500px] rounded-full bg-primary/12 blur-[120px] mix-blend-multiply dark:mix-blend-screen opacity-80 will-change-transform"
+      />
+
       {/* Orb 1 - Primary - Top Left */}
       <motion.div
         animate={{
