@@ -618,7 +618,7 @@ function WizardApp() {
   // Show loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-indigo-950 dark:to-purple-950 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
           <div className="relative w-16 h-16 mx-auto mb-6">
             <div className="absolute inset-0 rounded-full border-4 border-primary/20"></div>
@@ -636,7 +636,7 @@ function WizardApp() {
     const isBackendError = error.includes('Failed to fetch') || error.includes('backend') || error.includes('timeout');
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 dark:from-slate-950 dark:via-red-950 dark:to-orange-950 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="max-w-2xl mx-auto p-8 bg-card/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-border">
           <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
             <span className="text-4xl">⚠️</span>
@@ -681,7 +681,7 @@ function WizardApp() {
   // Render different screens based on step and flow
   if (wizardState.flow === 'medical') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 dark:from-slate-950 dark:via-rose-950 dark:to-purple-950">
+      <div className="min-h-screen">
         <Header onReset={handleReset} onRefresh={refresh} />
 
         {wizardState.step === 1 && (
@@ -1029,7 +1029,7 @@ function WizardApp() {
 
   // Standard flow screens
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-indigo-950 dark:to-purple-950">
+    <div className="min-h-screen">
       <Header onReset={handleReset} onRefresh={refresh} />
 
       {wizardState.step === 0 && !wizardState.selectedCategory && (
@@ -2219,9 +2219,13 @@ class AdminErrorBoundary extends React.Component<{ children: React.ReactNode }, 
   }
 }
 
+import { OrbBackground } from '@/app/components/OrbBackground';
+
 export default function App() {
   return (
-    <Router>
+    <>
+      <OrbBackground />
+      <Router>
       {(path, navigate) => {
         // If accessing admin route
         if (path.startsWith('/admin')) {
@@ -2245,5 +2249,6 @@ export default function App() {
         return <WizardApp />;
       }}
     </Router>
+    </>
   );
 }
