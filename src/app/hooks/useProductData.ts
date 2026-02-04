@@ -44,14 +44,14 @@ export function useProductData(): ProductData {
         fetchOptions(),
       ]);
 
-      // Merge static data onto Supabase products so filtering and display work
-      // even when Supabase hasn't been re-seeded with new sub-category IDs
+      // Fall back to static data only when Supabase record is missing fields.
+      // This preserves admin panel changes while covering gaps in unseeded data.
       const mergedProducts = productsData.map((p: Product) => {
         const staticProduct = staticProducts.find(sp => sp.id === p.id || sp.series === p.series);
         if (staticProduct) {
           return {
             ...p,
-            applications: staticProduct.applications,
+            applications: p.applications?.length ? p.applications : staticProduct.applications,
             image: p.image || staticProduct.image,
           };
         }
