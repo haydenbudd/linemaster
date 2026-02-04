@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import LiquidGlass from 'liquid-glass-react';
 
 interface FilterChipProps {
   label: string;
@@ -8,20 +9,30 @@ interface FilterChipProps {
 
 export function FilterChip({ label, value, onRemove }: FilterChipProps) {
   return (
-    <div className="group inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-950/50 dark:to-purple-950/50 border border-indigo-200 dark:border-indigo-800 rounded-full text-sm transition-all hover:shadow-md">
-      <span className="text-indigo-900 dark:text-indigo-300 font-medium">
-        {label}:
-      </span>
-      <span className="text-indigo-700 dark:text-indigo-200 font-bold">
-        {value}
-      </span>
-      <button
-        onClick={onRemove}
-        className="ml-1 p-1 rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-900 transition-colors group-hover:scale-110"
-        aria-label={`Remove ${label} filter`}
-      >
-        <X className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-      </button>
-    </div>
+    <LiquidGlass
+      cornerRadius={999}
+      padding="6px 12px"
+      blurAmount={0.15}
+      saturation={140}
+      displacementScale={20}
+      overLight
+      className="inline-flex"
+    >
+      <div className="flex items-center gap-1.5 text-sm">
+        <span className="text-muted-foreground font-medium text-xs">
+          {label}:
+        </span>
+        <span className="text-foreground font-semibold text-xs">
+          {value}
+        </span>
+        <button
+          onClick={onRemove}
+          className="ml-0.5 p-0.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+          aria-label={`Remove ${label} filter`}
+        >
+          <X className="w-3 h-3 text-muted-foreground" />
+        </button>
+      </div>
+    </LiquidGlass>
   );
 }
