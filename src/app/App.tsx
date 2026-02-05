@@ -1091,14 +1091,14 @@ function WizardApp() {
       {wizardState.step === 1 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={getProgressStep(1)} totalSteps={totalSteps} />
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-1.5 mb-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Back
-          </button>
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-1.5 mb-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Back
+            </button>
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP {getDisplayStep(1)} OF {totalSteps}
             </div>
