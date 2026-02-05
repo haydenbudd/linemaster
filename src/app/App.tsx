@@ -679,7 +679,7 @@ function WizardApp() {
   // Render different screens based on step and flow
   if (wizardState.flow === 'medical') {
     return (
-      <div className="min-h-screen mesh-gradient-medical relative">
+      <div className="min-h-screen mesh-gradient-medical relative z-10">
         <OrbBackground />
         <Header onReset={handleReset} />
 
@@ -1028,7 +1028,7 @@ function WizardApp() {
 
   // Standard flow screens
   return (
-    <div className="min-h-screen mesh-gradient-light relative">
+    <div className="min-h-screen mesh-gradient-light relative z-10">
       <OrbBackground />
       <Header onReset={handleReset} />
 

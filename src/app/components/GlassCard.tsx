@@ -74,11 +74,11 @@ export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
 
     const shadow = isDark
       ? overLight
-        ? '0 1px 0 0 rgba(255,255,255,0.06) inset, 0 8px 40px rgba(0,0,0,0.3)'
-        : '0 1px 0 0 rgba(255,255,255,0.04) inset, 0 4px 20px rgba(0,0,0,0.2)'
+        ? '0 1px 0 0 rgba(255,255,255,0.06) inset'
+        : '0 1px 0 0 rgba(255,255,255,0.04) inset'
       : overLight
-        ? '0 1px 0 0 rgba(255,255,255,0.5) inset, 0 8px 40px rgba(0,0,0,0.08)'
-        : '0 1px 0 0 rgba(255,255,255,0.1) inset, 0 4px 20px rgba(0,0,0,0.1)';
+        ? '0 1px 0 0 rgba(255,255,255,0.5) inset'
+        : '0 1px 0 0 rgba(255,255,255,0.1) inset';
 
     const borderColor = isDark
       ? overLight
@@ -112,33 +112,6 @@ export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
             transition: 'transform 0.15s ease-out, box-shadow 0.2s ease',
           }}
         >
-          {/* Subtle color orbs for glass depth */}
-          {overLight && (
-            <>
-              <div
-                className="absolute pointer-events-none rounded-full mix-blend-multiply dark:mix-blend-screen"
-                style={{
-                  width: '40%',
-                  height: '40%',
-                  top: '-10%',
-                  right: '-5%',
-                  background: 'radial-gradient(circle, rgba(0,113,227,0.06) 0%, transparent 70%)',
-                  filter: 'blur(20px)',
-                }}
-              />
-              <div
-                className="absolute pointer-events-none rounded-full mix-blend-multiply dark:mix-blend-screen"
-                style={{
-                  width: '35%',
-                  height: '35%',
-                  bottom: '-8%',
-                  left: '-3%',
-                  background: 'radial-gradient(circle, rgba(175,82,222,0.05) 0%, transparent 70%)',
-                  filter: 'blur(20px)',
-                }}
-              />
-            </>
-          )}
           <div className="relative">
             {children}
           </div>

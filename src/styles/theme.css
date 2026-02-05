@@ -212,21 +212,27 @@
   background: var(--glass-bg-hover);
 }
 
-/* Apple-style subtle mesh gradient backgrounds */
+/* Base page background on body so orbs can show through */
+body {
+  background-color: #f5f5f7;
+}
+.dark body {
+  background-color: #000000;
+}
+
+/* Apple-style subtle mesh gradient backgrounds — transparent so OrbBackground shows through */
 .mesh-gradient-light {
   background:
     radial-gradient(ellipse at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 20%, rgba(0, 113, 227, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 40% 80%, rgba(52, 199, 89, 0.06) 0%, transparent 50%),
-    #f5f5f7;
+    radial-gradient(ellipse at 40% 80%, rgba(52, 199, 89, 0.06) 0%, transparent 50%);
 }
 
 .dark .mesh-gradient-light {
   background:
     radial-gradient(ellipse at 20% 50%, rgba(120, 119, 198, 0.08) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 20%, rgba(10, 132, 255, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 40% 80%, rgba(48, 209, 88, 0.04) 0%, transparent 50%),
-    #000000;
+    radial-gradient(ellipse at 40% 80%, rgba(48, 209, 88, 0.04) 0%, transparent 50%);
 }
 
 /* Apple-style medical gradient */
@@ -234,16 +240,14 @@
   background:
     radial-gradient(ellipse at 20% 50%, rgba(255, 45, 85, 0.08) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 20%, rgba(175, 82, 222, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 40% 80%, rgba(255, 149, 0, 0.04) 0%, transparent 50%),
-    #f5f5f7;
+    radial-gradient(ellipse at 40% 80%, rgba(255, 149, 0, 0.04) 0%, transparent 50%);
 }
 
 .dark .mesh-gradient-medical {
   background:
     radial-gradient(ellipse at 20% 50%, rgba(255, 55, 95, 0.06) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 20%, rgba(191, 90, 242, 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 40% 80%, rgba(255, 159, 10, 0.03) 0%, transparent 50%),
-    #000000;
+    radial-gradient(ellipse at 40% 80%, rgba(255, 159, 10, 0.03) 0%, transparent 50%);
 }
 
 /* Smooth animations */

@@ -40,7 +40,7 @@ export function OrbBackground() {
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   return (
-    <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
       {/* Mouse-following orb */}
       <div
         ref={mouseOrbRef}

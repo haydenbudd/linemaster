@@ -8,46 +8,36 @@ export function ProgressDots({ currentStep, totalSteps, isMedical = false }: Pro
   const percentage = totalSteps > 1 ? (currentStep / (totalSteps - 1)) * 100 : 100;
 
   return (
-    <div className="mb-8" role="progressbar" aria-valuenow={currentStep + 1} aria-valuemin={1} aria-valuemax={totalSteps} aria-label={`Step ${currentStep + 1} of ${totalSteps}`}>
-      {/* Progress Bar with step dots */}
-      <div className="relative">
+    <div className="mb-6" role="progressbar" aria-valuenow={currentStep + 1} aria-valuemin={1} aria-valuemax={totalSteps} aria-label={`Step ${currentStep + 1} of ${totalSteps}`}>
+      <div className="relative h-3 mx-[5px]">
         {/* Bar track */}
-        <div className="h-1.5 bg-black/[0.06] dark:bg-white/[0.06] rounded-full overflow-hidden">
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 bg-black/[0.06] dark:bg-white/[0.06] rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-700 ease-out ${
-              isMedical
-                ? 'bg-[#ff2d55]'
-                : 'bg-primary'
+              isMedical ? 'bg-[#ff2d55]' : 'bg-primary'
             }`}
             style={{ width: `${percentage}%` }}
           />
         </div>
 
-        {/* Step dot markers — absolutely positioned for perfect centering */}
-        <div className="absolute inset-x-0 top-0 h-1.5 flex justify-between items-center">
-          {Array.from({ length: totalSteps }, (_, i) => (
+        {/* Step dot markers — centered at exact percentages along the bar */}
+        {Array.from({ length: totalSteps }, (_, i) => {
+          const left = totalSteps > 1 ? (i / (totalSteps - 1)) * 100 : 0;
+          const isActive = i <= currentStep;
+          return (
             <div
               key={i}
-              className={`w-2.5 h-2.5 rounded-full border-2 transition-all duration-300 ${
-                i <= currentStep
-                  ? isMedical
-                    ? 'bg-[#ff2d55] border-[#ff2d55]'
-                    : 'bg-primary border-primary'
-                  : 'bg-background border-foreground/15'
-              }`}
+              className={`absolute top-1/2 w-2.5 h-2.5 rounded-full transition-all duration-300`}
+              style={{
+                left: `${left}%`,
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: isActive
+                  ? isMedical ? '#ff2d55' : 'var(--primary)'
+                  : 'var(--border)',
+              }}
             />
-          ))}
-        </div>
-      </div>
-
-      {/* Step Indicator */}
-      <div className="mt-3 flex items-center">
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm font-semibold text-foreground tracking-tight">
-            Step {currentStep + 1}
-          </span>
-          <span className="text-sm text-muted-foreground">of {totalSteps}</span>
-        </div>
+          );
+        })}
       </div>
     </div>
   );
