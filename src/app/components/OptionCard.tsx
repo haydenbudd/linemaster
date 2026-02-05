@@ -7,7 +7,6 @@ interface OptionCardProps {
   option: Option;
   selected: boolean;
   multiSelect?: boolean;
-  productCount?: number;
   onSelect: () => void;
 }
 
@@ -15,7 +14,6 @@ export function OptionCard({
   option,
   selected,
   multiSelect = false,
-  productCount,
   onSelect,
 }: OptionCardProps) {
   const IconComponent = option.icon ? (Icons as any)[option.icon] : null;
@@ -55,11 +53,6 @@ export function OptionCard({
             )}
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{option.description}</p>
-          {productCount !== undefined && (
-            <span className="mt-1.5 inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-primary/8 text-primary">
-              {productCount} {productCount === 1 ? 'product' : 'products'}
-            </span>
-          )}
         </div>
 
         <div className="flex-shrink-0 ml-1 self-center">

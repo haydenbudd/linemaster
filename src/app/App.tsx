@@ -6,7 +6,6 @@ import { OptionCard } from '@/app/components/OptionCard';
 import { ProductCard } from '@/app/components/ProductCard';
 import { FilterChip } from '@/app/components/FilterChip';
 import { TrustBadges } from '@/app/components/TrustBadges';
-import { ProductCountBadge } from '@/app/components/ProductCountBadge';
 import { EnhancedSearch } from '@/app/components/EnhancedSearch';
 import { ChevronLeft, ArrowRight, Download, Send, CheckCircle, Heart, Search, Star, Shield, Footprints, RefreshCw } from 'lucide-react';
 import { useProductData } from '@/app/hooks/useProductData';
@@ -1063,8 +1062,7 @@ function WizardApp() {
                     key={option.id}
                     option={option}
                     selected={wizardState.selectedApplication === option.id}
-                    productCount={calculateOptionCount('selectedApplication', option.id)}
-                    onSelect={() => handleApplicationSelect(option.id)}
+                                        onSelect={() => handleApplicationSelect(option.id)}
                   />
                 ))}
             </div>
@@ -1114,8 +1112,7 @@ function WizardApp() {
                       <OptionCard
                         option={option}
                         selected={wizardState.selectedTechnology === option.id}
-                        productCount={calculateOptionCount('selectedTechnology', option.id)}
-                        onSelect={() => {
+                                                onSelect={() => {
                           wizardState.setSelectedTechnology(option.id);
                           setTimeout(handleContinue, 150);
                         }}
@@ -1158,8 +1155,7 @@ function WizardApp() {
                       <OptionCard
                         option={option}
                         selected={wizardState.selectedAction === option.id}
-                        productCount={calculateOptionCount('selectedAction', option.id)}
-                        onSelect={() => {
+                                                onSelect={() => {
                           wizardState.setSelectedAction(option.id);
                           setTimeout(handleContinue, 150);
                         }}
@@ -1201,8 +1197,7 @@ function WizardApp() {
                     <OptionCard
                       option={option}
                       selected={wizardState.selectedEnvironment === option.id}
-                      productCount={calculateOptionCount('selectedEnvironment', option.id)}
-                      onSelect={() => {
+                                            onSelect={() => {
                         wizardState.setSelectedEnvironment(option.id);
                         setTimeout(handleContinue, 150);
                       }}
@@ -1245,8 +1240,7 @@ function WizardApp() {
                     key={option.id}
                     option={option}
                     selected={wizardState.selectedDuty === option.id}
-                    productCount={getProductCount(4, option.id)}
-                    onSelect={() => {
+                                        onSelect={() => {
                       wizardState.setSelectedDuty(option.id);
                       setTimeout(handleContinue, 150);
                     }}
@@ -1304,8 +1298,7 @@ function WizardApp() {
                     key={option.id}
                     option={option}
                     selected={wizardState.selectedMaterial === option.id}
-                    productCount={getProductCount(5, option.id)}
-                    onSelect={() => {
+                                        onSelect={() => {
                       wizardState.setSelectedMaterial(option.id);
                       setTimeout(handleContinue, 150);
                     }}
@@ -1360,8 +1353,7 @@ function WizardApp() {
                     key={option.id}
                     option={option}
                     selected={wizardState.selectedConnection === option.id}
-                    productCount={getProductCount(6, option.id)}
-                    onSelect={() => {
+                                        onSelect={() => {
                       wizardState.setSelectedConnection(option.id);
                       setTimeout(handleContinue, 150);
                     }}
@@ -1415,8 +1407,7 @@ function WizardApp() {
               <OptionCard
                 option={{ id: 'yes', label: 'Yes — Safety Guard', description: 'Includes a protective guard over the pedal to prevent accidental presses.', icon: 'Shield' }}
                 selected={wizardState.selectedGuard === 'yes'}
-                productCount={getProductCount(7, 'yes')}
-                onSelect={() => {
+                                onSelect={() => {
                   wizardState.setSelectedGuard('yes');
                   setTimeout(handleContinue, 150);
                 }}
@@ -1424,8 +1415,7 @@ function WizardApp() {
               <OptionCard
                 option={{ id: 'no', label: 'No Guard Needed', description: 'Standard open pedal without a protective guard.', icon: 'Footprints' }}
                 selected={wizardState.selectedGuard === 'no'}
-                productCount={getProductCount(7, 'no')}
-                onSelect={() => {
+                                onSelect={() => {
                   wizardState.setSelectedGuard('no');
                   setTimeout(handleContinue, 150);
                 }}
@@ -1478,8 +1468,7 @@ function WizardApp() {
               <OptionCard
                 option={{ id: 'single', label: 'Single Pedal', description: 'One pedal for single-function operation.', icon: 'Footprints' }}
                 selected={wizardState.selectedPedalConfig === 'single'}
-                productCount={getProductCount(8, 'single')}
-                onSelect={() => {
+                                onSelect={() => {
                   wizardState.setSelectedPedalConfig('single');
                   setTimeout(handleContinue, 150);
                 }}
@@ -1487,8 +1476,7 @@ function WizardApp() {
               <OptionCard
                 option={{ id: 'twin', label: 'Twin Pedal', description: 'Dual pedals for two-function control (e.g., forward/reverse).', icon: 'Footprints' }}
                 selected={wizardState.selectedPedalConfig === 'twin'}
-                productCount={getProductCount(8, 'twin')}
-                onSelect={() => {
+                                onSelect={() => {
                   wizardState.setSelectedPedalConfig('twin');
                   setTimeout(handleContinue, 150);
                 }}
@@ -1547,12 +1535,6 @@ function WizardApp() {
                     option={option}
                     selected={wizardState.selectedFeatures.includes(option.id)}
                     multiSelect
-                    productCount={calculateOptionCount(
-                      'selectedFeatures',
-                      wizardState.selectedFeatures.includes(option.id)
-                        ? wizardState.selectedFeatures
-                        : [...wizardState.selectedFeatures, option.id]
-                    )}
                     onSelect={() => {
                       wizardState.setSelectedFeatures((prev) =>
                         prev.includes(option.id)
