@@ -110,6 +110,7 @@ export async function fetchProducts(): Promise<Product[]> {
   // Normalize products to ensure features is always an array
   return products.map((product: any) => ({
     ...product,
+    id: String(product.id || product.part_number || product.Part || Math.random().toString()),
     part_number: product.part_number || product.Part, // Handle legacy 'Part' field
     features: Array.isArray(product.features) ? product.features : [],
     recommended_for: Array.isArray(product.recommended_for) ? product.recommended_for : [],

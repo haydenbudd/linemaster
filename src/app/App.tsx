@@ -1858,7 +1858,7 @@ function WizardApp() {
                                    {bestMatch.series}
                                    {(bestMatch.part_number || bestMatch.id) && (
                                      <span className="text-2xl font-medium text-muted-foreground">
-                                       # {bestMatch.part_number || bestMatch.id.toUpperCase()}
+                                       # {bestMatch.part_number || String(bestMatch.id).toUpperCase()}
                                      </span>
                                    )}
                                  </h2>

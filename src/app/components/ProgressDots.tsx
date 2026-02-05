@@ -5,7 +5,7 @@ interface ProgressDotsProps {
 }
 
 export function ProgressDots({ currentStep, totalSteps, isMedical = false }: ProgressDotsProps) {
-  const percentage = ((currentStep + 1) / totalSteps) * 100;
+  const percentage = totalSteps > 1 ? (currentStep / (totalSteps - 1)) * 100 : 100;
 
   return (
     <div className="mb-8" role="progressbar" aria-valuenow={currentStep + 1} aria-valuemin={1} aria-valuemax={totalSteps} aria-label={`Step ${currentStep + 1} of ${totalSteps}`}>
