@@ -76,7 +76,7 @@ export function ProductCard({ product, matchReasons }: ProductCardProps) {
           </h3>
           {product.part_number || product.id ? (
             <span className="text-xs font-medium text-muted-foreground">
-              #{product.part_number || product.id.toUpperCase()}
+              #{product.part_number || String(product.id).toUpperCase()}
             </span>
           ) : null}
         </div>

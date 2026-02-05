@@ -40,14 +40,15 @@ export function OrbBackground() {
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   return (
-    <div className="fixed inset-0 z-[-1] overflow-hidden bg-background pointer-events-none">
+    <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
       {/* Mouse-following orb */}
       <div
         ref={mouseOrbRef}
-        className="absolute w-[600px] h-[600px] rounded-full bg-primary/10 blur-[100px] mix-blend-multiply dark:mix-blend-screen opacity-70 will-change-transform"
+        className="absolute w-[600px] h-[600px] rounded-full blur-[120px] will-change-transform"
+        style={{ background: 'rgba(0, 122, 255, 0.18)', opacity: 0.8 }}
       />
 
-      {/* Orb 1 - Primary blue - Top Left */}
+      {/* Orb 1 - Blue - Top Left */}
       <motion.div
         animate={prefersReducedMotion ? {} : {
           x: [0, 200, -120, 0],
@@ -60,7 +61,8 @@ export function OrbBackground() {
           ease: "easeInOut",
           times: [0, 0.33, 0.66, 1],
         }}
-        className="absolute top-[-10%] left-[-5%] w-[60vw] h-[60vw] max-w-[600px] max-h-[600px] bg-primary/15 rounded-full blur-[80px] mix-blend-multiply dark:mix-blend-screen opacity-50"
+        className="absolute top-[-10%] left-[-5%] w-[60vw] h-[60vw] max-w-[600px] max-h-[600px] rounded-full blur-[100px]"
+        style={{ background: 'rgba(0, 122, 255, 0.25)', opacity: 0.7 }}
       />
 
       {/* Orb 2 - Purple - Bottom Right */}
@@ -76,10 +78,11 @@ export function OrbBackground() {
           ease: "easeInOut",
           times: [0, 0.33, 0.66, 1],
         }}
-        className="absolute bottom-[-10%] right-[-5%] w-[55vw] h-[55vw] max-w-[550px] max-h-[550px] bg-chart-5/15 rounded-full blur-[80px] mix-blend-multiply dark:mix-blend-screen opacity-45"
+        className="absolute bottom-[-10%] right-[-5%] w-[55vw] h-[55vw] max-w-[550px] max-h-[550px] rounded-full blur-[100px]"
+        style={{ background: 'rgba(175, 82, 222, 0.22)', opacity: 0.65 }}
       />
 
-      {/* Orb 3 - Green accent - Center */}
+      {/* Orb 3 - Teal accent - Center */}
       <motion.div
         animate={prefersReducedMotion ? {} : {
           x: [0, 250, -200, 0],
@@ -92,7 +95,25 @@ export function OrbBackground() {
           ease: "easeInOut",
           times: [0, 0.33, 0.66, 1],
         }}
-        className="absolute top-[25%] left-[25%] w-[45vw] h-[45vw] max-w-[450px] max-h-[450px] bg-chart-2/10 rounded-full blur-[90px] mix-blend-multiply dark:mix-blend-screen opacity-40"
+        className="absolute top-[25%] left-[25%] w-[45vw] h-[45vw] max-w-[450px] max-h-[450px] rounded-full blur-[100px]"
+        style={{ background: 'rgba(52, 199, 89, 0.18)', opacity: 0.6 }}
+      />
+
+      {/* Orb 4 - Orange warm accent - Top Right */}
+      <motion.div
+        animate={prefersReducedMotion ? {} : {
+          x: [0, -150, 80, 0],
+          y: [0, 200, -100, 0],
+          scale: [1, 1.1, 0.9, 1],
+        }}
+        transition={{
+          duration: 20,
+          repeat: Infinity,
+          ease: "easeInOut",
+          times: [0, 0.33, 0.66, 1],
+        }}
+        className="absolute top-[5%] right-[10%] w-[40vw] h-[40vw] max-w-[400px] max-h-[400px] rounded-full blur-[100px]"
+        style={{ background: 'rgba(255, 149, 0, 0.15)', opacity: 0.55 }}
       />
     </div>
   );
