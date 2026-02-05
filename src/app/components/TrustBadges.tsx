@@ -10,16 +10,16 @@ export function TrustBadges() {
 
   return (
     <div className="mt-10 pt-6 border-t border-foreground/5">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {badges.map((badge, index) => (
           <div
             key={index}
-            className="flex items-center gap-2.5 p-3 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] transition-all duration-300 hover:bg-black/[0.04] dark:hover:bg-white/[0.04]"
+            className="flex items-center gap-2 p-3 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] transition-all duration-300 hover:bg-black/[0.04] dark:hover:bg-white/[0.04]"
           >
             <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center flex-shrink-0">
               <badge.icon className="w-4 h-4 text-primary" />
             </div>
-            <p className="text-xs font-medium text-foreground leading-tight">
+            <p className="text-sm font-medium text-foreground leading-tight">
               {badge.text}
             </p>
           </div>

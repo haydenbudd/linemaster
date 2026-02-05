@@ -2,7 +2,7 @@ import { ArrowRight, Sparkles, CheckCircle, Plug } from 'lucide-react';
 import { Product } from '@/app/lib/api';
 import { ImageWithFallback } from '@/app/components/figma/ImageWithFallback';
 import { getProxiedImageUrl } from '@/app/utils/imageProxy';
-import LiquidGlass from 'liquid-glass-react';
+import { GlassCard } from '@/app/components/GlassCard';
 
 interface ProductCardProps {
   product: Product;
@@ -36,13 +36,14 @@ export function ProductCard({ product, matchReasons }: ProductCardProps) {
   );
 
   return (
-    <LiquidGlass
+    <GlassCard
       cornerRadius={22}
       padding="0"
       blurAmount={0.15}
       saturation={140}
       displacementScale={40}
       overLight
+      tiltOnHover
       className="flex flex-col h-full group"
     >
       {/* Badges */}
@@ -59,11 +60,11 @@ export function ProductCard({ product, matchReasons }: ProductCardProps) {
       </div>
 
       {/* Product Image */}
-      <div className="h-56 flex items-center justify-center p-6 bg-black/[0.02] dark:bg-white/[0.02]">
+      <div className="h-40 sm:h-56 flex items-center justify-center p-6 bg-black/[0.02] dark:bg-white/[0.02]">
         <ImageWithFallback
           src={getProxiedImageUrl(product.image)}
           alt={product.series}
-          className="w-full h-full object-contain transition-all duration-700 group-hover:scale-105"
+          className="w-full h-full object-contain transition-all duration-700 group-hover:scale-[1.02]"
         />
       </div>
 
@@ -105,7 +106,7 @@ export function ProductCard({ product, matchReasons }: ProductCardProps) {
 
         {/* Technical Specs */}
         {(product.voltage || product.amperage || product.certifications || product.circuitry) && (
-          <div className="mb-4 grid grid-cols-2 gap-y-2 text-xs text-muted-foreground border-t border-foreground/5 py-3">
+          <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-xs text-muted-foreground border-t border-foreground/5 py-3">
              {product.voltage && (
                <div className="flex flex-col">
                  <span className="font-semibold text-foreground text-[11px]">Voltage</span>
@@ -125,9 +126,9 @@ export function ProductCard({ product, matchReasons }: ProductCardProps) {
                </div>
              )}
              {product.certifications && (
-               <div className="col-span-2 flex flex-col mt-1">
+               <div className="col-span-1 sm:col-span-2 flex flex-col mt-1">
                  <span className="font-semibold text-foreground text-[11px]">Certifications</span>
-                 <span>{product.certifications}</span>
+                 <span className="line-clamp-2">{product.certifications}</span>
                </div>
              )}
           </div>
@@ -188,6 +189,6 @@ export function ProductCard({ product, matchReasons }: ProductCardProps) {
           <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </a>
       </div>
-    </LiquidGlass>
+    </GlassCard>
   );
 }
