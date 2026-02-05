@@ -7,7 +7,7 @@ import { ProductCard } from '@/app/components/ProductCard';
 import { FilterChip } from '@/app/components/FilterChip';
 import { TrustBadges } from '@/app/components/TrustBadges';
 import { EnhancedSearch } from '@/app/components/EnhancedSearch';
-import { ChevronLeft, ArrowRight, Download, Send, CheckCircle, Heart, Search, Star, Shield, Footprints, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ArrowRight, Download, Send, CheckCircle, Heart, Search, Star, Shield, Footprints } from 'lucide-react';
 import { useProductData } from '@/app/hooks/useProductData';
 import { useProductFilter } from '@/app/hooks/useProductFilter';
 import { useWizardState } from '@/app/hooks/useWizardState';
@@ -88,6 +88,10 @@ function WizardApp() {
       wizardState.setSelectedApplication('');
     } else {
       let prevStep = wizardState.step - 1;
+      // Skip Pedal Configuration step (index 8) — removed
+      if (prevStep === 8) {
+        prevStep--;
+      }
       // Skip Connection Type step (index 6) for Air/pneumatic technology
       if (prevStep === 6 && wizardState.selectedTechnology === 'pneumatic') {
         prevStep--;
@@ -101,6 +105,11 @@ function WizardApp() {
 
     // Skip Connection Type step (index 6) for Air/pneumatic technology
     if (newStep === 6 && wizardState.selectedTechnology === 'pneumatic') {
+      newStep++;
+    }
+
+    // Skip Pedal Configuration step (index 8) — removed
+    if (newStep === 8) {
       newStep++;
     }
 
@@ -158,10 +167,6 @@ function WizardApp() {
       if (state.selectedGuard === 'yes' && !(product.features || []).includes('shield')) return false;
       if (state.selectedGuard === 'no' && (product.features || []).includes('shield')) return false;
 
-      // Filter by Pedal Configuration
-      if (state.selectedPedalConfig === 'twin' && !(product.features || []).includes('twin')) return false;
-      if (state.selectedPedalConfig === 'single' && (product.features || []).includes('twin')) return false;
-
       // Filter by selected features (if any features are selected)
       if (state.selectedFeatures.length > 0) {
         // Exclude custom cable/connector from this check (those trigger custom solution)
@@ -198,17 +203,9 @@ function WizardApp() {
       }
     }
 
-    // Try relaxing pedal config
-    if (wizardState.selectedPedalConfig) {
-      const withoutPedal = filterProducts({ selectedFeatures: [], selectedPedalConfig: '' });
-      if (withoutPedal.length > 0) {
-        return { products: withoutPedal, relaxed: 'pedalConfig' as const };
-      }
-    }
-
     // Try relaxing guard
     if (wizardState.selectedGuard) {
-      const withoutGuard = filterProducts({ selectedFeatures: [], selectedPedalConfig: '', selectedGuard: '' });
+      const withoutGuard = filterProducts({ selectedFeatures: [], selectedGuard: '' });
       if (withoutGuard.length > 0) {
         return { products: withoutGuard, relaxed: 'guard' as const };
       }
@@ -216,7 +213,7 @@ function WizardApp() {
 
     // Try relaxing material
     if (wizardState.selectedMaterial) {
-      const withoutMaterial = filterProducts({ selectedFeatures: [], selectedPedalConfig: '', selectedGuard: '', selectedMaterial: '' });
+      const withoutMaterial = filterProducts({ selectedFeatures: [], selectedGuard: '', selectedMaterial: '' });
       if (withoutMaterial.length > 0) {
         return { products: withoutMaterial, relaxed: 'material' as const };
       }
@@ -224,7 +221,7 @@ function WizardApp() {
 
     // Try relaxing duty
     if (wizardState.selectedDuty) {
-      const withoutDuty = filterProducts({ selectedFeatures: [], selectedPedalConfig: '', selectedGuard: '', selectedMaterial: '', selectedDuty: '' });
+      const withoutDuty = filterProducts({ selectedFeatures: [], selectedGuard: '', selectedMaterial: '', selectedDuty: '' });
       if (withoutDuty.length > 0) {
         return { products: withoutDuty, relaxed: 'duty' as const };
       }
@@ -365,24 +362,6 @@ function WizardApp() {
         if (optionId === 'no') return !hasShield;
         return true;
       }).length;
-    } else if (step === 8) {
-      // Pedal config step
-      return products.filter(p => {
-        if (!p.applications.includes(wizardState.selectedApplication)) return false;
-        if (p.technology !== wizardState.selectedTechnology) return false;
-        if (!p.actions.includes(wizardState.selectedAction)) return false;
-        if (wizardState.selectedEnvironment === 'wet' && p.ip !== 'IP68') return false;
-        if (wizardState.selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(p.ip)) return false;
-        if (wizardState.selectedDuty && p.duty !== wizardState.selectedDuty) return false;
-        if (wizardState.selectedMaterial && p.material !== wizardState.selectedMaterial) return false;
-        if (wizardState.selectedTechnology !== 'pneumatic' && wizardState.selectedConnection && p.connector_type !== wizardState.selectedConnection) return false;
-        if (wizardState.selectedGuard === 'yes' && !(p.features || []).includes('shield')) return false;
-        if (wizardState.selectedGuard === 'no' && (p.features || []).includes('shield')) return false;
-        const hasTwin = (p.features || []).includes('twin');
-        if (optionId === 'twin') return hasTwin;
-        if (optionId === 'single') return !hasTwin;
-        return true;
-      }).length;
     }
     return 0;
   };
@@ -475,11 +454,6 @@ function WizardApp() {
 
       if (wizardState.selectedGuard) {
         doc.text(`Safety Guard: ${wizardState.selectedGuard === 'yes' ? 'Required' : 'Not needed'}`, 20, yPos);
-        yPos += 6;
-      }
-
-      if (wizardState.selectedPedalConfig) {
-        doc.text(`Pedal Config: ${wizardState.selectedPedalConfig === 'twin' ? 'Twin Pedal' : 'Single Pedal'}`, 20, yPos);
         yPos += 6;
       }
 
@@ -595,8 +569,8 @@ function WizardApp() {
   // Calculate total visible steps dynamically (exclude Application step 0 and skipped steps)
   const totalSteps = (() => {
     if (wizardState.flow === 'medical') return 5;
-    let steps = 9; // Steps 1-9 (Tech, Action, Env, Duty, Material, Connection, Guard, PedalConfig, Features)
-    if (wizardState.selectedTechnology === 'pneumatic') steps--; // skip Connection → 8
+    let steps = 8; // Steps 1-9 minus PedalConfig (Tech, Action, Env, Duty, Material, Connection, Guard, Features)
+    if (wizardState.selectedTechnology === 'pneumatic') steps--; // skip Connection → 7
     return steps;
   })();
 
@@ -606,6 +580,9 @@ function WizardApp() {
     let step = rawStep - 1; // subtract 1 because Application (step 0) is not counted
     if (wizardState.selectedTechnology === 'pneumatic' && rawStep > 6) {
       step--; // adjust for skipped Connection step
+    }
+    if (rawStep > 8) {
+      step--; // adjust for skipped Pedal Configuration step
     }
     return step;
   };
@@ -803,7 +780,7 @@ function WizardApp() {
               <h2 className="text-2xl font-bold text-foreground mb-6">Pedal Count</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                {pedalCounts.map((option) => (
+                {pedalCounts.filter(o => o.id === '1' || o.id === '2').map((option) => (
                   <OptionCard
                     key={option.id}
                     option={option}
@@ -1495,74 +1472,6 @@ function WizardApp() {
         </div>
       )}
 
-      {wizardState.step === 8 && (
-        <div className="max-w-[800px] mx-auto px-6 py-8">
-          <ProgressDots currentStep={getProgressStep(8)} totalSteps={totalSteps} />
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-2 mb-4 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] rounded-xl transition-all"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Back
-          </button>
-          <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
-            <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
-              STEP {getDisplayStep(8)} OF {totalSteps}
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Pedal Configuration</h2>
-            <p className="text-sm text-muted-foreground mb-6">
-              Do you need a single pedal or a twin (dual) pedal for two-function control?
-            </p>
-
-            <div className="space-y-4 mb-8">
-              <OptionCard
-                option={{ id: 'single', label: 'Single Pedal', description: 'One pedal for single-function operation.', icon: 'Footprints' }}
-                selected={wizardState.selectedPedalConfig === 'single'}
-                                onSelect={() => {
-                  wizardState.setSelectedPedalConfig('single');
-                  setTimeout(handleContinue, 150);
-                }}
-              />
-              <OptionCard
-                option={{ id: 'twin', label: 'Twin Pedal', description: 'Dual pedals for two-function control (e.g., forward/reverse).', icon: 'Footprints' }}
-                selected={wizardState.selectedPedalConfig === 'twin'}
-                                onSelect={() => {
-                  wizardState.setSelectedPedalConfig('twin');
-                  setTimeout(handleContinue, 150);
-                }}
-              />
-            </div>
-
-            {getProductCount(8, 'single') === 0 && getProductCount(8, 'twin') === 0 && (
-              <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-800 dark:text-amber-200">
-                No products match your current selections. Try adjusting your previous choices, or{' '}
-                <a href="https://linemaster.com/contact/" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-amber-900 dark:hover:text-amber-100">contact us</a>{' '}
-                for assistance.
-              </div>
-            )}
-
-            <div className="flex items-center justify-between">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
-              <button
-                onClick={() => {
-                  wizardState.setSelectedPedalConfig('');
-                  handleContinue();
-                }}
-                className="px-5 py-2.5 text-sm text-muted-foreground hover:text-foreground font-medium transition-all border border-dashed border-foreground/15 hover:border-foreground/30 rounded-xl"
-              >
-                No Preference — Skip
-              </button>
-            </div>
-          </GlassCard>
-        </div>
-      )}
-
       {wizardState.step === 9 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={getProgressStep(9)} totalSteps={totalSteps} />
@@ -1744,7 +1653,6 @@ function WizardApp() {
 
                 const relaxedMessages: Record<string, string> = {
                   features: 'No exact matches with your selected features, but these products match all other criteria:',
-                  pedalConfig: 'No exact matches for your pedal configuration, but these products match your other criteria:',
                   guard: 'No exact matches for your guard preference, but these products match your other criteria:',
                   material: 'No exact matches for your material preference, but these products match your other criteria:',
                   duty: 'No exact matches for your duty class, but these products match your other requirements:',
@@ -1871,16 +1779,6 @@ function WizardApp() {
                             onRemove={() => {
                               wizardState.setSelectedGuard('');
                               wizardState.setStep(7);
-                            }}
-                          />
-                        )}
-                        {wizardState.selectedPedalConfig && (
-                          <FilterChip
-                            label="Pedal"
-                            value={wizardState.selectedPedalConfig === 'twin' ? 'Twin Pedal' : 'Single Pedal'}
-                            onRemove={() => {
-                              wizardState.setSelectedPedalConfig('');
-                              wizardState.setStep(8);
                             }}
                           />
                         )}

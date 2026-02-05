@@ -83,14 +83,14 @@ export function Header({ onReset }: HeaderProps) {
                   <Moon className="w-[18px] h-[18px] text-muted-foreground" />
                 )}
               </button>
-              <a
-                href="#/admin"
+              <button
+                onClick={() => { window.location.hash = '/admin'; }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-all duration-200"
                 title="Admin Panel"
               >
                 <Settings className="w-[18px] h-[18px] text-muted-foreground" />
                 <span className="text-sm font-medium text-muted-foreground">Admin</span>
-              </a>
+              </button>
               <button
                 onClick={onReset}
                 className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary text-primary-foreground hover:opacity-90 active:opacity-80 transition-all duration-200 text-sm font-medium ml-1"
@@ -124,14 +124,13 @@ export function Header({ onReset }: HeaderProps) {
                       {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                       {isDark ? 'Light Mode' : 'Dark Mode'}
                     </button>
-                    <a
-                      href="#/admin"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-3 w-full px-4 py-3 text-sm text-foreground hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-colors"
+                    <button
+                      onClick={() => { window.location.hash = '/admin'; setMenuOpen(false); }}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-sm text-foreground hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-colors text-left"
                     >
                       <Settings className="w-4 h-4" />
                       Admin Panel
-                    </a>
+                    </button>
                     <div className="border-t border-foreground/5 my-1" />
                     <button
                       onClick={() => { onReset(); setMenuOpen(false); }}
