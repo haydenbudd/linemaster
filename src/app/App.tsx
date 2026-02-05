@@ -602,6 +602,7 @@ function WizardApp() {
 
   // Map raw wizard step index to logical progress step (0-indexed, excludes Application step and skipped steps)
   const getProgressStep = (rawStep: number) => {
+    if (rawStep <= 0) return 0; // Application step — not part of numbered progress
     let step = rawStep - 1; // subtract 1 because Application (step 0) is not counted
     if (wizardState.selectedTechnology === 'pneumatic' && rawStep > 6) {
       step--; // adjust for skipped Connection step
