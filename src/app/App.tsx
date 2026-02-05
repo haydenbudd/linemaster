@@ -1956,7 +1956,7 @@ function WizardApp() {
 
                                  <div className="flex flex-col sm:flex-row gap-4">
                                    <a
-                                     href={bestMatch.link}
+                                     href={bestMatch.link || `https://linemaster.com/?s=${encodeURIComponent(bestMatch.part_number || bestMatch.series || bestMatch.id)}`}
                                      target="_blank"
                                      rel="noopener noreferrer"
                                      className="flex-1 inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-primary/30"

@@ -180,7 +180,7 @@ export function ProductCard({ product, matchReasons }: ProductCardProps) {
 
         {/* Button */}
         <a
-          href={product.link}
+          href={product.link || `https://linemaster.com/?s=${encodeURIComponent(product.part_number || product.series || product.id)}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-2 w-full px-5 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl transition-all duration-200 mt-auto text-sm"
