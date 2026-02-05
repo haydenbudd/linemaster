@@ -46,11 +46,6 @@ export function OptionCard({
         <div className="flex-1 min-w-0 text-left">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-semibold text-foreground mb-0.5 text-[15px] tracking-tight">{option.label}</h3>
-            {option.isMedical && (
-              <span className="px-2.5 py-0.5 bg-[#ff2d55] text-white text-[10px] font-semibold uppercase tracking-wider rounded-full">
-                ISO Certified
-              </span>
-            )}
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{option.description}</p>
         </div>
