@@ -1,6 +1,6 @@
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { Product } from '@/app/lib/api';
-import LiquidGlass from 'liquid-glass-react';
+import { GlassCard } from '@/app/components/GlassCard';
 
 interface EnhancedSearchProps {
   products: Product[];
@@ -34,8 +34,17 @@ export function EnhancedSearch({
     }
   };
 
+  const activeFilterCount = dutyFilter.length + (cordedFilter !== 'all' ? 1 : 0) + (sortBy !== 'relevance' ? 1 : 0);
+
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setSortBy('relevance');
+    setDutyFilter([]);
+    setCordedFilter('all');
+  };
+
   return (
-    <LiquidGlass
+    <GlassCard
       cornerRadius={20}
       padding="20px"
       blurAmount={0.2}
@@ -50,7 +59,7 @@ export function EnhancedSearch({
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search products by name, material, or feature..."
+            placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-black/[0.03] dark:bg-white/[0.04] border border-foreground/5 rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all text-sm"
@@ -58,10 +67,24 @@ export function EnhancedSearch({
         </div>
 
         {/* Filters Row */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3">
           <div className="flex items-center gap-1.5">
             <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-xs font-medium text-muted-foreground">Filters:</span>
+            <span className="text-xs font-medium text-muted-foreground">Filters</span>
+            {activeFilterCount > 0 && (
+              <span className="inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold bg-primary text-primary-foreground rounded-full">
+                {activeFilterCount}
+              </span>
+            )}
+            {activeFilterCount > 0 && (
+              <button
+                onClick={clearAllFilters}
+                className="ml-1 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-3 h-3" />
+                Clear
+              </button>
+            )}
           </div>
 
           {/* Sort */}
@@ -76,19 +99,21 @@ export function EnhancedSearch({
           </select>
 
           {/* Duty Chips */}
-          {['heavy', 'medium', 'light'].map((duty) => (
-            <button
-              key={duty}
-              onClick={() => toggleDutyFilter(duty)}
-              className={`px-3 py-1 text-[11px] font-semibold uppercase tracking-wider rounded-full border transition-all duration-200 ${
-                dutyFilter.includes(duty)
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-transparent text-muted-foreground border-foreground/10 hover:border-primary/30 hover:text-foreground'
-              }`}
-            >
-              {duty}
-            </button>
-          ))}
+          <div className="flex flex-wrap gap-2">
+            {['heavy', 'medium', 'light'].map((duty) => (
+              <button
+                key={duty}
+                onClick={() => toggleDutyFilter(duty)}
+                className={`px-3 py-1 text-[11px] font-semibold uppercase tracking-wider rounded-full border transition-all duration-200 ${
+                  dutyFilter.includes(duty)
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-transparent text-muted-foreground border-foreground/10 hover:border-primary/30 hover:text-foreground'
+                }`}
+              >
+                {duty}
+              </button>
+            ))}
+          </div>
 
           {/* Corded Filter */}
           <select
@@ -102,6 +127,6 @@ export function EnhancedSearch({
           </select>
         </div>
       </div>
-    </LiquidGlass>
+    </GlassCard>
   );
 }

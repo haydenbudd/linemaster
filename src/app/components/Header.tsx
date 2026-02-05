@@ -1,6 +1,6 @@
-import { RotateCcw, Settings, Moon, Sun, RefreshCw } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import LiquidGlass from 'liquid-glass-react';
+import { RotateCcw, Settings, Moon, Sun, RefreshCw, Menu, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { GlassCard } from '@/app/components/GlassCard';
 
 interface HeaderProps {
   onReset: () => void;
@@ -9,6 +9,8 @@ interface HeaderProps {
 
 export function Header({ onReset, onRefresh }: HeaderProps) {
   const [isDark, setIsDark] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const theme = localStorage.getItem('theme');
@@ -17,6 +19,16 @@ export function Header({ onReset, onRefresh }: HeaderProps) {
       setIsDark(true);
     }
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
 
   const toggleTheme = () => {
     if (isDark) {
@@ -33,7 +45,7 @@ export function Header({ onReset, onRefresh }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50">
       <div className="mx-auto px-2 sm:px-4 pt-2">
-        <LiquidGlass
+        <GlassCard
           cornerRadius={20}
           padding="0 16px"
           blurAmount={0.5}
@@ -57,11 +69,11 @@ export function Header({ onReset, onRefresh }: HeaderProps) {
               </span>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-0.5">
+            {/* Desktop Actions */}
+            <div className="hidden sm:flex items-center gap-0.5">
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-200"
+                className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-all duration-200"
                 title={isDark ? 'Light mode' : 'Dark mode'}
               >
                 {isDark ? (
@@ -73,7 +85,7 @@ export function Header({ onReset, onRefresh }: HeaderProps) {
               {onRefresh && (
                 <button
                   onClick={onRefresh}
-                  className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-200"
+                  className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-all duration-200"
                   title="Refresh product data"
                 >
                   <RefreshCw className="w-[18px] h-[18px] text-muted-foreground" />
@@ -81,22 +93,76 @@ export function Header({ onReset, onRefresh }: HeaderProps) {
               )}
               <a
                 href="#/admin"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-all duration-200"
                 title="Admin Panel"
               >
                 <Settings className="w-[18px] h-[18px] text-muted-foreground" />
-                <span className="text-sm font-medium text-muted-foreground hidden sm:inline">Admin</span>
+                <span className="text-sm font-medium text-muted-foreground">Admin</span>
               </a>
               <button
                 onClick={onReset}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-all duration-200 text-sm font-medium ml-1"
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary text-primary-foreground hover:opacity-90 active:opacity-80 transition-all duration-200 text-sm font-medium ml-1"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Reset</span>
               </button>
             </div>
+
+            {/* Mobile Menu Button */}
+            <div className="sm:hidden relative" ref={menuRef}>
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-all duration-200"
+                aria-label="Menu"
+              >
+                {menuOpen ? (
+                  <X className="w-5 h-5 text-muted-foreground" />
+                ) : (
+                  <Menu className="w-5 h-5 text-muted-foreground" />
+                )}
+              </button>
+
+              {menuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 rounded-2xl bg-background/95 backdrop-blur-xl border border-foreground/10 shadow-xl overflow-hidden z-50">
+                  <div className="py-1">
+                    <button
+                      onClick={() => { toggleTheme(); setMenuOpen(false); }}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-sm text-foreground hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-colors"
+                    >
+                      {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                      {isDark ? 'Light Mode' : 'Dark Mode'}
+                    </button>
+                    {onRefresh && (
+                      <button
+                        onClick={() => { onRefresh(); setMenuOpen(false); }}
+                        className="flex items-center gap-3 w-full px-4 py-3 text-sm text-foreground hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-colors"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                        Refresh Data
+                      </button>
+                    )}
+                    <a
+                      href="#/admin"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-sm text-foreground hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-colors"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Admin Panel
+                    </a>
+                    <div className="border-t border-foreground/5 my-1" />
+                    <button
+                      onClick={() => { onReset(); setMenuOpen(false); }}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-primary hover:bg-primary/5 active:bg-primary/10 transition-colors"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Reset Wizard
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </LiquidGlass>
+        </GlassCard>
       </div>
     </header>
   );

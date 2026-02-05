@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import LiquidGlass from 'liquid-glass-react';
+import { GlassCard } from '@/app/components/GlassCard';
 
 interface FilterChipProps {
   label: string;
@@ -9,7 +9,7 @@ interface FilterChipProps {
 
 export function FilterChip({ label, value, onRemove }: FilterChipProps) {
   return (
-    <LiquidGlass
+    <GlassCard
       cornerRadius={999}
       padding="6px 12px"
       blurAmount={0.15}
@@ -18,21 +18,21 @@ export function FilterChip({ label, value, onRemove }: FilterChipProps) {
       overLight
       className="inline-flex"
     >
-      <div className="flex items-center gap-1.5 text-sm">
-        <span className="text-muted-foreground font-medium text-xs">
+      <div className="flex items-center gap-1.5 text-sm max-w-[200px]">
+        <span className="text-muted-foreground font-medium text-xs flex-shrink-0">
           {label}:
         </span>
-        <span className="text-foreground font-semibold text-xs">
+        <span className="text-foreground font-semibold text-xs truncate">
           {value}
         </span>
         <button
           onClick={onRemove}
-          className="ml-0.5 p-0.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+          className="ml-0.5 w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 active:bg-black/10 dark:active:bg-white/15 transition-colors"
           aria-label={`Remove ${label} filter`}
         >
           <X className="w-3 h-3 text-muted-foreground" />
         </button>
       </div>
-    </LiquidGlass>
+    </GlassCard>
   );
 }

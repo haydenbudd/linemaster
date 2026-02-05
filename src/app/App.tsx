@@ -16,7 +16,8 @@ import { trackWizardStep, trackProductView, trackPDFDownload, trackQuoteRequest,
 import { getProxiedImageUrl } from '@/app/utils/imageProxy';
 import { getProcessedProducts, isProductEnvironmentMatch } from '@/app/utils/productFilters';
 import jsPDF from 'jspdf';
-import LiquidGlass from 'liquid-glass-react';
+import { GlassCard } from '@/app/components/GlassCard';
+import { OrbBackground } from '@/app/components/OrbBackground';
 
 // Lazy load admin panel
 const AdminContainer = lazy(() =>
@@ -622,7 +623,7 @@ function WizardApp() {
 
     return (
       <div className="min-h-screen mesh-gradient-light flex items-center justify-center p-4">
-        <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="max-w-2xl mx-auto w-full">
+        <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="max-w-2xl mx-auto w-full">
           <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
             <span className="text-4xl">⚠️</span>
           </div>
@@ -658,7 +659,7 @@ function WizardApp() {
               Retry Connection
             </button>
           </div>
-        </LiquidGlass>
+        </GlassCard>
       </div>
     );
   }
@@ -666,12 +667,13 @@ function WizardApp() {
   // Render different screens based on step and flow
   if (wizardState.flow === 'medical') {
     return (
-      <div className="min-h-screen mesh-gradient-medical">
+      <div className="min-h-screen mesh-gradient-medical relative">
+        <OrbBackground />
         <Header onReset={handleReset} onRefresh={refresh} />
 
         {wizardState.step === 1 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
-            <LiquidGlass cornerRadius={28} padding="0" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full overflow-hidden">
+            <GlassCard cornerRadius={28} padding="0" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full overflow-hidden">
               {/* Banner */}
               <div
                 className="p-8 text-white"
@@ -729,14 +731,14 @@ function WizardApp() {
                   </button>
                 </div>
               </div>
-            </LiquidGlass>
+            </GlassCard>
           </div>
         )}
 
         {wizardState.step === 2 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={1} totalSteps={totalSteps} isMedical />
-            <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+            <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
               <div className="text-[#ff2d55] text-xs font-semibold uppercase tracking-wider mb-2">
                 STEP 2 OF 5
               </div>
@@ -775,14 +777,14 @@ function WizardApp() {
                 </button>
                 <span className="text-sm text-muted-foreground">Select to continue</span>
               </div>
-            </LiquidGlass>
+            </GlassCard>
           </div>
         )}
 
         {wizardState.step === 3 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={2} totalSteps={totalSteps} isMedical />
-            <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+            <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
               <div className="text-[#ff2d55] text-xs font-semibold uppercase tracking-wider mb-2">
                 STEP 3 OF 5
               </div>
@@ -812,14 +814,14 @@ function WizardApp() {
                 </button>
                 <span className="text-sm text-muted-foreground">Select to continue</span>
               </div>
-            </LiquidGlass>
+            </GlassCard>
           </div>
         )}
 
         {wizardState.step === 4 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={3} totalSteps={totalSteps} isMedical />
-            <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+            <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
               <div className="text-[#ff2d55] text-xs font-semibold uppercase tracking-wider mb-2">
                 STEP 4 OF 5
               </div>
@@ -860,14 +862,14 @@ function WizardApp() {
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
-            </LiquidGlass>
+            </GlassCard>
           </div>
         )}
 
         {wizardState.step === 5 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={4} totalSteps={totalSteps} isMedical />
-            <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+            <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
               <div className="text-[#ff2d55] text-xs font-semibold uppercase tracking-wider mb-2">
                 STEP 5 OF 5
               </div>
@@ -908,13 +910,13 @@ function WizardApp() {
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
-            </LiquidGlass>
+            </GlassCard>
           </div>
         )}
 
         {wizardState.step === 6 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
-            <LiquidGlass cornerRadius={28} padding="0" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full overflow-hidden">
+            <GlassCard cornerRadius={28} padding="0" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full overflow-hidden">
               {/* Banner */}
               <div
                 className="p-8 text-white"
@@ -1005,7 +1007,7 @@ function WizardApp() {
                   </p>
                 </div>
               </div>
-            </LiquidGlass>
+            </GlassCard>
           </div>
         )}
       </div>
@@ -1014,7 +1016,8 @@ function WizardApp() {
 
   // Standard flow screens
   return (
-    <div className="min-h-screen mesh-gradient-light">
+    <div className="min-h-screen mesh-gradient-light relative">
+      <OrbBackground />
       <Header onReset={handleReset} onRefresh={refresh} />
 
       {wizardState.step === 0 && (
@@ -1031,7 +1034,7 @@ function WizardApp() {
             </p>
           </div>
 
-          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+          <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="flex items-center gap-3 mb-6">
               <div className="h-10 w-1 bg-gradient-to-b from-primary to-purple-500 rounded-full"></div>
               <div>
@@ -1073,14 +1076,14 @@ function WizardApp() {
             </div>
 
             <TrustBadges />
-          </LiquidGlass>
+          </GlassCard>
         </div>
       )}
 
       {wizardState.step === 1 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={1} totalSteps={totalSteps} />
-          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+          <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP 2 OF {totalSteps}
             </div>
@@ -1117,14 +1120,14 @@ function WizardApp() {
               </button>
               <span className="text-sm text-muted-foreground">Select to continue</span>
             </div>
-          </LiquidGlass>
+          </GlassCard>
         </div>
       )}
 
       {wizardState.step === 2 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={2} totalSteps={totalSteps} />
-          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+          <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP 3 OF {totalSteps}
             </div>
@@ -1161,14 +1164,14 @@ function WizardApp() {
               </button>
               <span className="text-sm text-muted-foreground">Select to continue</span>
             </div>
-          </LiquidGlass>
+          </GlassCard>
         </div>
       )}
 
       {wizardState.step === 3 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={3} totalSteps={totalSteps} />
-          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+          <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP 4 OF {totalSteps}
             </div>
@@ -1204,14 +1207,14 @@ function WizardApp() {
               </button>
               <span className="text-sm text-muted-foreground">Select to continue</span>
             </div>
-          </LiquidGlass>
+          </GlassCard>
         </div>
       )}
 
       {wizardState.step === 4 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={4} totalSteps={totalSteps} />
-          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+          <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP 5 OF {totalSteps}
             </div>
@@ -1257,19 +1260,19 @@ function WizardApp() {
                   wizardState.setSelectedDuty('');
                   handleContinue();
                 }}
-                className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors underline"
+                className="px-5 py-2.5 text-sm text-muted-foreground hover:text-foreground font-medium transition-all border border-dashed border-foreground/15 hover:border-foreground/30 rounded-xl"
               >
                 No Preference — Skip
               </button>
             </div>
-          </LiquidGlass>
+          </GlassCard>
         </div>
       )}
 
       {wizardState.step === 5 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={5} totalSteps={totalSteps} />
-          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+          <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP 6 OF {totalSteps}
             </div>
@@ -1316,19 +1319,19 @@ function WizardApp() {
                   wizardState.setSelectedMaterial('');
                   handleContinue();
                 }}
-                className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors underline"
+                className="px-5 py-2.5 text-sm text-muted-foreground hover:text-foreground font-medium transition-all border border-dashed border-foreground/15 hover:border-foreground/30 rounded-xl"
               >
                 No Preference — Skip
               </button>
             </div>
-          </LiquidGlass>
+          </GlassCard>
         </div>
       )}
 
       {wizardState.step === 6 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={6} totalSteps={totalSteps} />
-          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+          <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP 7 OF {totalSteps}
             </div>
@@ -1372,19 +1375,19 @@ function WizardApp() {
                   wizardState.setSelectedConnection('');
                   handleContinue();
                 }}
-                className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors underline"
+                className="px-5 py-2.5 text-sm text-muted-foreground hover:text-foreground font-medium transition-all border border-dashed border-foreground/15 hover:border-foreground/30 rounded-xl"
               >
                 No Preference — Skip
               </button>
             </div>
-          </LiquidGlass>
+          </GlassCard>
         </div>
       )}
 
       {wizardState.step === 7 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={7} totalSteps={totalSteps} />
-          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+          <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP 8 OF {totalSteps}
             </div>
@@ -1435,19 +1438,19 @@ function WizardApp() {
                   wizardState.setSelectedGuard('');
                   handleContinue();
                 }}
-                className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors underline"
+                className="px-5 py-2.5 text-sm text-muted-foreground hover:text-foreground font-medium transition-all border border-dashed border-foreground/15 hover:border-foreground/30 rounded-xl"
               >
                 No Preference — Skip
               </button>
             </div>
-          </LiquidGlass>
+          </GlassCard>
         </div>
       )}
 
       {wizardState.step === 8 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={8} totalSteps={totalSteps} />
-          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+          <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP 9 OF {totalSteps}
             </div>
@@ -1498,19 +1501,19 @@ function WizardApp() {
                   wizardState.setSelectedPedalConfig('');
                   handleContinue();
                 }}
-                className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors underline"
+                className="px-5 py-2.5 text-sm text-muted-foreground hover:text-foreground font-medium transition-all border border-dashed border-foreground/15 hover:border-foreground/30 rounded-xl"
               >
                 No Preference — Skip
               </button>
             </div>
-          </LiquidGlass>
+          </GlassCard>
         </div>
       )}
 
       {wizardState.step === 9 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={9} totalSteps={totalSteps} />
-          <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+          <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP {totalSteps} OF {totalSteps}
             </div>
@@ -1562,7 +1565,7 @@ function WizardApp() {
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-          </LiquidGlass>
+          </GlassCard>
         </div>
       )}
 
@@ -1570,7 +1573,7 @@ function WizardApp() {
         <>
           {needsCustomSolution() ? (
             <div className="max-w-[800px] mx-auto px-6 py-8">
-              <LiquidGlass cornerRadius={28} padding="0" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full overflow-hidden">
+              <GlassCard cornerRadius={28} padding="0" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full overflow-hidden">
                 {/* Banner */}
                 <div
                   className="p-8 text-white"
@@ -1657,7 +1660,7 @@ function WizardApp() {
                     </p>
                   </div>
                 </div>
-              </LiquidGlass>
+              </GlassCard>
             </div>
           ) : (
             <div className="max-w-[1200px] mx-auto px-6 py-8">
@@ -1734,7 +1737,7 @@ function WizardApp() {
                     </div>
 
                     {/* Filter Summary Bar */}
-                    <LiquidGlass cornerRadius={20} padding="24px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="mb-12 w-full">
+                    <GlassCard cornerRadius={20} padding="24px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="mb-12 w-full">
                       <div className="flex items-center gap-3 mb-4">
                         <span className="text-sm font-bold text-foreground uppercase tracking-wider">
                           Active Filters:
@@ -1838,12 +1841,12 @@ function WizardApp() {
                           />
                         ))}
                       </div>
-                    </LiquidGlass>
+                    </GlassCard>
 
                     {/* Best Match Highlight */}
                     {bestMatch && (
                       <div className="mb-16 transform hover:scale-[1.01] transition-transform duration-500">
-                        <LiquidGlass cornerRadius={32} padding="0" blurAmount={0.25} saturation={150} displacementScale={50} overLight className="w-full overflow-hidden">
+                        <GlassCard cornerRadius={32} padding="0" blurAmount={0.25} saturation={150} displacementScale={50} overLight className="w-full overflow-hidden">
                            <div className="grid grid-cols-1 lg:grid-cols-2">
                              <div className="p-12 flex flex-col justify-center relative overflow-hidden">
                                <div className="relative z-10">
@@ -1926,7 +1929,7 @@ function WizardApp() {
                                />
                              </div>
                            </div>
-                        </LiquidGlass>
+                        </GlassCard>
                       </div>
                     )}
 
@@ -1992,7 +1995,7 @@ function WizardApp() {
 
                     {/* Alternative products notice */}
                     {!hasExactMatches && alternatives && (
-                      <LiquidGlass cornerRadius={20} padding="24px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="mb-12 w-full">
+                      <GlassCard cornerRadius={20} padding="24px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="mb-12 w-full">
                         <div className="flex items-start gap-4">
                           <div className="w-12 h-12 bg-[#ff9500] rounded-full flex items-center justify-center flex-shrink-0 text-2xl">
                             ℹ️
@@ -2013,11 +2016,11 @@ function WizardApp() {
                             </button>
                           </div>
                         </div>
-                      </LiquidGlass>
+                      </GlassCard>
                     )}
 
                     {/* Footer CTA */}
-                    <LiquidGlass cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} className="mt-16 w-full bg-[#1e293b]">
+                    <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} className="mt-16 w-full bg-[#1e293b]">
                       <div className="text-white text-center">
                         <h2 className="text-2xl font-bold mb-2">Can't find what you need?</h2>
                         <p className="text-white/80 mb-6">
@@ -2040,7 +2043,7 @@ function WizardApp() {
                           </button>
                         </div>
                       </div>
-                    </LiquidGlass>
+                    </GlassCard>
                   </>
                 );
               })()}
