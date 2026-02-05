@@ -1,8 +1,8 @@
 import { RotateCcw, Settings, Moon, Sun, Menu, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { GlassCard } from '@/app/components/GlassCard';
-import logoLight from '@/assets/Linemaster Blue Corporate Logo 2.png';
-import logoDark from '@/assets/white linemaster logo.png';
+const logoLight = '/Linemaster Blue Corporate Logo 2.png';
+const logoDark = '/white linemaster logo.png';
 
 interface HeaderProps {
   onReset: () => void;
