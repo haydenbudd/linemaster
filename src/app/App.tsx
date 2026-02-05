@@ -593,20 +593,21 @@ function WizardApp() {
     doc.save(`linemaster-${wizardState.flow}-specifications-${Date.now()}.pdf`);
   };
 
-  // Calculate total visible steps dynamically (exclude skipped steps)
+  // Calculate total visible steps dynamically (exclude Application step 0 and skipped steps)
   const totalSteps = (() => {
     if (wizardState.flow === 'medical') return 5;
-    let steps = 10; // base: steps 0-9 (App, Tech, Action, Env, Duty, Material, Connection, Guard, PedalConfig, Features)
-    if (wizardState.selectedTechnology === 'pneumatic') steps--; // skip Connection
+    let steps = 9; // Steps 1-9 (Tech, Action, Env, Duty, Material, Connection, Guard, PedalConfig, Features)
+    if (wizardState.selectedTechnology === 'pneumatic') steps--; // skip Connection → 8
     return steps;
   })();
 
-  // Map raw wizard step index to logical progress step (accounts for skipped steps)
+  // Map raw wizard step index to logical progress step (0-indexed, excludes Application step and skipped steps)
   const getProgressStep = (rawStep: number) => {
+    let step = rawStep - 1; // subtract 1 because Application (step 0) is not counted
     if (wizardState.selectedTechnology === 'pneumatic' && rawStep > 6) {
-      return rawStep - 1;
+      step--; // adjust for skipped Connection step
     }
-    return rawStep;
+    return step;
   };
 
   // 1-indexed display step for labels
@@ -680,7 +681,7 @@ function WizardApp() {
     return (
       <div className="min-h-screen mesh-gradient-medical relative">
         <OrbBackground />
-        <Header onReset={handleReset} onRefresh={refresh} />
+        <Header onReset={handleReset} />
 
         {wizardState.step === 1 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
@@ -1029,11 +1030,10 @@ function WizardApp() {
   return (
     <div className="min-h-screen mesh-gradient-light relative">
       <OrbBackground />
-      <Header onReset={handleReset} onRefresh={refresh} />
+      <Header onReset={handleReset} />
 
       {wizardState.step === 0 && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <ProgressDots currentStep={0} totalSteps={totalSteps} />
 
           {/* Hero Section */}
           <div className="text-center mb-12">
@@ -1049,9 +1049,6 @@ function WizardApp() {
             <div className="flex items-center gap-3 mb-6">
               <div className="h-10 w-1 bg-gradient-to-b from-primary to-purple-500 rounded-full"></div>
               <div>
-                <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-1">
-                  Step {getDisplayStep(0)} of {totalSteps}
-                </div>
                 <h2 className="text-2xl font-bold text-foreground">
                   What's your application?
                 </h2>

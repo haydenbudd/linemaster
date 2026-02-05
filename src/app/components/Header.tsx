@@ -1,4 +1,4 @@
-import { RotateCcw, Settings, Moon, Sun, RefreshCw, Menu, X } from 'lucide-react';
+import { RotateCcw, Settings, Moon, Sun, Menu, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { GlassCard } from '@/app/components/GlassCard';
 import logoLight from '@/assets/Linemaster Blue Corporate Logo 2.png';
@@ -6,10 +6,9 @@ import logoDark from '@/assets/white linemaster logo.png';
 
 interface HeaderProps {
   onReset: () => void;
-  onRefresh?: () => void;
 }
 
-export function Header({ onReset, onRefresh }: HeaderProps) {
+export function Header({ onReset }: HeaderProps) {
   const [isDark, setIsDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -84,15 +83,6 @@ export function Header({ onReset, onRefresh }: HeaderProps) {
                   <Moon className="w-[18px] h-[18px] text-muted-foreground" />
                 )}
               </button>
-              {onRefresh && (
-                <button
-                  onClick={onRefresh}
-                  className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-all duration-200"
-                  title="Refresh product data"
-                >
-                  <RefreshCw className="w-[18px] h-[18px] text-muted-foreground" />
-                </button>
-              )}
               <a
                 href="#/admin"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-all duration-200"
@@ -134,15 +124,6 @@ export function Header({ onReset, onRefresh }: HeaderProps) {
                       {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                       {isDark ? 'Light Mode' : 'Dark Mode'}
                     </button>
-                    {onRefresh && (
-                      <button
-                        onClick={() => { onRefresh(); setMenuOpen(false); }}
-                        className="flex items-center gap-3 w-full px-4 py-3 text-sm text-foreground hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 dark:active:bg-white/10 transition-colors"
-                      >
-                        <RefreshCw className="w-4 h-4" />
-                        Refresh Data
-                      </button>
-                    )}
                     <a
                       href="#/admin"
                       onClick={() => setMenuOpen(false)}
