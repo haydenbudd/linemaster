@@ -1033,6 +1033,13 @@ function WizardApp() {
 
       {wizardState.step === 0 && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <button
+            onClick={() => window.history.back()}
+            className="flex items-center gap-2 mb-4 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] rounded-xl transition-all"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
 
           {/* Hero Section */}
           <div className="text-center mb-12">
@@ -1067,14 +1074,7 @@ function WizardApp() {
                 ))}
             </div>
 
-            <div className="flex items-center justify-between pt-6 border-t border-foreground/5">
-              <button
-                disabled
-                className="flex items-center gap-2 px-6 py-3 text-muted-foreground/50 cursor-not-allowed"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <span className="font-semibold">Back</span>
-              </button>
+            <div className="flex items-center justify-center pt-6 border-t border-foreground/5">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
                 <span>Select an option to continue</span>
