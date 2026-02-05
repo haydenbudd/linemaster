@@ -1139,6 +1139,13 @@ function WizardApp() {
       {wizardState.step === 2 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={getProgressStep(2)} totalSteps={totalSteps} />
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 mb-4 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] rounded-xl transition-all"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP {getDisplayStep(2)} OF {totalSteps}
@@ -1182,6 +1189,13 @@ function WizardApp() {
       {wizardState.step === 3 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={getProgressStep(3)} totalSteps={totalSteps} />
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 mb-4 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] rounded-xl transition-all"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP {getDisplayStep(3)} OF {totalSteps}
@@ -1224,6 +1238,13 @@ function WizardApp() {
       {wizardState.step === 4 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={getProgressStep(4)} totalSteps={totalSteps} />
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 mb-4 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] rounded-xl transition-all"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP {getDisplayStep(4)} OF {totalSteps}
@@ -1281,6 +1302,13 @@ function WizardApp() {
       {wizardState.step === 5 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={getProgressStep(5)} totalSteps={totalSteps} />
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 mb-4 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] rounded-xl transition-all"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP {getDisplayStep(5)} OF {totalSteps}
@@ -1339,6 +1367,13 @@ function WizardApp() {
       {wizardState.step === 6 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={getProgressStep(6)} totalSteps={totalSteps} />
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 mb-4 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] rounded-xl transition-all"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP {getDisplayStep(6)} OF {totalSteps}
@@ -1394,6 +1429,13 @@ function WizardApp() {
       {wizardState.step === 7 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={getProgressStep(7)} totalSteps={totalSteps} />
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 mb-4 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] rounded-xl transition-all"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP {getDisplayStep(7)} OF {totalSteps}
@@ -1455,6 +1497,13 @@ function WizardApp() {
       {wizardState.step === 8 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={getProgressStep(8)} totalSteps={totalSteps} />
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 mb-4 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] rounded-xl transition-all"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP {getDisplayStep(8)} OF {totalSteps}
@@ -1516,6 +1565,13 @@ function WizardApp() {
       {wizardState.step === 9 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={getProgressStep(9)} totalSteps={totalSteps} />
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 mb-4 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] rounded-xl transition-all"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
               STEP {getDisplayStep(9)} OF {totalSteps}
