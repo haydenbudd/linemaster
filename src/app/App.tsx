@@ -596,10 +596,21 @@ function WizardApp() {
   // Calculate total visible steps dynamically (exclude skipped steps)
   const totalSteps = (() => {
     if (wizardState.flow === 'medical') return 5;
-    let steps = 10; // base: steps 0-10 (App, Tech, Action, Env, Duty, Material, Connection, Guard, PedalConfig, Features, Results)
+    let steps = 10; // base: steps 0-9 (App, Tech, Action, Env, Duty, Material, Connection, Guard, PedalConfig, Features)
     if (wizardState.selectedTechnology === 'pneumatic') steps--; // skip Connection
     return steps;
   })();
+
+  // Map raw wizard step index to logical progress step (accounts for skipped steps)
+  const getProgressStep = (rawStep: number) => {
+    if (wizardState.selectedTechnology === 'pneumatic' && rawStep > 6) {
+      return rawStep - 1;
+    }
+    return rawStep;
+  };
+
+  // 1-indexed display step for labels
+  const getDisplayStep = (rawStep: number) => getProgressStep(rawStep) + 1;
 
   // Show loading state
   if (loading) {
@@ -1039,7 +1050,7 @@ function WizardApp() {
               <div className="h-10 w-1 bg-gradient-to-b from-primary to-purple-500 rounded-full"></div>
               <div>
                 <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-1">
-                  Step 1 of {totalSteps}
+                  Step {getDisplayStep(0)} of {totalSteps}
                 </div>
                 <h2 className="text-2xl font-bold text-foreground">
                   What's your application?
@@ -1082,10 +1093,17 @@ function WizardApp() {
 
       {wizardState.step === 1 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
-          <ProgressDots currentStep={1} totalSteps={totalSteps} />
+          <ProgressDots currentStep={getProgressStep(1)} totalSteps={totalSteps} />
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-1.5 mb-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
-              STEP 2 OF {totalSteps}
+              STEP {getDisplayStep(1)} OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Technology</h2>
             <p className="text-sm text-muted-foreground mb-6">Select your technology.</p>
@@ -1126,10 +1144,10 @@ function WizardApp() {
 
       {wizardState.step === 2 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
-          <ProgressDots currentStep={2} totalSteps={totalSteps} />
+          <ProgressDots currentStep={getProgressStep(2)} totalSteps={totalSteps} />
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
-              STEP 3 OF {totalSteps}
+              STEP {getDisplayStep(2)} OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Action</h2>
             <p className="text-sm text-muted-foreground mb-6">Select switch action.</p>
@@ -1170,10 +1188,10 @@ function WizardApp() {
 
       {wizardState.step === 3 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
-          <ProgressDots currentStep={3} totalSteps={totalSteps} />
+          <ProgressDots currentStep={getProgressStep(3)} totalSteps={totalSteps} />
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
-              STEP 4 OF {totalSteps}
+              STEP {getDisplayStep(3)} OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">IP Rating</h2>
             <p className="text-sm text-muted-foreground mb-6">Select Ingress Protection rating.</p>
@@ -1213,10 +1231,10 @@ function WizardApp() {
 
       {wizardState.step === 4 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
-          <ProgressDots currentStep={4} totalSteps={totalSteps} />
+          <ProgressDots currentStep={getProgressStep(4)} totalSteps={totalSteps} />
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
-              STEP 5 OF {totalSteps}
+              STEP {getDisplayStep(4)} OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Stability & Material</h2>
             <p className="text-sm text-muted-foreground mb-6">
@@ -1271,10 +1289,10 @@ function WizardApp() {
 
       {wizardState.step === 5 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
-          <ProgressDots currentStep={5} totalSteps={totalSteps} />
+          <ProgressDots currentStep={getProgressStep(5)} totalSteps={totalSteps} />
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
-              STEP 6 OF {totalSteps}
+              STEP {getDisplayStep(5)} OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Material</h2>
             <p className="text-sm text-muted-foreground mb-6">
@@ -1330,10 +1348,10 @@ function WizardApp() {
 
       {wizardState.step === 6 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
-          <ProgressDots currentStep={6} totalSteps={totalSteps} />
+          <ProgressDots currentStep={getProgressStep(6)} totalSteps={totalSteps} />
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
-              STEP 7 OF {totalSteps}
+              STEP {getDisplayStep(6)} OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Connection Type</h2>
             <p className="text-sm text-muted-foreground mb-6">Select connection style.</p>
@@ -1386,10 +1404,10 @@ function WizardApp() {
 
       {wizardState.step === 7 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
-          <ProgressDots currentStep={7} totalSteps={totalSteps} />
+          <ProgressDots currentStep={getProgressStep(7)} totalSteps={totalSteps} />
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
-              STEP 8 OF {totalSteps}
+              STEP {getDisplayStep(7)} OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Safety Guard</h2>
             <p className="text-sm text-muted-foreground mb-6">
@@ -1449,10 +1467,10 @@ function WizardApp() {
 
       {wizardState.step === 8 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
-          <ProgressDots currentStep={8} totalSteps={totalSteps} />
+          <ProgressDots currentStep={getProgressStep(8)} totalSteps={totalSteps} />
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
-              STEP 9 OF {totalSteps}
+              STEP {getDisplayStep(8)} OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Pedal Configuration</h2>
             <p className="text-sm text-muted-foreground mb-6">
@@ -1512,10 +1530,10 @@ function WizardApp() {
 
       {wizardState.step === 9 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
-          <ProgressDots currentStep={9} totalSteps={totalSteps} />
+          <ProgressDots currentStep={getProgressStep(9)} totalSteps={totalSteps} />
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">
-              STEP {totalSteps} OF {totalSteps}
+              STEP {getDisplayStep(9)} OF {totalSteps}
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Additional Features</h2>
             <p className="text-sm text-muted-foreground mb-6">Select any additional features you need.</p>

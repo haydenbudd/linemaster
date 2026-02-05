@@ -5,9 +5,6 @@ node_modules/
 dist/
 build/
 
-# Lock files (optional - include if team uses npm)
-package-lock.json
-
 # Environment variables
 .env
 .env.local

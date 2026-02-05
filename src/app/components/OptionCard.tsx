@@ -30,18 +30,18 @@ export function OptionCard({
       overLight
       tiltOnHover
       onClick={onSelect}
-      className={`w-full cursor-pointer transition-all duration-300 min-h-[48px] ${
+      className={`w-full cursor-pointer transition-all duration-300 min-h-[48px] group ${
         selected ? 'ring-2 ring-primary/40' : ''
       } ${option.isMedical ? 'ring-1 ring-[#ff2d55]/30' : ''}`}
     >
       <div className="flex items-start gap-4">
         {IconComponent && (
-          <div className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 ${
+          <div className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-0.5 ${
             selected
               ? 'bg-primary text-primary-foreground'
-              : 'bg-black/[0.04] dark:bg-white/[0.06] text-muted-foreground'
+              : 'bg-black/[0.04] dark:bg-white/[0.06] text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'
           }`}>
-            <IconComponent className="w-5 h-5" />
+            <IconComponent className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
           </div>
         )}
 

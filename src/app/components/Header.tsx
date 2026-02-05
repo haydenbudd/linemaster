@@ -1,6 +1,8 @@
 import { RotateCcw, Settings, Moon, Sun, RefreshCw, Menu, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { GlassCard } from '@/app/components/GlassCard';
+import logoLight from '@/assets/Linemaster Blue Corporate Logo 2.png';
+import logoDark from '@/assets/white linemaster logo.png';
 
 interface HeaderProps {
   onReset: () => void;
@@ -59,9 +61,9 @@ export function Header({ onReset, onRefresh }: HeaderProps) {
             {/* Logo */}
             <div className="flex items-center gap-3">
               <img
-                src="https://linemaster.com/wp-content/uploads/2024/10/linemaster-logo.jpg"
+                src={isDark ? logoDark : logoLight}
                 alt="Linemaster"
-                className="h-7 dark:brightness-0 dark:invert"
+                className="h-7"
               />
               <div className="hidden sm:block h-4 w-px bg-foreground/10" />
               <span className="hidden sm:block text-sm font-medium text-muted-foreground tracking-tight">
