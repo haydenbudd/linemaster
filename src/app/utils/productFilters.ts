@@ -63,7 +63,7 @@ export const filterProductsByConnection = (products: Product[], cordedFilter: 'a
 export const isProductEnvironmentMatch = (product: Product, selectedEnvironment?: string) => {
   if (!selectedEnvironment) return false;
   if (selectedEnvironment === 'any') return true; // No preference — all products match
-  if (selectedEnvironment === 'dry') return product.ip === 'IP20';
+  if (selectedEnvironment === 'dry') return true; // Dry: any IP rating is sufficient
   if (selectedEnvironment === 'damp') return ['IP56', 'IP68'].includes(product.ip);
   if (selectedEnvironment === 'wet') return product.ip === 'IP68';
   return false;
@@ -121,3 +121,40 @@ export const getProcessedProducts = (products: Product[], options: FilterOptions
   filtered = sortProducts(filtered, options.sortBy, options.selectedEnvironment);
   return filtered;
 };
+
+// Wizard-level filter interface used for step-by-step product matching
+export interface WizardFilters {
+  selectedApplication: string;
+  selectedTechnology: string;
+  selectedAction: string;
+  selectedEnvironment: string;
+  selectedDuty: string;
+  selectedMaterial: string;
+  selectedConnection: string;
+  selectedGuard: string;
+  selectedFeatures: string[];
+}
+
+// Check if a product matches the current wizard filter selections
+export function checkWizardMatch(product: Product, filters: WizardFilters): boolean {
+  if (filters.selectedApplication && !product.applications.includes(filters.selectedApplication)) return false;
+  if (filters.selectedTechnology && product.technology !== filters.selectedTechnology) return false;
+  if (filters.selectedAction && !product.actions.includes(filters.selectedAction)) return false;
+  if (filters.selectedEnvironment === 'wet' && product.ip !== 'IP68') return false;
+  if (filters.selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(product.ip)) return false;
+  if (filters.selectedDuty && product.duty !== filters.selectedDuty) return false;
+  if (filters.selectedMaterial && product.material !== filters.selectedMaterial) return false;
+  if (filters.selectedTechnology !== 'pneumatic' && filters.selectedConnection && product.connector_type !== filters.selectedConnection) return false;
+  if (filters.selectedGuard === 'yes' && !(product.features || []).includes('shield')) return false;
+  if (filters.selectedGuard === 'no' && (product.features || []).includes('shield')) return false;
+
+  if (filters.selectedFeatures.length > 0) {
+    const hardwareFeatures = filters.selectedFeatures.filter(f => f !== 'custom_cable' && f !== 'custom_connector');
+    if (hardwareFeatures.length > 0) {
+      const productFeatures = product.features || [];
+      if (!hardwareFeatures.every(f => productFeatures.includes(f))) return false;
+    }
+  }
+
+  return true;
+}

@@ -1,11 +1,38 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchProducts, fetchOptions, Product, Option } from '@/app/lib/api';
+import { fetchProducts, Product, Option } from '@/app/lib/api';
+import {
+  applications as staticApplications,
+  technologies as staticTechnologies,
+  actions as staticActions,
+  environments as staticEnvironments,
+  features as staticFeatures,
+  consoleStyles as staticConsoleStyles,
+  pedalCounts as staticPedalCounts,
+  medicalTechnicalFeatures as staticMedicalTechnicalFeatures,
+  accessories as staticAccessories,
+} from '@/app/data/options';
+import { products as staticProducts } from '@/app/data/products';
 
 interface OptionWithIcon extends Option {
   icon?: string;
   isMedical?: boolean;
   availableFor?: string[];
   hideFor?: string[];
+}
+
+// Convert static options (React component icons) to OptionWithIcon (string icon names)
+function toOptionWithIcon(opt: any): OptionWithIcon {
+  return {
+    id: opt.id,
+    category: opt.category || '',
+    label: opt.label,
+    description: opt.description,
+    icon: typeof opt.icon === 'string' ? opt.icon : opt.icon?.displayName || opt.icon?.name || undefined,
+    isMedical: opt.isMedical || false,
+    availableFor: opt.availableFor || undefined,
+    hideFor: opt.hideFor || undefined,
+    sortOrder: opt.sortOrder || 0,
+  };
 }
 
 interface ProductData {
@@ -27,9 +54,22 @@ interface ProductData {
   refresh: () => void;
 }
 
+// Pre-compute static option data so the wizard renders instantly
+const staticOptionData = {
+  applications: staticApplications.map(toOptionWithIcon),
+  technologies: staticTechnologies.map(toOptionWithIcon),
+  actions: staticActions.map(toOptionWithIcon),
+  environments: staticEnvironments.map(toOptionWithIcon),
+  features: staticFeatures.map(toOptionWithIcon),
+  consoleStyles: staticConsoleStyles.map(toOptionWithIcon),
+  pedalCounts: staticPedalCounts.map(toOptionWithIcon),
+  medicalTechnicalFeatures: staticMedicalTechnicalFeatures.map(toOptionWithIcon),
+  accessories: staticAccessories.map(toOptionWithIcon),
+};
+
 export function useProductData(): ProductData {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [options, setOptions] = useState<OptionWithIcon[]>([]);
+  // Initialize with static data so the wizard is usable immediately
+  const [products, setProducts] = useState<Product[]>(staticProducts as Product[]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,30 +78,13 @@ export function useProductData(): ProductData {
       setLoading(true);
       setError(null);
 
-      const [productsData, optionsData] = await Promise.all([
-        fetchProducts(),
-        fetchOptions(),
-      ]);
+      const productsData = await fetchProducts();
 
-      setProducts(productsData);
-
-      // Map options from Supabase, using the 'value' field as 'id' for backward compatibility
-      const mapped: OptionWithIcon[] = optionsData.map((opt: any) => ({
-        id: opt.value || opt.id,
-        category: opt.category,
-        label: opt.label,
-        description: opt.description,
-        icon: opt.icon || undefined,
-        isMedical: opt.is_medical || false,
-        availableFor: opt.available_for || undefined,
-        hideFor: opt.hide_for || undefined,
-        sortOrder: opt.sort_order || 0,
-      }));
-
-      setOptions(mapped);
+      // Use API products if available, otherwise keep static fallback
+      setProducts(productsData.length > 0 ? productsData : staticProducts as Product[]);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load data';
-      setError(message);
+      console.warn('API fetch failed, using static fallback data:', err);
+      setProducts(staticProducts as Product[]);
     } finally {
       setLoading(false);
     }
@@ -70,13 +93,6 @@ export function useProductData(): ProductData {
   useEffect(() => {
     loadData();
   }, [loadData]);
-
-  // Helper to filter and sort options by category
-  const getByCategory = (category: string): OptionWithIcon[] => {
-    return options
-      .filter(o => o.category === category)
-      .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-  };
 
   // Derive unique materials from product data with user-friendly descriptions
   const materials: OptionWithIcon[] = (() => {
@@ -146,17 +162,19 @@ export function useProductData(): ProductData {
       .sort((a, b) => (dutyMeta[a.id]?.order ?? 99) - (dutyMeta[b.id]?.order ?? 99));
   })();
 
+  // Always use static data for wizard options — these define the UX flow and must always be available.
+  // API options could supplement in the future but should never be the sole source.
   return {
     products,
-    applications: getByCategory('application'),
-    technologies: getByCategory('technology'),
-    actions: getByCategory('action'),
-    environments: getByCategory('environment'),
-    features: getByCategory('feature'),
-    consoleStyles: getByCategory('console_style'),
-    pedalCounts: getByCategory('pedal_count'),
-    medicalTechnicalFeatures: getByCategory('medical_feature'),
-    accessories: getByCategory('accessory'),
+    applications: staticOptionData.applications,
+    technologies: staticOptionData.technologies,
+    actions: staticOptionData.actions,
+    environments: staticOptionData.environments,
+    features: staticOptionData.features,
+    consoleStyles: staticOptionData.consoleStyles,
+    pedalCounts: staticOptionData.pedalCounts,
+    medicalTechnicalFeatures: staticOptionData.medicalTechnicalFeatures,
+    accessories: staticOptionData.accessories,
     materials,
     connections,
     duties,
