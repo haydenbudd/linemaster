@@ -9,7 +9,6 @@ import { TrustBadges } from '@/app/components/TrustBadges';
 import { EnhancedSearch } from '@/app/components/EnhancedSearch';
 import { ChevronLeft, ArrowRight, Download, Send, CheckCircle, Heart, Search, Star, Shield, Footprints } from 'lucide-react';
 import { useProductData } from '@/app/hooks/useProductData';
-import { useProductFilter } from '@/app/hooks/useProductFilter';
 import { useWizardState } from '@/app/hooks/useWizardState';
 import { trackWizardStep, trackProductView, trackPDFDownload, trackQuoteRequest, trackNoResults } from '@/app/utils/analytics';
 import { getProxiedImageUrl } from '@/app/utils/imageProxy';
@@ -285,8 +284,10 @@ function WizardApp() {
 
   const needsCustomSolution = useMemo(() => {
     const filtered = filterProducts();
-    const isCustom =
-      filtered.length === 0 ||
+    // Only show the custom solution dead-end when the user selected custom features
+    // that require engineering (custom cable/connector). When there are 0 exact matches
+    // but alternatives exist, the results page handles that with getAlternativeProducts().
+    const hasCustomFeature =
       wizardState.selectedFeatures.includes('custom_cable') ||
       wizardState.selectedFeatures.includes('custom_connector');
 
@@ -299,7 +300,7 @@ function WizardApp() {
         features: wizardState.selectedFeatures,
       });
     }
-    return isCustom;
+    return hasCustomFeature;
   }, [
     products,
     wizardState.step,
@@ -1021,6 +1022,16 @@ function WizardApp() {
                     Attach your downloaded PDF to the quote form for faster processing.
                   </p>
                 </div>
+
+                <div className="mt-6 pt-6 border-t border-foreground/5">
+                  <button
+                    onClick={handleBack}
+                    className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Back to Accessories
+                  </button>
+                </div>
               </div>
             </GlassCard>
           </div>
@@ -1599,6 +1610,13 @@ function WizardApp() {
             </div>
           ) : (
             <div className="max-w-[1200px] mx-auto px-6 py-8">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 mb-4 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] rounded-xl transition-all"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Back
+              </button>
               {(() => {
                 const exactMatches = filterProducts();
                 const hasExactMatches = exactMatches.length > 0;
@@ -1648,10 +1666,16 @@ function WizardApp() {
                       {hasExactMatches ? (
                         <>
                           <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4 tracking-tight">
-                            We Found <span className="text-primary">The One.</span>
+                            {exactMatches.length === 1
+                              ? <>We Found <span className="text-primary">The One.</span></>
+                              : <>We Found <span className="text-primary">{exactMatches.length} Matches.</span></>
+                            }
                           </h1>
                           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                            Based on your requirements, this is the exact switch you need.
+                            {exactMatches.length === 1
+                              ? 'Based on your requirements, this is the exact switch you need.'
+                              : 'Based on your requirements, these switches match your needs.'
+                            }
                           </p>
                         </>
                       ) : (
@@ -1690,6 +1714,8 @@ function WizardApp() {
                             value={applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication}
                             onRemove={() => {
                               wizardState.setSelectedApplication('');
+                              wizardState.setSelectedTechnology('');
+                              clearDownstreamSelections(0);
                               wizardState.setStep(0);
                             }}
                           />
@@ -1700,6 +1726,7 @@ function WizardApp() {
                             value={technologies.find(t => t.id === wizardState.selectedTechnology)?.label || wizardState.selectedTechnology}
                             onRemove={() => {
                               wizardState.setSelectedTechnology('');
+                              clearDownstreamSelections(1);
                               wizardState.setStep(1);
                             }}
                           />
@@ -1710,6 +1737,7 @@ function WizardApp() {
                             value={actions.find(a => a.id === wizardState.selectedAction)?.label || wizardState.selectedAction}
                             onRemove={() => {
                               wizardState.setSelectedAction('');
+                              clearDownstreamSelections(2);
                               wizardState.setStep(2);
                             }}
                           />
@@ -1720,6 +1748,7 @@ function WizardApp() {
                             value={environments.find(e => e.id === wizardState.selectedEnvironment)?.label || wizardState.selectedEnvironment}
                             onRemove={() => {
                               wizardState.setSelectedEnvironment('');
+                              clearDownstreamSelections(3);
                               wizardState.setStep(3);
                             }}
                           />
@@ -1730,6 +1759,7 @@ function WizardApp() {
                             value={duties.find(d => d.id === wizardState.selectedDuty)?.label || wizardState.selectedDuty}
                             onRemove={() => {
                               wizardState.setSelectedDuty('');
+                              clearDownstreamSelections(4);
                               wizardState.setStep(4);
                             }}
                           />
@@ -1740,6 +1770,7 @@ function WizardApp() {
                             value={wizardState.selectedMaterial}
                             onRemove={() => {
                               wizardState.setSelectedMaterial('');
+                              clearDownstreamSelections(5);
                               wizardState.setStep(5);
                             }}
                           />
@@ -1750,6 +1781,7 @@ function WizardApp() {
                             value={wizardState.selectedGuard === 'yes' ? 'Safety Guard' : 'No Guard'}
                             onRemove={() => {
                               wizardState.setSelectedGuard('');
+                              clearDownstreamSelections(7);
                               wizardState.setStep(7);
                             }}
                           />
