@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { Option } from '@/app/lib/api';
 
@@ -24,61 +24,79 @@ export function OptionCard({
     <button
       onClick={onSelect}
       className={`
-        group relative w-full p-6 rounded-2xl border-2 text-left transition-all duration-300
-        hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]
+        group relative w-full p-6 text-left transition-all duration-300
+        rounded-[var(--radius)] border backdrop-blur-xl shadow-lg
+        hover:shadow-xl hover:scale-[1.01]
+        before:absolute before:inset-0 before:rounded-[var(--radius)] before:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4)] before:pointer-events-none before:content-['']
         ${
           selected
-            ? 'border-primary bg-gradient-to-br from-primary/10 via-primary/5 to-transparent shadow-lg ring-2 ring-primary/20'
-            : 'border-border bg-card hover:border-primary/50 dark:hover:bg-card/80'
+            ? 'border-primary bg-card/60 shadow-xl ring-1 ring-primary'
+            : 'border-white/20 dark:border-white/10 bg-card/40 hover:bg-card/60'
         }
-        ${option.isMedical ? 'ring-2 ring-rose-500/30 ring-offset-2 dark:ring-offset-background' : ''}
+        ${option.isMedical ? 'ring-offset-2' : ''}
       `}
     >
+      {/* ISO Certified Badge */}
       {option.isMedical && (
-        <div className="absolute -top-3 right-4 px-3 py-1.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-lg">
-          ISO CERTIFIED
+        <div className="absolute -top-3 right-6 px-3 py-1 bg-gradient-to-r from-[#ff2056] to-[#f6339a] text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-md z-10">
+          ISO Certified
         </div>
       )}
 
-      <div className="flex items-start gap-4">
-        {IconComponent && (
-          <div className={`flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl transition-all ${
-            selected 
-              ? 'bg-primary text-primary-foreground scale-110' 
-              : 'bg-accent text-primary group-hover:bg-primary/10'
-          }`}>
-            <IconComponent className="w-6 h-6" />
+      <div className="flex items-start gap-4 h-full">
+        {/* Icon Container */}
+        <div className="flex-shrink-0">
+          <div className={`w-12 h-12 rounded-[calc(var(--radius)-8px)] flex items-center justify-center transition-colors ${selected ? 'bg-primary/20 text-primary' : 'bg-secondary text-foreground/70 group-hover:bg-primary/10 group-hover:text-primary'}`}>
+            {IconComponent ? (
+              <IconComponent className="w-6 h-6 stroke-[2]" />
+            ) : (
+              <div className="w-6 h-6 rounded-full bg-primary/20" />
+            )}
           </div>
-        )}
-
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-foreground mb-1.5 text-lg">{option.label}</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">{option.description}</p>
-          {productCount !== undefined && (
-            <span className="mt-1 inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full bg-primary/10 text-primary">
-              {productCount} {productCount === 1 ? 'product' : 'products'}
-            </span>
-          )}
         </div>
 
-        <div className="flex-shrink-0 ml-2">
+        {/* Content */}
+        <div className="flex-1 min-w-0 flex flex-col items-start gap-1">
+          <h3 className="text-lg font-bold text-foreground leading-tight">
+            {option.label}
+          </h3>
+
+          {productCount !== undefined && (
+            <div className="bg-secondary px-2 py-0.5 rounded-full text-xs font-semibold text-foreground inline-flex items-center">
+              {productCount} matches
+            </div>
+          )}
+
+          <p className="text-sm font-medium text-muted-foreground leading-relaxed mt-1">
+            {option.description}
+          </p>
+        </div>
+
+        {/* Selection Indicator (Radio/Checkbox) */}
+        <div className="flex-shrink-0 self-start mt-1">
           {multiSelect ? (
-            selected ? (
-              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 text-primary-foreground" />
-              </div>
-            ) : (
-              <Circle className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
-            )
-          ) : (
             <div
-              className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+              className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all duration-200 ${
                 selected
-                  ? 'border-primary bg-primary scale-110'
-                  : 'border-muted-foreground/30 bg-transparent group-hover:border-primary'
+                  ? 'border-primary bg-primary'
+                  : 'border-muted-foreground/30 bg-transparent group-hover:border-primary/50'
               }`}
             >
-              {selected && <div className="w-2.5 h-2.5 rounded-full bg-primary-foreground" />}
+              {selected && <CheckCircle2 className="w-4 h-4 text-primary-foreground" />}
+            </div>
+          ) : (
+            <div
+              className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
+                selected
+                  ? 'border-primary'
+                  : 'border-muted-foreground/30 group-hover:border-primary/50'
+              }`}
+            >
+              <div
+                className={`w-3 h-3 rounded-full bg-primary transition-transform duration-200 ${
+                  selected ? 'scale-100' : 'scale-0'
+                }`}
+              />
             </div>
           )}
         </div>
