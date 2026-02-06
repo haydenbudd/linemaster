@@ -65,8 +65,21 @@ function WizardApp() {
     setCordedFilter('all');
   };
 
+  // Clear all selections downstream of the given step to prevent stale filter combos
+  const clearDownstreamSelections = (fromStep: number) => {
+    if (fromStep <= 1) { wizardState.setSelectedAction(''); }
+    if (fromStep <= 2) { wizardState.setSelectedEnvironment(''); }
+    if (fromStep <= 3) { wizardState.setSelectedDuty(''); }
+    if (fromStep <= 4) { wizardState.setSelectedMaterial(''); }
+    if (fromStep <= 5) { wizardState.setSelectedConnection(''); }
+    if (fromStep <= 6) { wizardState.setSelectedGuard(''); }
+    if (fromStep <= 7) { wizardState.setSelectedFeatures([]); }
+  };
+
   const handleApplicationSelect = (id: string) => {
     wizardState.setSelectedApplication(id);
+    wizardState.setSelectedTechnology('');
+    clearDownstreamSelections(0);
     const app = applications.find((a) => a.id === id);
     if (app?.isMedical) {
       wizardState.setFlow('medical');
@@ -270,9 +283,14 @@ function WizardApp() {
     return { products: allForApplication, relaxed: 'all' as const };
   };
 
-  const needsCustomSolution = () => {
+  const needsCustomSolution = useMemo(() => {
     const filtered = filterProducts();
-    if (filtered.length === 0) {
+    const isCustom =
+      filtered.length === 0 ||
+      wizardState.selectedFeatures.includes('custom_cable') ||
+      wizardState.selectedFeatures.includes('custom_connector');
+
+    if (wizardState.step === 10 && filtered.length === 0) {
       trackNoResults({
         application: wizardState.selectedApplication,
         technology: wizardState.selectedTechnology,
@@ -281,12 +299,20 @@ function WizardApp() {
         features: wizardState.selectedFeatures,
       });
     }
-    return (
-      filtered.length === 0 ||
-      wizardState.selectedFeatures.includes('custom_cable') ||
-      wizardState.selectedFeatures.includes('custom_connector')
-    );
-  };
+    return isCustom;
+  }, [
+    products,
+    wizardState.step,
+    wizardState.selectedApplication,
+    wizardState.selectedTechnology,
+    wizardState.selectedAction,
+    wizardState.selectedEnvironment,
+    wizardState.selectedDuty,
+    wizardState.selectedMaterial,
+    wizardState.selectedConnection,
+    wizardState.selectedGuard,
+    wizardState.selectedFeatures,
+  ]);
 
   // Dynamic filtering: Calculate product counts for each step
   const getProductCount = (step: number, optionId?: string) => {
@@ -568,7 +594,7 @@ function WizardApp() {
 
   // Calculate total visible steps dynamically (exclude Application step 0 and skipped steps)
   const totalSteps = (() => {
-    if (wizardState.flow === 'medical') return 5;
+    if (wizardState.flow === 'medical') return 4;
     let steps = 8; // Steps 1-9 minus PedalConfig (Tech, Action, Env, Duty, Material, Connection, Guard, Features)
     if (wizardState.selectedTechnology === 'pneumatic') steps--; // skip Connection → 7
     return steps;
@@ -726,10 +752,10 @@ function WizardApp() {
 
         {wizardState.step === 2 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
-            <ProgressDots currentStep={1} totalSteps={totalSteps} isMedical />
+            <ProgressDots currentStep={0} totalSteps={totalSteps} isMedical />
             <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
               <div className="text-[#ff2d55] text-xs font-semibold uppercase tracking-wider mb-2">
-                STEP 2 OF 5
+                STEP 1 OF {totalSteps}
               </div>
               <h2 className="text-2xl font-bold text-foreground mb-2">Console Style</h2>
               <p className="text-sm text-muted-foreground mb-6">Select your preferred platform.</p>
@@ -772,15 +798,15 @@ function WizardApp() {
 
         {wizardState.step === 3 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
-            <ProgressDots currentStep={2} totalSteps={totalSteps} isMedical />
+            <ProgressDots currentStep={1} totalSteps={totalSteps} isMedical />
             <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
               <div className="text-[#ff2d55] text-xs font-semibold uppercase tracking-wider mb-2">
-                STEP 3 OF 5
+                STEP 2 OF {totalSteps}
               </div>
               <h2 className="text-2xl font-bold text-foreground mb-6">Pedal Count</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                {pedalCounts.filter(o => o.id === '1' || o.id === '2').map((option) => (
+                {pedalCounts.map((option) => (
                   <OptionCard
                     key={option.id}
                     option={option}
@@ -809,10 +835,10 @@ function WizardApp() {
 
         {wizardState.step === 4 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
-            <ProgressDots currentStep={3} totalSteps={totalSteps} isMedical />
+            <ProgressDots currentStep={2} totalSteps={totalSteps} isMedical />
             <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
               <div className="text-[#ff2d55] text-xs font-semibold uppercase tracking-wider mb-2">
-                STEP 4 OF 5
+                STEP 3 OF {totalSteps}
               </div>
               <h2 className="text-2xl font-bold text-foreground mb-2">Technical Features</h2>
               <p className="text-sm text-muted-foreground mb-6">Select all that apply.</p>
@@ -857,10 +883,10 @@ function WizardApp() {
 
         {wizardState.step === 5 && (
           <div className="max-w-[800px] mx-auto px-6 py-8">
-            <ProgressDots currentStep={4} totalSteps={totalSteps} isMedical />
+            <ProgressDots currentStep={3} totalSteps={totalSteps} isMedical />
             <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
               <div className="text-[#ff2d55] text-xs font-semibold uppercase tracking-wider mb-2">
-                STEP 5 OF 5
+                STEP 4 OF {totalSteps}
               </div>
               <h2 className="text-2xl font-bold text-foreground mb-2">Accessories & Add-ons</h2>
               <p className="text-sm text-muted-foreground mb-6">Select all that apply.</p>
@@ -1011,14 +1037,6 @@ function WizardApp() {
 
       {wizardState.step === 0 && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <button
-            onClick={() => window.history.back()}
-            className="flex items-center gap-2 mb-4 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] rounded-xl transition-all"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Back
-          </button>
-
           {/* Hero Section */}
           <div className="text-center mb-12">
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
@@ -1092,6 +1110,7 @@ function WizardApp() {
                         selected={wizardState.selectedTechnology === option.id}
                                                 onSelect={() => {
                           wizardState.setSelectedTechnology(option.id);
+                          clearDownstreamSelections(1);
                           setTimeout(handleContinue, 150);
                         }}
                       />
@@ -1100,14 +1119,7 @@ function WizardApp() {
                 })}
             </div>
 
-            <div className="flex items-center justify-between">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
+            <div className="flex items-center justify-center pt-2">
               <span className="text-sm text-muted-foreground">Select to continue</span>
             </div>
           </GlassCard>
@@ -1142,6 +1154,7 @@ function WizardApp() {
                         selected={wizardState.selectedAction === option.id}
                                                 onSelect={() => {
                           wizardState.setSelectedAction(option.id);
+                          clearDownstreamSelections(2);
                           setTimeout(handleContinue, 150);
                         }}
                       />
@@ -1150,14 +1163,7 @@ function WizardApp() {
                 })}
             </div>
 
-            <div className="flex items-center justify-between">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
+            <div className="flex items-center justify-center pt-2">
               <span className="text-sm text-muted-foreground">Select to continue</span>
             </div>
           </GlassCard>
@@ -1191,6 +1197,7 @@ function WizardApp() {
                       selected={wizardState.selectedEnvironment === option.id}
                                             onSelect={() => {
                         wizardState.setSelectedEnvironment(option.id);
+                        clearDownstreamSelections(3);
                         setTimeout(handleContinue, 150);
                       }}
                     />
@@ -1199,14 +1206,7 @@ function WizardApp() {
               })}
             </div>
 
-            <div className="flex items-center justify-between">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
+            <div className="flex items-center justify-center pt-2">
               <span className="text-sm text-muted-foreground">Select to continue</span>
             </div>
           </GlassCard>
@@ -1234,6 +1234,7 @@ function WizardApp() {
 
             <div className="space-y-4 mb-8">
               {duties
+                .filter(d => getProductCount(4, d.id) > 0)
                 .map((option) => (
                   <OptionCard
                     key={option.id}
@@ -1241,6 +1242,7 @@ function WizardApp() {
                     selected={wizardState.selectedDuty === option.id}
                                         onSelect={() => {
                       wizardState.setSelectedDuty(option.id);
+                      clearDownstreamSelections(4);
                       setTimeout(handleContinue, 150);
                     }}
                   />
@@ -1255,14 +1257,7 @@ function WizardApp() {
               </div>
             )}
 
-            <div className="flex items-center justify-between">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
+            <div className="flex items-center justify-end">
               <button
                 onClick={() => {
                   wizardState.setSelectedDuty('');
@@ -1306,6 +1301,7 @@ function WizardApp() {
                     selected={wizardState.selectedMaterial === option.id}
                                         onSelect={() => {
                       wizardState.setSelectedMaterial(option.id);
+                      clearDownstreamSelections(5);
                       setTimeout(handleContinue, 150);
                     }}
                   />
@@ -1320,14 +1316,7 @@ function WizardApp() {
               </div>
             )}
 
-            <div className="flex items-center justify-between">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
+            <div className="flex items-center justify-end">
               <button
                 onClick={() => {
                   wizardState.setSelectedMaterial('');
@@ -1361,6 +1350,7 @@ function WizardApp() {
 
             <div className="space-y-4 mb-8">
               {connections
+                .filter(c => getProductCount(6, c.id) > 0)
                 .map((option) => (
                   <OptionCard
                     key={option.id}
@@ -1368,6 +1358,7 @@ function WizardApp() {
                     selected={wizardState.selectedConnection === option.id}
                                         onSelect={() => {
                       wizardState.setSelectedConnection(option.id);
+                      clearDownstreamSelections(6);
                       setTimeout(handleContinue, 150);
                     }}
                   />
@@ -1382,14 +1373,7 @@ function WizardApp() {
               </div>
             )}
 
-            <div className="flex items-center justify-between">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
+            <div className="flex items-center justify-end">
               <button
                 onClick={() => {
                   wizardState.setSelectedConnection('');
@@ -1429,6 +1413,7 @@ function WizardApp() {
                 selected={wizardState.selectedGuard === 'yes'}
                                 onSelect={() => {
                   wizardState.setSelectedGuard('yes');
+                  clearDownstreamSelections(7);
                   setTimeout(handleContinue, 150);
                 }}
               />
@@ -1437,6 +1422,7 @@ function WizardApp() {
                 selected={wizardState.selectedGuard === 'no'}
                                 onSelect={() => {
                   wizardState.setSelectedGuard('no');
+                  clearDownstreamSelections(7);
                   setTimeout(handleContinue, 150);
                 }}
               />
@@ -1450,14 +1436,7 @@ function WizardApp() {
               </div>
             )}
 
-            <div className="flex items-center justify-between">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
+            <div className="flex items-center justify-end">
               <button
                 onClick={() => {
                   wizardState.setSelectedGuard('');
@@ -1512,14 +1491,7 @@ function WizardApp() {
                 ))}
             </div>
 
-            <div className="flex items-center justify-between">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
+            <div className="flex items-center justify-end">
               <button
                 onClick={handleContinue}
                 className="flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-colors"
@@ -1534,7 +1506,7 @@ function WizardApp() {
 
       {wizardState.step === 10 && (
         <>
-          {needsCustomSolution() ? (
+          {needsCustomSolution ? (
             <div className="max-w-[800px] mx-auto px-6 py-8">
               <GlassCard cornerRadius={28} padding="0" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full overflow-hidden">
                 {/* Banner */}
@@ -1670,7 +1642,7 @@ function WizardApp() {
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/60 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                         </span>
-                        Analyzed 300+ Products
+                        {products.length} Products Analyzed
                       </div>
 
                       {hasExactMatches ? (
