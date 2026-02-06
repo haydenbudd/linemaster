@@ -8,6 +8,7 @@ import { ChevronLeft, ArrowRight } from 'lucide-react';
 
 export interface StandardStepsProps {
   wizardState: WizardState;
+  categories: Option[];
   applications: Option[];
   technologies: Option[];
   actions: Option[];
@@ -21,6 +22,7 @@ export interface StandardStepsProps {
   getDisplayStep: (rawStep: number) => number;
   getProductCount: (step: number, optionId?: string) => number;
   clearDownstreamSelections: (fromStep: number) => void;
+  onCategorySelect: (id: string) => void;
   onApplicationSelect: (id: string) => void;
   onBack: () => void;
   onContinue: () => void;
@@ -28,6 +30,7 @@ export interface StandardStepsProps {
 
 export function StandardSteps({
   wizardState,
+  categories,
   applications,
   technologies,
   actions,
@@ -41,13 +44,18 @@ export function StandardSteps({
   getDisplayStep,
   getProductCount,
   clearDownstreamSelections,
+  onCategorySelect,
   onApplicationSelect,
   onBack,
   onContinue,
 }: StandardStepsProps) {
+  // Filter applications by selected category for phase 2
+  const filteredApps = wizardState.selectedCategory
+    ? applications.filter((a: any) => a.parentCategory === wizardState.selectedCategory)
+    : applications;
   return (
     <>
-      {wizardState.step === 0 && (
+      {wizardState.step === 0 && !wizardState.selectedCategory && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Hero Section */}
           <div className="text-center mb-12">
@@ -64,22 +72,21 @@ export function StandardSteps({
               <div className="h-10 w-1 bg-gradient-to-b from-primary to-purple-500 rounded-full"></div>
               <div>
                 <h2 className="text-2xl font-bold text-foreground">
-                  What's your application?
+                  What's your industry?
                 </h2>
               </div>
             </div>
-            <p className="text-muted-foreground mb-8">Select the industry or use case that best describes your needs.</p>
+            <p className="text-muted-foreground mb-8">Select the category that best matches your business.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              {applications
-                .map((option) => (
-                  <OptionCard
-                    key={option.id}
-                    option={option}
-                    selected={wizardState.selectedApplication === option.id}
-                    onSelect={() => onApplicationSelect(option.id)}
-                  />
-                ))}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              {categories.map((option) => (
+                <OptionCard
+                  key={option.id}
+                  option={option}
+                  selected={wizardState.selectedCategory === option.id}
+                  onSelect={() => onCategorySelect(option.id)}
+                />
+              ))}
             </div>
 
             <div className="flex items-center justify-center pt-6 border-t border-foreground/5">
@@ -94,6 +101,56 @@ export function StandardSteps({
         </div>
       )}
 
+      {wizardState.step === 0 && wizardState.selectedCategory && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
+              Find Your Perfect Foot Switch
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Answer a few questions and we'll recommend the best product for your needs
+            </p>
+          </div>
+
+          <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
+            <button
+              onClick={onBack}
+              className="flex items-center gap-2 mb-4 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] rounded-xl transition-all"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Back to Industries
+            </button>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-10 w-1 bg-gradient-to-b from-primary to-purple-500 rounded-full"></div>
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">
+                  What's your application?
+                </h2>
+              </div>
+            </div>
+            <p className="text-muted-foreground mb-8">Select the specific use case that best describes your needs.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              {filteredApps.map((option) => (
+                <OptionCard
+                  key={option.id}
+                  option={option}
+                  selected={wizardState.selectedApplication === option.id}
+                  onSelect={() => onApplicationSelect(option.id)}
+                />
+              ))}
+            </div>
+
+            <div className="flex items-center justify-center pt-6 border-t border-foreground/5">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                <span>Select an option to continue</span>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+      )}
+
       {wizardState.step === 1 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
           <ProgressDots currentStep={getProgressStep(1)} totalSteps={totalSteps} />
@@ -102,7 +159,7 @@ export function StandardSteps({
             className="flex items-center gap-2 mb-4 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] rounded-xl transition-all"
           >
             <ChevronLeft className="w-4 h-4" />
-            Back to Applications
+            Back
           </button>
           <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
             <div className="text-primary text-xs font-semibold uppercase tracking-wider mb-2">

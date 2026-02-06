@@ -22,6 +22,7 @@ function WizardApp() {
 
   const {
     products,
+    categories,
     applications,
     technologies,
     actions,
@@ -61,26 +62,43 @@ function WizardApp() {
     if (fromStep <= 7) { wizardState.setSelectedFeatures([]); }
   };
 
+  const handleCategorySelect = (categoryId: string) => {
+    const cat = categories.find((c) => c.id === categoryId);
+    wizardState.setSelectedCategory(categoryId);
+
+    // Medical category auto-advances to medical flow
+    if (cat?.isMedical) {
+      wizardState.setSelectedApplication('medical');
+      wizardState.setSelectedTechnology('');
+      clearDownstreamSelections(0);
+      wizardState.setFlow('medical');
+      setTimeout(() => wizardState.setStep(1), 150);
+      trackWizardStep(0, 'medical', { application: 'medical' });
+    }
+    // Other categories stay on step 0 phase 2 to show sub-applications
+  };
+
   const handleApplicationSelect = (id: string) => {
     wizardState.setSelectedApplication(id);
     wizardState.setSelectedTechnology('');
     clearDownstreamSelections(0);
-    const app = applications.find((a) => a.id === id);
-    if (app?.isMedical) {
-      wizardState.setFlow('medical');
-      setTimeout(() => wizardState.setStep(1), 150);
-    } else {
-      wizardState.setFlow('standard');
-      setTimeout(() => wizardState.setStep(1), 150);
-    }
-    trackWizardStep(0, app?.isMedical ? 'medical' : 'standard', { application: id });
+    wizardState.setFlow('standard');
+    setTimeout(() => wizardState.setStep(1), 150);
+    trackWizardStep(0, 'standard', { application: id });
   };
 
   const handleBack = () => {
+    // Step 0 phase 2: go back to phase 1 (category selection)
+    if (wizardState.step === 0 && wizardState.selectedCategory) {
+      wizardState.setSelectedCategory('');
+      wizardState.setSelectedApplication('');
+      return;
+    }
     if (wizardState.step === 0) return;
     if (wizardState.flow === 'medical' && wizardState.step === 1) {
       wizardState.setFlow('standard');
       wizardState.setStep(0);
+      wizardState.setSelectedCategory('');
       wizardState.setSelectedApplication('');
     } else {
       let prevStep = wizardState.step - 1;
@@ -355,6 +373,7 @@ function WizardApp() {
       {wizardState.step >= 0 && wizardState.step <= 9 && (
         <StandardSteps
           wizardState={wizardState}
+          categories={categories}
           applications={applications}
           technologies={technologies}
           actions={actions}
@@ -368,6 +387,7 @@ function WizardApp() {
           getDisplayStep={getDisplayStep}
           getProductCount={getProductCount}
           clearDownstreamSelections={clearDownstreamSelections}
+          onCategorySelect={handleCategorySelect}
           onApplicationSelect={handleApplicationSelect}
           onBack={handleBack}
           onContinue={handleContinue}
