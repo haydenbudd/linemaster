@@ -712,9 +712,9 @@ function WizardApp() {
                   'Wireless RF Technology',
                   'Custom Enclosure Design',
                 ].map((feature) => (
-                  <div key={feature} className="flex items-center gap-3 p-4 bg-[#fff1f2] rounded-xl">
-                    <CheckCircle className="w-6 h-6 text-[#e11d48] flex-shrink-0" />
-                    <span className="text-sm font-semibold text-[#0f172a]">{feature}</span>
+                  <div key={feature} className="flex items-center gap-3 p-4 bg-rose-50 dark:bg-rose-950/30 rounded-xl">
+                    <CheckCircle className="w-6 h-6 text-rose-600 dark:text-rose-400 flex-shrink-0" />
+                    <span className="text-sm font-semibold text-foreground">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -723,7 +723,7 @@ function WizardApp() {
               <div className="flex items-center justify-between px-8 pb-8">
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   Back
@@ -731,13 +731,13 @@ function WizardApp() {
                 <div className="flex gap-3">
                   <button
                     onClick={handleViewMedicalProducts}
-                    className="px-6 py-3 text-[#e11d48] font-semibold hover:bg-rose-50 rounded-xl transition-colors"
+                    className="px-6 py-3 text-rose-600 dark:text-rose-400 font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition-colors"
                   >
                     View Standard Products
                   </button>
                   <button
                     onClick={handleContinue}
-                    className="flex items-center gap-2 px-8 py-3 bg-[#e11d48] hover:bg-[#be123c] text-white font-semibold rounded-xl transition-colors"
+                    className="flex items-center gap-2 px-8 py-3 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl transition-colors"
                   >
                     Continue
                     <ArrowRight className="w-4 h-4" />
@@ -752,11 +752,11 @@ function WizardApp() {
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={1} totalSteps={totalSteps} isMedical />
             <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 p-6 md:p-12">
-              <div className="text-[#e11d48] text-xs font-bold uppercase tracking-wide mb-2">
+              <div className="text-rose-600 dark:text-rose-400 text-xs font-bold uppercase tracking-wide mb-2">
                 STEP 2 OF 5
               </div>
-              <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Console Style</h2>
-              <p className="text-sm text-[#64748b] mb-6">Select your preferred platform.</p>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Console Style</h2>
+              <p className="text-sm text-muted-foreground mb-6">Select your preferred platform.</p>
 
               <div className="mb-6">
                 <img
@@ -783,12 +783,12 @@ function WizardApp() {
               <div className="flex items-center justify-between">
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   Back
                 </button>
-                <span className="text-sm text-[#64748b]">Select to continue</span>
+                <span className="text-sm text-muted-foreground">Select to continue</span>
               </div>
             </div>
           </div>
@@ -798,10 +798,10 @@ function WizardApp() {
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={2} totalSteps={totalSteps} isMedical />
             <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 p-6 md:p-12">
-              <div className="text-[#e11d48] text-xs font-bold uppercase tracking-wide mb-2">
+              <div className="text-rose-600 dark:text-rose-400 text-xs font-bold uppercase tracking-wide mb-2">
                 STEP 3 OF 5
               </div>
-              <h2 className="text-2xl font-bold text-[#0f172a] mb-6">Pedal Count</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-6">Pedal Count</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 {pedalCounts.map((option) => (
@@ -820,12 +820,12 @@ function WizardApp() {
               <div className="flex items-center justify-between">
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   Back
                 </button>
-                <span className="text-sm text-[#64748b]">Select to continue</span>
+                <span className="text-sm text-muted-foreground">Select to continue</span>
               </div>
             </div>
           </div>
@@ -835,11 +835,11 @@ function WizardApp() {
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={3} totalSteps={totalSteps} isMedical />
             <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 p-6 md:p-12">
-              <div className="text-[#e11d48] text-xs font-bold uppercase tracking-wide mb-2">
+              <div className="text-rose-600 dark:text-rose-400 text-xs font-bold uppercase tracking-wide mb-2">
                 STEP 4 OF 5
               </div>
-              <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Technical Features</h2>
-              <p className="text-sm text-[#64748b] mb-6">Select all that apply.</p>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Technical Features</h2>
+              <p className="text-sm text-muted-foreground mb-6">Select all that apply.</p>
 
               <div className="space-y-4 mb-8">
                 {medicalTechnicalFeatures.map((option) => (
@@ -862,14 +862,14 @@ function WizardApp() {
               <div className="flex items-center justify-between">
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   Back
                 </button>
                 <button
                   onClick={handleContinue}
-                  className="flex items-center gap-2 px-8 py-3 bg-[#e11d48] hover:bg-[#be123c] text-white font-semibold rounded-xl transition-colors"
+                  className="flex items-center gap-2 px-8 py-3 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl transition-colors"
                 >
                   Continue
                   <ArrowRight className="w-4 h-4" />
@@ -883,11 +883,11 @@ function WizardApp() {
           <div className="max-w-[800px] mx-auto px-6 py-8">
             <ProgressDots currentStep={4} totalSteps={totalSteps} isMedical />
             <div className="bg-card/40 backdrop-blur-2xl rounded-[var(--radius-card)] shadow-[var(--elevation-sm)] border border-white/20 p-6 md:p-12">
-              <div className="text-[#e11d48] text-xs font-bold uppercase tracking-wide mb-2">
+              <div className="text-rose-600 dark:text-rose-400 text-xs font-bold uppercase tracking-wide mb-2">
                 STEP 5 OF 5
               </div>
-              <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Accessories & Add-ons</h2>
-              <p className="text-sm text-[#64748b] mb-6">Select all that apply.</p>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Accessories & Add-ons</h2>
+              <p className="text-sm text-muted-foreground mb-6">Select all that apply.</p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 {accessories.map((option) => (
@@ -910,14 +910,14 @@ function WizardApp() {
               <div className="flex items-center justify-between">
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-2 px-6 py-3 text-[#64748b] hover:text-[#1e293b] transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   Back
                 </button>
                 <button
                   onClick={handleContinue}
-                  className="flex items-center gap-2 px-8 py-3 bg-[#e11d48] hover:bg-[#be123c] text-white font-semibold rounded-xl transition-colors"
+                  className="flex items-center gap-2 px-8 py-3 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl transition-colors"
                 >
                   See Results
                   <ArrowRight className="w-4 h-4" />
@@ -949,27 +949,27 @@ function WizardApp() {
 
               {/* Summary */}
               <div className="p-8">
-                <div className="divide-y divide-[#e2e8f0]">
+                <div className="divide-y divide-border">
                   <div className="flex justify-between py-4">
-                    <span className="text-sm text-[#64748b]">Console Style</span>
-                    <span className="text-sm font-semibold text-[#0f172a]">
+                    <span className="text-sm text-muted-foreground">Console Style</span>
+                    <span className="text-sm font-semibold text-foreground">
                       {consoleStyles.find(c => c.id === wizardState.selectedConsoleStyle)?.label || wizardState.selectedConsoleStyle}
                     </span>
                   </div>
                   <div className="flex justify-between py-4">
-                    <span className="text-sm text-[#64748b]">Pedal Configuration</span>
-                    <span className="text-sm font-semibold text-[#0f172a]">
+                    <span className="text-sm text-muted-foreground">Pedal Configuration</span>
+                    <span className="text-sm font-semibold text-foreground">
                       {pedalCounts.find(p => p.id === wizardState.selectedPedalCount)?.label || wizardState.selectedPedalCount}
                     </span>
                   </div>
                   {wizardState.selectedMedicalFeatures.length > 0 && (
                     <div className="flex justify-between py-4">
-                      <span className="text-sm text-[#64748b]">Technical Features</span>
+                      <span className="text-sm text-muted-foreground">Technical Features</span>
                       <div className="flex flex-wrap gap-2 justify-end">
                         {wizardState.selectedMedicalFeatures.map((feature) => (
                           <span
                             key={feature}
-                            className="px-3 py-1 bg-[#2563eb] text-white text-xs font-bold uppercase tracking-wide rounded-full"
+                            className="px-3 py-1 bg-primary text-white text-xs font-bold uppercase tracking-wide rounded-full"
                           >
                             {medicalTechnicalFeatures.find(f => f.id === feature)?.label || feature}
                           </span>
@@ -979,12 +979,12 @@ function WizardApp() {
                   )}
                   {wizardState.selectedAccessories.length > 0 && (
                     <div className="flex justify-between py-4">
-                      <span className="text-sm text-[#64748b]">Accessories</span>
+                      <span className="text-sm text-muted-foreground">Accessories</span>
                       <div className="flex flex-wrap gap-2 justify-end">
                         {wizardState.selectedAccessories.map((accessory) => (
                           <span
                             key={accessory}
-                            className="px-3 py-1 bg-[#14b8a6] text-white text-xs font-bold uppercase tracking-wide rounded-full"
+                            className="px-3 py-1 bg-teal-500 text-white text-xs font-bold uppercase tracking-wide rounded-full"
                           >
                             {accessories.find(a => a.id === accessory)?.label || accessory}
                           </span>
@@ -997,25 +997,25 @@ function WizardApp() {
                 <div className="mt-8 space-y-4">
                   <button
                     onClick={generatePDF}
-                    className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-[#1e293b] hover:bg-[#334155] text-white font-semibold rounded-xl transition-colors"
+                    className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-semibold rounded-xl transition-colors"
                   >
                     <Download className="w-5 h-5" />
                     Download Specifications PDF
                   </button>
 
-                  <div className="text-center text-sm text-[#64748b] py-2">then</div>
+                  <div className="text-center text-sm text-muted-foreground py-2">then</div>
 
                   <button
                     onClick={() =>
                       window.open('https://linemaster.com/contact/', '_blank')
                     }
-                    className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold rounded-xl transition-colors"
+                    className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors"
                   >
                     <Send className="w-5 h-5" />
                     Submit Quote Request
                   </button>
 
-                  <p className="text-xs text-center text-[#64748b] mt-4">
+                  <p className="text-xs text-center text-muted-foreground mt-4">
                     Attach your downloaded PDF to the quote form for faster processing.
                   </p>
                 </div>
@@ -1668,7 +1668,7 @@ function WizardApp() {
               </button>
               <button
                 onClick={handleContinue}
-                className="flex items-center gap-2 px-8 py-3 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-semibold rounded-xl transition-colors"
+                className="flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-colors"
               >
                 See Results
                 <ArrowRight className="w-4 h-4" />
@@ -1702,39 +1702,39 @@ function WizardApp() {
 
                 {/* Summary */}
                 <div className="p-8">
-                  <div className="divide-y divide-[#e2e8f0]">
+                  <div className="divide-y divide-border">
                     <div className="flex justify-between py-4">
-                      <span className="text-sm text-[#64748b]">Application</span>
-                      <span className="text-sm font-semibold text-[#0f172a]">
+                      <span className="text-sm text-muted-foreground">Application</span>
+                      <span className="text-sm font-semibold text-foreground">
                         {staticApplications.find(a => a.id === wizardState.selectedApplication)?.label || applications.find(a => a.id === wizardState.selectedApplication)?.label || wizardState.selectedApplication}
                       </span>
                     </div>
                     <div className="flex justify-between py-4">
-                      <span className="text-sm text-[#64748b]">Technology</span>
-                      <span className="text-sm font-semibold text-[#0f172a]">
+                      <span className="text-sm text-muted-foreground">Technology</span>
+                      <span className="text-sm font-semibold text-foreground">
                         {technologies.find(t => t.id === wizardState.selectedTechnology)?.label || wizardState.selectedTechnology}
                       </span>
                     </div>
                     <div className="flex justify-between py-4">
-                      <span className="text-sm text-[#64748b]">Switch Action</span>
-                      <span className="text-sm font-semibold text-[#0f172a]">
+                      <span className="text-sm text-muted-foreground">Switch Action</span>
+                      <span className="text-sm font-semibold text-foreground">
                         {actions.find(a => a.id === wizardState.selectedAction)?.label || wizardState.selectedAction}
                       </span>
                     </div>
                     <div className="flex justify-between py-4">
-                      <span className="text-sm text-[#64748b]">Environment</span>
-                      <span className="text-sm font-semibold text-[#0f172a]">
+                      <span className="text-sm text-muted-foreground">Environment</span>
+                      <span className="text-sm font-semibold text-foreground">
                         {environments.find(e => e.id === wizardState.selectedEnvironment)?.label || wizardState.selectedEnvironment}
                       </span>
                     </div>
                     {wizardState.selectedFeatures.length > 0 && (
                       <div className="flex justify-between py-4">
-                        <span className="text-sm text-[#64748b]">Features</span>
+                        <span className="text-sm text-muted-foreground">Features</span>
                         <div className="flex flex-wrap gap-2 justify-end">
                           {wizardState.selectedFeatures.map((feature) => (
                             <span
                               key={feature}
-                              className="px-3 py-1 bg-[#2563eb] text-white text-xs font-bold uppercase tracking-wide rounded-full"
+                              className="px-3 py-1 bg-primary text-white text-xs font-bold uppercase tracking-wide rounded-full"
                             >
                               {features.find(f => f.id === feature)?.label || feature}
                             </span>
@@ -1747,25 +1747,25 @@ function WizardApp() {
                   <div className="mt-8 space-y-4">
                     <button
                       onClick={generatePDF}
-                      className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-[#1e293b] hover:bg-[#334155] text-white font-semibold rounded-xl transition-colors"
+                      className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-semibold rounded-xl transition-colors"
                     >
                       <Download className="w-5 h-5" />
                       Download Specifications PDF
                     </button>
 
-                    <div className="text-center text-sm text-[#64748b] py-2">then</div>
+                    <div className="text-center text-sm text-muted-foreground py-2">then</div>
 
                     <button
                       onClick={() =>
                         window.open('https://linemaster.com/contact/', '_blank')
                       }
-                      className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold rounded-xl transition-colors"
+                      className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors"
                     >
                       <Send className="w-5 h-5" />
                       Contact Us
                     </button>
 
-                    <p className="text-xs text-center text-[#64748b] mt-4">
+                    <p className="text-xs text-center text-muted-foreground mt-4">
                       Attach your downloaded PDF when reaching out for faster processing.
                     </p>
                   </div>
@@ -1823,10 +1823,10 @@ function WizardApp() {
                       
                       {hasExactMatches ? (
                         <>
-                          <h1 className="text-4xl md:text-5xl font-extrabold text-[#0f172a] dark:text-white mb-4 tracking-tight">
+                          <h1 className="text-4xl md:text-5xl font-extrabold text-foreground dark:text-white mb-4 tracking-tight">
                             We Found <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">The One.</span>
                           </h1>
-                          <p className="text-lg text-[#64748b] dark:text-gray-400 max-w-2xl mx-auto">
+                          <p className="text-lg text-muted-foreground dark:text-gray-400 max-w-2xl mx-auto">
                             Based on your requirements, this is the exact switch you need.
                           </p>
                         </>
@@ -1836,10 +1836,10 @@ function WizardApp() {
                             <span className="text-lg">💡</span>
                             Alternative Suggestions
                           </div>
-                          <h1 className="text-3xl font-bold text-[#0f172a] dark:text-white mb-2">
+                          <h1 className="text-3xl font-bold text-foreground dark:text-white mb-2">
                             No Exact Matches Found
                           </h1>
-                          <p className="text--[#64748b] dark:text-gray-400 max-w-2xl mx-auto">
+                          <p className="text-muted-foreground dark:text-gray-400 max-w-2xl mx-auto">
                             {alternatives && relaxedMessages[alternatives.relaxed]}
                           </p>
                         </>
@@ -2131,7 +2131,7 @@ function WizardApp() {
                     )}
 
                     {/* Footer CTA */}
-                    <div className="mt-16 bg-[#1e293b] rounded-3xl p-8 text-white text-center">
+                    <div className="mt-16 bg-slate-800 dark:bg-slate-900 rounded-3xl p-8 text-white text-center">
                       <h2 className="text-2xl font-bold mb-2">Can't find what you need?</h2>
                       <p className="text-white/80 mb-6">
                         Our team can help you find the right foot switch for your application.
@@ -2139,7 +2139,7 @@ function WizardApp() {
                       <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <button
                           onClick={generatePDF}
-                          className="px-8 py-3 bg-white hover:bg-gray-100 text-[#1e293b] font-semibold rounded-xl transition-colors"
+                          className="px-8 py-3 bg-white hover:bg-gray-100 text-slate-800 dark:text-slate-200 font-semibold rounded-xl transition-colors"
                         >
                           Download Specs PDF
                         </button>
@@ -2147,7 +2147,7 @@ function WizardApp() {
                           onClick={() =>
                             window.open('https://linemaster.com/contact/', '_blank')
                           }
-                          className="px-8 py-3 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-semibold rounded-xl transition-colors"
+                          className="px-8 py-3 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-colors"
                         >
                           Contact Us
                         </button>
