@@ -137,7 +137,7 @@ export function Header({ onReset }: HeaderProps) {
                       className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-primary hover:bg-primary/5 active:bg-primary/10 transition-colors"
                     >
                       <RotateCcw className="w-4 h-4" />
-                      Reset Wizard
+                      Reset Filters
                     </button>
                   </div>
                 </div>
