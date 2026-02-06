@@ -16,4 +16,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    // Ensure framer-motion is pre-bundled (it's a transitive dep of motion)
+    include: ['framer-motion'],
+  },
 })
