@@ -16,7 +16,18 @@ export function OptionCard({
   multiSelect = false,
   onSelect,
 }: OptionCardProps) {
-  const IconComponent = option.icon ? (Icons as any)[option.icon] : null;
+  // Handle icons as either string names (lucide-react lookup) or direct React components
+  const IconComponent = (() => {
+    if (!option.icon) return null;
+    if (typeof option.icon === 'string') {
+      return (Icons as any)[option.icon] || null;
+    }
+    // Already a React component (e.g., from static data)
+    if (typeof option.icon === 'function' || typeof option.icon === 'object') {
+      return option.icon;
+    }
+    return null;
+  })();
 
   return (
     <GlassCard
