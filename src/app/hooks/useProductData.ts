@@ -1,11 +1,38 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchProducts, fetchOptions, Product, Option } from '@/app/lib/api';
+import {
+  applications as staticApplications,
+  technologies as staticTechnologies,
+  actions as staticActions,
+  environments as staticEnvironments,
+  features as staticFeatures,
+  consoleStyles as staticConsoleStyles,
+  pedalCounts as staticPedalCounts,
+  medicalTechnicalFeatures as staticMedicalTechnicalFeatures,
+  accessories as staticAccessories,
+} from '@/app/data/options';
+import { products as staticProducts } from '@/app/data/products';
 
 interface OptionWithIcon extends Option {
   icon?: string;
   isMedical?: boolean;
   availableFor?: string[];
   hideFor?: string[];
+}
+
+// Convert static options (React component icons) to OptionWithIcon (string icon names)
+function toOptionWithIcon(opt: any): OptionWithIcon {
+  return {
+    id: opt.id,
+    category: opt.category || '',
+    label: opt.label,
+    description: opt.description,
+    icon: typeof opt.icon === 'string' ? opt.icon : opt.icon?.displayName || opt.icon?.name || undefined,
+    isMedical: opt.isMedical || false,
+    availableFor: opt.availableFor || undefined,
+    hideFor: opt.hideFor || undefined,
+    sortOrder: opt.sortOrder || 0,
+  };
 }
 
 interface ProductData {
@@ -43,7 +70,8 @@ export function useProductData(): ProductData {
         fetchOptions(),
       ]);
 
-      setProducts(productsData);
+      // Fall back to static products if API returns empty
+      setProducts(productsData.length > 0 ? productsData : staticProducts as Product[]);
 
       // Map options from Supabase, using the 'value' field as 'id' for backward compatibility
       const mapped: OptionWithIcon[] = optionsData.map((opt: any) => ({
@@ -60,8 +88,10 @@ export function useProductData(): ProductData {
 
       setOptions(mapped);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load data';
-      setError(message);
+      console.warn('API fetch failed, using static fallback data:', err);
+      // Use static product data as fallback so the wizard still works
+      setProducts(staticProducts as Product[]);
+      setOptions([]);
     } finally {
       setLoading(false);
     }
@@ -146,17 +176,28 @@ export function useProductData(): ProductData {
       .sort((a, b) => (dutyMeta[a.id]?.order ?? 99) - (dutyMeta[b.id]?.order ?? 99));
   })();
 
+  // Use API data, falling back to static data when a category is empty
+  const apiApplications = getByCategory('application');
+  const apiTechnologies = getByCategory('technology');
+  const apiActions = getByCategory('action');
+  const apiEnvironments = getByCategory('environment');
+  const apiFeatures = getByCategory('feature');
+  const apiConsoleStyles = getByCategory('console_style');
+  const apiPedalCounts = getByCategory('pedal_count');
+  const apiMedicalFeatures = getByCategory('medical_feature');
+  const apiAccessories = getByCategory('accessory');
+
   return {
     products,
-    applications: getByCategory('application'),
-    technologies: getByCategory('technology'),
-    actions: getByCategory('action'),
-    environments: getByCategory('environment'),
-    features: getByCategory('feature'),
-    consoleStyles: getByCategory('console_style'),
-    pedalCounts: getByCategory('pedal_count'),
-    medicalTechnicalFeatures: getByCategory('medical_feature'),
-    accessories: getByCategory('accessory'),
+    applications: apiApplications.length > 0 ? apiApplications : staticApplications.map(toOptionWithIcon),
+    technologies: apiTechnologies.length > 0 ? apiTechnologies : staticTechnologies.map(toOptionWithIcon),
+    actions: apiActions.length > 0 ? apiActions : staticActions.map(toOptionWithIcon),
+    environments: apiEnvironments.length > 0 ? apiEnvironments : staticEnvironments.map(toOptionWithIcon),
+    features: apiFeatures.length > 0 ? apiFeatures : staticFeatures.map(toOptionWithIcon),
+    consoleStyles: apiConsoleStyles.length > 0 ? apiConsoleStyles : staticConsoleStyles.map(toOptionWithIcon),
+    pedalCounts: apiPedalCounts.length > 0 ? apiPedalCounts : staticPedalCounts.map(toOptionWithIcon),
+    medicalTechnicalFeatures: apiMedicalFeatures.length > 0 ? apiMedicalFeatures : staticMedicalTechnicalFeatures.map(toOptionWithIcon),
+    accessories: apiAccessories.length > 0 ? apiAccessories : staticAccessories.map(toOptionWithIcon),
     materials,
     connections,
     duties,
