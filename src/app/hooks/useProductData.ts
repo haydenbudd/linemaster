@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchProducts, fetchOptions, Product, Option } from '@/app/lib/api';
+import { fetchProducts, Product, Option } from '@/app/lib/api';
 import {
   applications as staticApplications,
   technologies as staticTechnologies,
@@ -54,9 +54,22 @@ interface ProductData {
   refresh: () => void;
 }
 
+// Pre-compute static option data so the wizard renders instantly
+const staticOptionData = {
+  applications: staticApplications.map(toOptionWithIcon),
+  technologies: staticTechnologies.map(toOptionWithIcon),
+  actions: staticActions.map(toOptionWithIcon),
+  environments: staticEnvironments.map(toOptionWithIcon),
+  features: staticFeatures.map(toOptionWithIcon),
+  consoleStyles: staticConsoleStyles.map(toOptionWithIcon),
+  pedalCounts: staticPedalCounts.map(toOptionWithIcon),
+  medicalTechnicalFeatures: staticMedicalTechnicalFeatures.map(toOptionWithIcon),
+  accessories: staticAccessories.map(toOptionWithIcon),
+};
+
 export function useProductData(): ProductData {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [options, setOptions] = useState<OptionWithIcon[]>([]);
+  // Initialize with static data so the wizard is usable immediately
+  const [products, setProducts] = useState<Product[]>(staticProducts as Product[]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,33 +78,13 @@ export function useProductData(): ProductData {
       setLoading(true);
       setError(null);
 
-      const [productsData, optionsData] = await Promise.all([
-        fetchProducts(),
-        fetchOptions(),
-      ]);
+      const productsData = await fetchProducts();
 
-      // Fall back to static products if API returns empty
+      // Use API products if available, otherwise keep static fallback
       setProducts(productsData.length > 0 ? productsData : staticProducts as Product[]);
-
-      // Map options from Supabase, using the 'value' field as 'id' for backward compatibility
-      const mapped: OptionWithIcon[] = optionsData.map((opt: any) => ({
-        id: opt.value || opt.id,
-        category: opt.category,
-        label: opt.label,
-        description: opt.description,
-        icon: opt.icon || undefined,
-        isMedical: opt.is_medical || false,
-        availableFor: opt.available_for || undefined,
-        hideFor: opt.hide_for || undefined,
-        sortOrder: opt.sort_order || 0,
-      }));
-
-      setOptions(mapped);
     } catch (err) {
       console.warn('API fetch failed, using static fallback data:', err);
-      // Use static product data as fallback so the wizard still works
       setProducts(staticProducts as Product[]);
-      setOptions([]);
     } finally {
       setLoading(false);
     }
@@ -100,13 +93,6 @@ export function useProductData(): ProductData {
   useEffect(() => {
     loadData();
   }, [loadData]);
-
-  // Helper to filter and sort options by category
-  const getByCategory = (category: string): OptionWithIcon[] => {
-    return options
-      .filter(o => o.category === category)
-      .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-  };
 
   // Derive unique materials from product data with user-friendly descriptions
   const materials: OptionWithIcon[] = (() => {
@@ -176,28 +162,19 @@ export function useProductData(): ProductData {
       .sort((a, b) => (dutyMeta[a.id]?.order ?? 99) - (dutyMeta[b.id]?.order ?? 99));
   })();
 
-  // Use API data, falling back to static data when a category is empty
-  const apiApplications = getByCategory('application');
-  const apiTechnologies = getByCategory('technology');
-  const apiActions = getByCategory('action');
-  const apiEnvironments = getByCategory('environment');
-  const apiFeatures = getByCategory('feature');
-  const apiConsoleStyles = getByCategory('console_style');
-  const apiPedalCounts = getByCategory('pedal_count');
-  const apiMedicalFeatures = getByCategory('medical_feature');
-  const apiAccessories = getByCategory('accessory');
-
+  // Always use static data for wizard options — these define the UX flow and must always be available.
+  // API options could supplement in the future but should never be the sole source.
   return {
     products,
-    applications: apiApplications.length > 0 ? apiApplications : staticApplications.map(toOptionWithIcon),
-    technologies: apiTechnologies.length > 0 ? apiTechnologies : staticTechnologies.map(toOptionWithIcon),
-    actions: apiActions.length > 0 ? apiActions : staticActions.map(toOptionWithIcon),
-    environments: apiEnvironments.length > 0 ? apiEnvironments : staticEnvironments.map(toOptionWithIcon),
-    features: apiFeatures.length > 0 ? apiFeatures : staticFeatures.map(toOptionWithIcon),
-    consoleStyles: apiConsoleStyles.length > 0 ? apiConsoleStyles : staticConsoleStyles.map(toOptionWithIcon),
-    pedalCounts: apiPedalCounts.length > 0 ? apiPedalCounts : staticPedalCounts.map(toOptionWithIcon),
-    medicalTechnicalFeatures: apiMedicalFeatures.length > 0 ? apiMedicalFeatures : staticMedicalTechnicalFeatures.map(toOptionWithIcon),
-    accessories: apiAccessories.length > 0 ? apiAccessories : staticAccessories.map(toOptionWithIcon),
+    applications: staticOptionData.applications,
+    technologies: staticOptionData.technologies,
+    actions: staticOptionData.actions,
+    environments: staticOptionData.environments,
+    features: staticOptionData.features,
+    consoleStyles: staticOptionData.consoleStyles,
+    pedalCounts: staticOptionData.pedalCounts,
+    medicalTechnicalFeatures: staticOptionData.medicalTechnicalFeatures,
+    accessories: staticOptionData.accessories,
     materials,
     connections,
     duties,

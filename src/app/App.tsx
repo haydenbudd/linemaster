@@ -45,9 +45,6 @@ function WizardApp() {
     materials,
     connections,
     duties,
-    loading,
-    error,
-    refresh,
   } = useProductData();
 
   // Enhanced search state for results page
@@ -617,68 +614,8 @@ function WizardApp() {
   // 1-indexed display step for labels
   const getDisplayStep = (rawStep: number) => getProgressStep(rawStep) + 1;
 
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen mesh-gradient-light flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="relative w-16 h-16 mx-auto mb-6">
-            <div className="absolute inset-0 rounded-full border-4 border-primary/20"></div>
-            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary animate-spin"></div>
-          </div>
-          <h3 className="text-lg font-bold text-foreground mb-2">Loading Product Finder</h3>
-          <p className="text-sm text-muted-foreground">Please wait...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show error state
-  if (error) {
-    const isBackendError = error.includes('Failed to fetch') || error.includes('backend') || error.includes('timeout');
-
-    return (
-      <div className="min-h-screen mesh-gradient-light flex items-center justify-center p-4">
-        <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="max-w-2xl mx-auto w-full">
-          <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <span className="text-4xl">⚠️</span>
-          </div>
-          <h2 className="text-2xl font-bold text-foreground mb-3 text-center">Backend Connection Error</h2>
-          <p className="text-muted-foreground mb-6 leading-relaxed text-center">{error}</p>
-
-          {isBackendError && (
-            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-6 mb-6 text-left">
-              <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                <span className="text-xl">🚀</span>
-                Deployment Required
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                The Supabase Edge Function needs to be deployed. Follow these steps:
-              </p>
-              <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                <li>Install Supabase CLI: <code className="px-2 py-1 bg-card rounded text-xs">npm install -g supabase</code></li>
-                <li>Login: <code className="px-2 py-1 bg-card rounded text-xs">supabase login</code></li>
-                <li>Link project: <code className="px-2 py-1 bg-card rounded text-xs">supabase link --project-ref dhaqigiwkmsjrchrbllu</code></li>
-                <li>Deploy: <code className="px-2 py-1 bg-card rounded text-xs">supabase functions deploy server</code></li>
-              </ol>
-              <p className="text-xs text-muted-foreground mt-4">
-                See <span className="font-mono">DEPLOY_BACKEND.md</span> for detailed instructions.
-              </p>
-            </div>
-          )}
-
-          <div className="flex gap-4 justify-center">
-            <button
-              onClick={() => refresh()}
-              className="px-8 py-3.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-all shadow-lg hover:shadow-xl"
-            >
-              Retry Connection
-            </button>
-          </div>
-        </GlassCard>
-      </div>
-    );
-  }
+  // No blocking loading/error screens — the wizard renders immediately using static
+  // data. Products will update in the background when the API responds.
 
   // Render different screens based on step and flow
   if (wizardState.flow === 'medical') {
