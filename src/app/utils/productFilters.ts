@@ -123,33 +123,38 @@ export const getProcessedProducts = (products: Product[], options: FilterOptions
 };
 
 // Wizard-level filter interface used for step-by-step product matching
+// Field names match the Figma Make App.tsx expectations (no "selected" prefix)
 export interface WizardFilters {
-  selectedApplication: string;
-  selectedTechnology: string;
-  selectedAction: string;
-  selectedEnvironment: string;
-  selectedDuty: string;
-  selectedMaterial: string;
-  selectedConnection: string;
-  selectedGuard: string;
-  selectedFeatures: string[];
+  application?: string;
+  technology?: string;
+  action?: string;
+  environment?: string;
+  duty?: string;
+  connection?: string;
+  guard?: string;
+  certifications?: string[];
+  features?: string[];
+  consoleStyle?: string;
+  pedalCount?: string;
+  medicalFeatures?: string[];
+  accessories?: string[];
 }
 
 // Check if a product matches the current wizard filter selections
 export function checkWizardMatch(product: Product, filters: WizardFilters): boolean {
-  if (filters.selectedApplication && !product.applications.includes(filters.selectedApplication)) return false;
-  if (filters.selectedTechnology && product.technology !== filters.selectedTechnology) return false;
-  if (filters.selectedAction && !product.actions.includes(filters.selectedAction)) return false;
-  if (filters.selectedEnvironment === 'wet' && product.ip !== 'IP68') return false;
-  if (filters.selectedEnvironment === 'damp' && !['IP56', 'IP68'].includes(product.ip)) return false;
-  if (filters.selectedDuty && product.duty !== filters.selectedDuty) return false;
-  if (filters.selectedMaterial && product.material !== filters.selectedMaterial) return false;
-  if (filters.selectedTechnology !== 'pneumatic' && filters.selectedConnection && product.connector_type !== filters.selectedConnection) return false;
-  if (filters.selectedGuard === 'yes' && !(product.features || []).includes('shield')) return false;
-  if (filters.selectedGuard === 'no' && (product.features || []).includes('shield')) return false;
+  if (filters.application && !product.applications.includes(filters.application)) return false;
+  if (filters.technology && product.technology !== filters.technology) return false;
+  if (filters.action && !product.actions.includes(filters.action)) return false;
+  if (filters.environment === 'wet' && product.ip !== 'IP68') return false;
+  if (filters.environment === 'damp' && !['IP56', 'IP68'].includes(product.ip)) return false;
+  if (filters.duty && product.duty !== filters.duty) return false;
+  if (filters.technology !== 'pneumatic' && filters.connection && product.connector_type !== filters.connection) return false;
+  if (filters.guard === 'yes' && !(product.features || []).includes('shield')) return false;
+  if (filters.guard === 'no' && (product.features || []).includes('shield')) return false;
 
-  if (filters.selectedFeatures.length > 0) {
-    const hardwareFeatures = filters.selectedFeatures.filter(f => f !== 'custom_cable' && f !== 'custom_connector');
+  const selectedFeatures = filters.features || [];
+  if (selectedFeatures.length > 0) {
+    const hardwareFeatures = selectedFeatures.filter(f => f !== 'custom_cable' && f !== 'custom_connector');
     if (hardwareFeatures.length > 0) {
       const productFeatures = product.features || [];
       if (!hardwareFeatures.every(f => productFeatures.includes(f))) return false;
