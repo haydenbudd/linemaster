@@ -14,7 +14,7 @@ export function TrustBadges() {
         {badges.map((badge, index) => (
           <div
             key={index}
-            className="flex items-center gap-2 p-3 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] transition-all duration-300 hover:bg-black/[0.04] dark:hover:bg-white/[0.04]"
+            className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 dark:bg-primary/10 transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/15"
           >
             <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center flex-shrink-0">
               <badge.icon className="w-4 h-4 text-primary" />

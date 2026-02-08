@@ -14,9 +14,12 @@ export function ProgressDots({ currentStep, totalSteps, isMedical = false }: Pro
         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 bg-black/[0.06] dark:bg-white/[0.06] rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-700 ease-out ${
-              isMedical ? 'bg-[#ff2d55]' : 'bg-primary'
+              isMedical ? 'bg-[#ff2d55]' : ''
             }`}
-            style={{ width: `${percentage}%` }}
+            style={{
+              width: `${percentage}%`,
+              ...(!isMedical ? { background: 'linear-gradient(90deg, #6366f1, #a855f7, #ec4899)' } : {}),
+            }}
           />
         </div>
 

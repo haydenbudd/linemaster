@@ -67,7 +67,7 @@ export function ResultsPage({
           <div
             className="p-8 text-white"
             style={{
-              background: 'linear-gradient(135deg, #007aff 0%, #005ecb 100%)',
+              background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
             }}
           >
             <div className="text-white/80 text-xs font-bold uppercase tracking-wide mb-3">

@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef } from 'react';
 
 interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
   cornerRadius?: number;
@@ -14,13 +14,13 @@ interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
 export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
   (
     {
-      cornerRadius = 20,
+      cornerRadius,
       padding = '24px 32px',
-      blurAmount = 0.2,
-      saturation = 150,
-      displacementScale = 40,
-      overLight = false,
-      tiltOnHover = false,
+      blurAmount,
+      saturation,
+      displacementScale,
+      overLight,
+      tiltOnHover,
       children,
       className = '',
       style,
@@ -29,93 +29,15 @@ export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
     },
     ref
   ) => {
-    const [isDark, setIsDark] = useState(false);
-    const innerRef = useRef<HTMLDivElement>(null);
-    const rafRef = useRef<number>(0);
-
-    useEffect(() => {
-      const check = () => setIsDark(document.documentElement.classList.contains('dark'));
-      check();
-      const observer = new MutationObserver(check);
-      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-      return () => observer.disconnect();
-    }, []);
-
-    const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-      const el = innerRef.current;
-      if (!el) return;
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = requestAnimationFrame(() => {
-        const rect = el.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width - 0.5;
-        const y = (e.clientY - rect.top) / rect.height - 0.5;
-        const tiltX = y * -8;
-        const tiltY = x * 8;
-        el.style.transform = `perspective(600px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(1.02)`;
-      });
-    }, []);
-
-    const handleMouseLeave = useCallback(() => {
-      const el = innerRef.current;
-      if (!el) return;
-      cancelAnimationFrame(rafRef.current);
-      el.style.transform = 'perspective(600px) rotateX(0deg) rotateY(0deg) scale(1)';
-    }, []);
-
-    const blurPx = (overLight ? 12 : 4) + blurAmount * 32;
-
-    const bg = isDark
-      ? overLight
-        ? 'rgba(30, 30, 35, 0.65)'
-        : 'rgba(30, 30, 35, 0.4)'
-      : overLight
-        ? 'rgba(255, 255, 255, 0.5)'
-        : 'rgba(255, 255, 255, 0.08)';
-
-    const shadow = isDark
-      ? overLight
-        ? '0 1px 0 0 rgba(255,255,255,0.06) inset'
-        : '0 1px 0 0 rgba(255,255,255,0.04) inset'
-      : overLight
-        ? '0 1px 0 0 rgba(255,255,255,0.5) inset'
-        : '0 1px 0 0 rgba(255,255,255,0.1) inset';
-
-    const borderColor = isDark
-      ? overLight
-        ? 'rgba(255,255,255,0.1)'
-        : 'rgba(255,255,255,0.06)'
-      : overLight
-        ? 'rgba(255,255,255,0.5)'
-        : 'rgba(255,255,255,0.12)';
-
     return (
       <div
         ref={ref}
         onClick={onClick}
-        className={`relative ${onClick ? 'cursor-pointer' : ''} ${className}`}
-        style={style}
+        className={`bg-card rounded-2xl border border-border shadow-lg ${onClick ? 'cursor-pointer' : ''} ${className}`}
+        style={{ padding, ...style }}
         {...rest}
       >
-        <div
-          ref={innerRef}
-          onMouseMove={tiltOnHover ? handleMouseMove : undefined}
-          onMouseLeave={tiltOnHover ? handleMouseLeave : undefined}
-          className="relative overflow-hidden will-change-transform"
-          style={{
-            borderRadius: `${cornerRadius}px`,
-            padding,
-            backdropFilter: `blur(${blurPx}px) saturate(${saturation}%)`,
-            WebkitBackdropFilter: `blur(${blurPx}px) saturate(${saturation}%)`,
-            background: bg,
-            boxShadow: shadow,
-            border: `1px solid ${borderColor}`,
-            transition: 'transform 0.15s ease-out, box-shadow 0.2s ease',
-          }}
-        >
-          <div className="relative">
-            {children}
-          </div>
-        </div>
+        {children}
       </div>
     );
   }

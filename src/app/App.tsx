@@ -1,7 +1,7 @@
 import { useState, Suspense, lazy, useMemo } from 'react';
 import { Router } from '@/app/components/Router';
 import { Header } from '@/app/components/Header';
-import { OrbBackground } from '@/app/components/OrbBackground';
+
 import { useProductData } from '@/app/hooks/useProductData';
 import { useWizardState } from '@/app/hooks/useWizardState';
 import { trackWizardStep, trackNoResults } from '@/app/utils/analytics';
@@ -366,8 +366,7 @@ function WizardApp() {
 
   // Standard flow
   return (
-    <div className="min-h-screen mesh-gradient-light relative z-10">
-      <OrbBackground />
+    <div className="min-h-screen bg-background">
       <Header onReset={handleReset} />
 
       {wizardState.step >= 0 && wizardState.step <= 9 && (

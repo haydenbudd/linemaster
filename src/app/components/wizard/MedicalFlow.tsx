@@ -4,7 +4,7 @@ import { OptionCard } from '@/app/components/OptionCard';
 import { ProgressDots } from '@/app/components/ProgressDots';
 import { GlassCard } from '@/app/components/GlassCard';
 import { Header } from '@/app/components/Header';
-import { OrbBackground } from '@/app/components/OrbBackground';
+
 import { getProxiedImageUrl } from '@/app/utils/imageProxy';
 import { ChevronLeft, ArrowRight, Download, Send, CheckCircle, Heart } from 'lucide-react';
 
@@ -36,8 +36,7 @@ export function MedicalFlow({
   onReset,
 }: MedicalFlowProps) {
   return (
-    <div className="min-h-screen mesh-gradient-medical relative z-10">
-      <OrbBackground />
+    <div className="min-h-screen bg-background">
       <Header onReset={onReset} />
 
       {wizardState.step === 1 && (
