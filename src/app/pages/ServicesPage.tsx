@@ -84,7 +84,7 @@ function Section({
   style?: React.CSSProperties;
 }) {
   return (
-    <section id={id} className={`relative py-20 md:py-28 ${className}`} style={style}>
+    <section id={id} className={`relative py-14 md:py-20 ${className}`} style={style}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">{children}</div>
     </section>
   );
@@ -153,7 +153,7 @@ function Hero() {
         }}
       />
 
-      <div className="relative mx-auto flex min-h-[85vh] max-w-7xl flex-col items-center justify-center px-4 py-32 text-center sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex min-h-[calc(100vh-7rem)] max-w-7xl flex-col items-center justify-center px-4 py-24 text-center sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -191,7 +191,7 @@ function Hero() {
           className="mt-10 flex flex-col gap-4 sm:flex-row"
         >
           <Link
-            to="/custom-solutions"
+            href="/custom-solutions"
             className="inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:brightness-110"
             style={{ background: blue, boxShadow: `0 0 32px ${blueGlow}` }}
           >
@@ -284,7 +284,7 @@ function ServicesOverview() {
         </FadeInOnScroll>
       </div>
 
-      <div className="mt-16 grid gap-6 md:grid-cols-3">
+      <div className="mt-10 grid gap-6 md:grid-cols-3">
         {servicePillars.map((pillar, i) => (
           <FadeInOnScroll key={pillar.title} delay={i * 0.1}>
             <GlassPanel hover className="group flex h-full flex-col">
@@ -485,7 +485,7 @@ function DesignProduction() {
       <FadeInOnScroll delay={0.3}>
         <div className="mt-14 text-center">
           <Link
-            to="/custom-solutions"
+            href="/custom-solutions"
             className="inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:brightness-110"
             style={{ background: blue, boxShadow: `0 0 32px ${blueGlow}` }}
           >
@@ -584,7 +584,7 @@ function Documentation() {
       </div>
 
       {/* Capabilities grid */}
-      <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {documentationCapabilities.map((cap, i) => (
           <FadeInOnScroll key={cap.title} delay={i * 0.06}>
             <GlassPanel hover className="h-full">
@@ -640,7 +640,7 @@ function Documentation() {
       <FadeInOnScroll delay={0.4}>
         <div className="mt-14 text-center">
           <Link
-            to="/about"
+            href="/about"
             className="inline-flex items-center gap-2 rounded-full border px-8 py-3.5 text-sm font-semibold transition-all duration-200 hover:bg-white/5"
             style={{ borderColor: 'rgba(212,168,83,0.3)', color: gold }}
           >
@@ -720,7 +720,7 @@ function Training() {
       </div>
 
       {/* What's included */}
-      <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {trainingIncludes.map((item, i) => (
           <FadeInOnScroll key={item.title} delay={i * 0.08}>
             <GlassPanel hover className="h-full">
@@ -769,7 +769,7 @@ function Training() {
       <FadeInOnScroll delay={0.4}>
         <div className="mt-14 text-center">
           <Link
-            to="/custom-solutions"
+            href="/custom-solutions"
             className="inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:brightness-110"
             style={{ background: green, boxShadow: `0 0 32px ${greenMuted}` }}
           >
@@ -1063,7 +1063,7 @@ function CTASection() {
         <FadeInOnScroll delay={0.2}>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
-              to="/custom-solutions"
+              href="/custom-solutions"
               className="inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:brightness-110"
               style={{ background: blue, boxShadow: `0 0 32px ${blueGlow}` }}
             >

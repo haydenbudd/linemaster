@@ -62,21 +62,21 @@ const capabilities = [
     title: 'Custom OEM Solutions',
     description:
       'From concept to production. We engineer bespoke foot controls tailored to your exact specifications, performance requirements, and regulatory standards.',
-    link: '/solutions',
+    link: '/custom-solutions',
   },
   {
     icon: Shield,
     title: 'Medical-Grade Manufacturing',
     description:
       'ISO 13485 certified. IEC 60601 compliant. Built for the operating room with full traceability, validated processes, and uncompromising quality.',
-    link: '/medical',
+    link: '/industries',
   },
   {
     icon: Factory,
     title: 'Industrial Foot Controls',
     description:
       'Rugged, reliable controls for the world\'s toughest environments — from factory floors to heavy equipment to mission-critical defense applications.',
-    link: '/industrial',
+    link: '/industries',
   },
 ];
 
@@ -138,7 +138,7 @@ export default function HomePage() {
       {/* ============================================================ */}
       {/*  HERO                                                        */}
       {/* ============================================================ */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[calc(100vh-7rem)] flex items-center justify-center overflow-hidden">
         {/* Animated gradient background */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-br from-[#0A1628] via-[#0f2035] to-[#060e1a]" />
@@ -259,14 +259,14 @@ export default function HomePage() {
       {/* ============================================================ */}
       {/*  CAPABILITIES SHOWCASE                                       */}
       {/* ============================================================ */}
-      <section className="relative py-28 px-6">
+      <section className="relative py-16 lg:py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             variants={fadeUp}
-            className="text-center mb-16"
+            className="text-center mb-10"
           >
             <h2 className="text-4xl sm:text-5xl font-bold">
               Engineering{' '}
@@ -321,7 +321,7 @@ export default function HomePage() {
       {/* ============================================================ */}
       {/*  TRUST SECTION                                               */}
       {/* ============================================================ */}
-      <section className="relative py-28 px-6">
+      <section className="relative py-16 lg:py-20 px-6">
         {/* Subtle section divider gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-950/20 to-transparent" />
 
@@ -331,7 +331,7 @@ export default function HomePage() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             variants={fadeUp}
-            className="text-center mb-16"
+            className="text-center mb-10"
           >
             <h2 className="text-4xl sm:text-5xl font-bold">
               Trusted by{' '}
@@ -375,14 +375,14 @@ export default function HomePage() {
       {/* ============================================================ */}
       {/*  INDUSTRIES GRID                                             */}
       {/* ============================================================ */}
-      <section className="relative py-28 px-6">
+      <section className="relative py-16 lg:py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             variants={fadeUp}
-            className="text-center mb-16"
+            className="text-center mb-10"
           >
             <h2 className="text-4xl sm:text-5xl font-bold">
               Industries We{' '}
@@ -452,7 +452,7 @@ export default function HomePage() {
       {/* ============================================================ */}
       {/*  PRODUCT PREVIEW                                             */}
       {/* ============================================================ */}
-      <section className="relative py-28 px-6">
+      <section className="relative py-16 lg:py-20 px-6">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-950/20 to-transparent" />
 
         <div className="relative max-w-6xl mx-auto">
@@ -461,7 +461,7 @@ export default function HomePage() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             variants={fadeUp}
-            className="text-center mb-16"
+            className="text-center mb-10"
           >
             <h2 className="text-4xl sm:text-5xl font-bold">
               Our{' '}
@@ -516,7 +516,7 @@ export default function HomePage() {
       {/* ============================================================ */}
       {/*  SIGHTGUARD SPOTLIGHT                                        */}
       {/* ============================================================ */}
-      <section className="relative py-28 px-6 overflow-hidden">
+      <section className="relative py-16 lg:py-20 px-6 overflow-hidden">
         {/* Background accent */}
         <div className="absolute inset-0">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-[#2563EB]/5 blur-[150px]" />
@@ -567,7 +567,7 @@ export default function HomePage() {
 
               <div className="mt-10">
                 <Link
-                  href="/products/sightguard"
+                  href="/products"
                   className="inline-flex items-center gap-2 px-8 py-4 rounded-lg bg-[#2563EB] text-white font-semibold text-base hover:bg-blue-600 transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5"
                 >
                   Discover SightGuard
@@ -597,7 +597,7 @@ export default function HomePage() {
       {/* ============================================================ */}
       {/*  CTA SECTION                                                 */}
       {/* ============================================================ */}
-      <section className="relative py-28 px-6">
+      <section className="relative py-16 lg:py-20 px-6">
         <div className="absolute inset-0 bg-gradient-to-b from-[#0A1628] via-[#0d1d33] to-[#0A1628]" />
         {/* Accent glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-[#2563EB]/8 blur-[120px]" />

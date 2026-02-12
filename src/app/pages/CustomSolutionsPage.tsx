@@ -84,7 +84,7 @@ function Section({
   style?: React.CSSProperties;
 }) {
   return (
-    <section id={id} className={`relative py-20 md:py-28 ${className}`} style={style}>
+    <section id={id} className={`relative py-14 md:py-20 ${className}`} style={style}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">{children}</div>
     </section>
   );
@@ -145,7 +145,7 @@ function Hero() {
         }}
       />
 
-      <div className="relative mx-auto flex min-h-[85vh] max-w-7xl flex-col items-center justify-center px-4 py-32 text-center sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex min-h-[calc(100vh-7rem)] max-w-7xl flex-col items-center justify-center px-4 py-24 text-center sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -284,7 +284,7 @@ function WhyLinemaster() {
         </FadeInOnScroll>
       </div>
 
-      <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {valueProps.map((vp, i) => (
           <FadeInOnScroll key={vp.title} delay={i * 0.08}>
             <GlassPanel hover className="h-full">
@@ -550,7 +550,7 @@ function Capabilities() {
         </FadeInOnScroll>
       </div>
 
-      <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {capabilities.map((cap, i) => (
           <FadeInOnScroll key={cap.title} delay={i * 0.08}>
             <GlassPanel hover className="group h-full">

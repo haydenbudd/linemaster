@@ -207,7 +207,7 @@ export default function IndustriesPage() {
       {/* ============================================================ */}
       {/*  HERO                                                        */}
       {/* ============================================================ */}
-      <section className="relative pt-32 pb-24 overflow-hidden">
+      <section className="relative pt-28 pb-16 overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-br from-[#0A1628] via-[#0f2035] to-[#060e1a]" />
@@ -295,7 +295,7 @@ export default function IndustriesPage() {
       {/* ============================================================ */}
       {/*  MEDICAL & HEALTHCARE                                        */}
       {/* ============================================================ */}
-      <section className="relative py-28 px-6">
+      <section className="relative py-16 lg:py-20 px-6">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-950/20 to-transparent" />
 
         <div className="relative max-w-6xl mx-auto">
@@ -305,7 +305,7 @@ export default function IndustriesPage() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             variants={fadeUp}
-            className="mb-16"
+            className="mb-10"
           >
             <div className="flex items-center gap-4 mb-6">
               <div className="w-14 h-14 rounded-xl bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center">
@@ -417,7 +417,7 @@ export default function IndustriesPage() {
       {/* ============================================================ */}
       {/*  INDUSTRIAL & COMMERCIAL                                     */}
       {/* ============================================================ */}
-      <section className="relative py-28 px-6">
+      <section className="relative py-16 lg:py-20 px-6">
         <div className="relative max-w-6xl mx-auto">
           {/* Section header */}
           <motion.div
@@ -425,7 +425,7 @@ export default function IndustriesPage() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             variants={fadeUp}
-            className="mb-16"
+            className="mb-10"
           >
             <div className="flex items-center gap-4 mb-6">
               <div className="w-14 h-14 rounded-xl bg-[#D4A853]/10 border border-[#D4A853]/20 flex items-center justify-center">
@@ -494,7 +494,7 @@ export default function IndustriesPage() {
       {/* ============================================================ */}
       {/*  CROSS-INDUSTRY CAPABILITIES                                 */}
       {/* ============================================================ */}
-      <section className="relative py-28 px-6">
+      <section className="relative py-16 lg:py-20 px-6">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-950/20 to-transparent" />
 
         <div className="relative max-w-6xl mx-auto">
@@ -503,7 +503,7 @@ export default function IndustriesPage() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             variants={fadeUp}
-            className="text-center mb-16"
+            className="text-center mb-10"
           >
             <h2 className="text-4xl sm:text-5xl font-bold">
               Cross-Industry{' '}
@@ -549,7 +549,7 @@ export default function IndustriesPage() {
       {/* ============================================================ */}
       {/*  CTA SECTION                                                 */}
       {/* ============================================================ */}
-      <section className="relative py-28 px-6">
+      <section className="relative py-16 lg:py-20 px-6">
         <div className="absolute inset-0 bg-gradient-to-b from-[#0A1628] via-[#0d1d33] to-[#0A1628]" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-[#2563EB]/8 blur-[120px]" />
 

@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
+import { Link } from "@/app/components/Router";
 import {
   Shield,
   Award,
@@ -127,7 +128,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function Divider() {
   return (
-    <div className="w-full flex justify-center py-2">
+    <div className="w-full flex justify-center">
       <div className="w-24 h-px" style={{ background: `linear-gradient(90deg, transparent, ${BLUE}, transparent)` }} />
     </div>
   );
@@ -181,8 +182,7 @@ function HeroSection() {
           className="text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-10"
           style={{ color: GRAY_LIGHT }}
         >
-          Since our founding, Linemaster Switch Corporation has been the trusted partner for the
-          world's most demanding medical and industrial applications.
+          Manufactured in Woodstock, CT since 1952. From a small carriage house to America's Foot Switch Leader.
         </motion.p>
 
         <motion.div variants={fadeUp} className="flex flex-wrap gap-4 justify-center">
@@ -221,41 +221,92 @@ function HeroSection() {
 // ---------------------------------------------------------------------------
 function CompanyStorySection() {
   return (
-    <SectionWrapper className="py-24 lg:py-32 max-w-7xl mx-auto" id="story">
-      <div className="grid lg:grid-cols-2 gap-16 items-center">
+    <SectionWrapper className="py-14 lg:py-20 max-w-7xl mx-auto" id="story">
+      <div className="grid lg:grid-cols-2 gap-16 items-start">
         {/* Left — text */}
         <div>
           <SectionLabel>Our Story</SectionLabel>
-          <SectionTitle>From Industrial Roots to Medical-Grade Precision</SectionTitle>
+          <SectionTitle>Born from Necessity, Built to Last</SectionTitle>
 
           <motion.div variants={fadeUp} className="space-y-5 text-base leading-relaxed" style={{ color: GRAY_LIGHT }}>
             <p>
-              Linemaster Switch Corporation began as a pioneer in industrial foot control
-              manufacturing, building rugged, reliable foot switches for factories and heavy-duty
-              applications across the United States. Over the decades, our relentless pursuit of
-              engineering excellence led us to an entirely new frontier: medical-grade precision.
+              The roots of Linemaster extend to the{" "}
+              <strong className="font-semibold" style={{ color: WHITE }}>Great Depression of the 1930s</strong>.
+              In 1937, Albert Simonds incorporated the Simonds Machine Company in Southbridge,
+              Massachusetts with just $500 borrowed from his aunt and a machinery loan from the
+              Reynolds Company in Providence, Rhode Island. He set out to build the{" "}
+              <strong className="font-semibold" style={{ color: WHITE }}>Lensmaster</strong> optical
+              machinery line&mdash;equipment designed to grind lenses with precision.
             </p>
             <p>
-              Today, we are an <strong className="font-semibold" style={{ color: WHITE }}>ISO 13485:2016 certified</strong> medical
-              device component supplier, trusted by the world's leading OEMs&mdash;including{" "}
-              <strong className="font-semibold" style={{ color: WHITE }}>Johnson &amp; Johnson</strong>,{" "}
-              <strong className="font-semibold" style={{ color: WHITE }}>Stryker</strong>, and other Fortune 500
-              multinationals&mdash;to deliver foot control solutions that meet the most stringent
-              regulatory and quality standards.
+              But Al Simonds needed reliable hands-free control for his machinery, and nothing on the
+              market met his standards. So he invented the foot switch. That first model, the{" "}
+              <strong className="font-semibold" style={{ color: WHITE }}>Senior</strong>, launched what
+              would become the LINEMASTER brand. World War II briefly interrupted growth, but by the
+              early 1940s the Junior and Duplex models had joined the line. Housings were cast iron,
+              produced by Connecticut Foundry; switching mechanisms came from Arrow-Hart &amp; Hegeman
+              of Hartford, CT. After the war, the Treadlite, Compact, and Electro-Lok models followed.
             </p>
             <p>
-              Our evolution from industrial workhorse to certified medical partner is a testament to
-              our culture of continuous improvement, deep engineering expertise, and an unwavering
-              commitment to the safety and performance our customers demand.
+              Al married Nancy B. Blakely in Woodstock, Connecticut in November 1951 and purchased{" "}
+              <strong className="font-semibold" style={{ color: WHITE }}>"Bald Hill Acres"</strong> on
+              April 11, 1952. On{" "}
+              <strong className="font-semibold" style={{ color: WHITE }}>May 1, 1952</strong>,
+              Linemaster Switch Corporation was officially established in Woodstock, CT. Operations
+              began in a small wooden carriage house on the property, while the mansion served as
+              both home and office until 1964.
             </p>
+            <p>
+              From that humble carriage house, Linemaster has grown into{" "}
+              <strong className="font-semibold" style={{ color: WHITE }}>America's foot switch leader</strong>&mdash;an{" "}
+              <strong className="font-semibold" style={{ color: WHITE }}>ISO 13485:2016 certified</strong> manufacturer
+              trusted by Fortune 500 OEMs for the most demanding medical and industrial applications.
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Right — trade show image + stats */}
+        <div className="space-y-8">
+          <motion.div
+            variants={fadeUp}
+            className="relative rounded-2xl overflow-hidden"
+            style={{ background: NAVY_LIGHTER, border: `1px solid rgba(255,255,255,0.06)` }}
+          >
+            <img
+              src="/linemaster/images/linemaster_1950s_trade_show_optimized.jpg"
+              alt="Linemaster trade show display in the late 1950s"
+              className="w-full h-auto object-cover"
+              style={{ minHeight: "280px", background: NAVY_LIGHTER }}
+              onError={(e) => {
+                const target = e.currentTarget;
+                target.style.display = "none";
+                const fallback = target.nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = "flex";
+              }}
+            />
+            <div
+              className="items-center justify-center aspect-[4/3] hidden"
+              style={{ background: NAVY_LIGHTER }}
+            >
+              <div className="text-center p-8">
+                <Factory className="w-16 h-16 mx-auto mb-4 opacity-30" style={{ color: BLUE }} />
+                <p className="text-sm" style={{ color: GRAY }}>Trade Show Photo</p>
+                <p className="text-xs mt-1" style={{ color: GRAY }}>Place tradeshow-1950s.jpg in public/images/</p>
+              </div>
+            </div>
+            <div className="px-4 py-3" style={{ background: "rgba(0,0,0,0.3)" }}>
+              <p className="text-xs italic" style={{ color: GRAY_LIGHT }}>
+                Linemaster trade show display, late 1950s
+              </p>
+            </div>
           </motion.div>
 
           {/* Quick stats */}
-          <motion.div variants={fadeUp} className="grid grid-cols-3 gap-6 mt-10">
+          <motion.div variants={fadeUp} className="grid grid-cols-3 gap-6">
             {[
-              { value: "70+", label: "Years" },
-              { value: "500+", label: "OEM Partners" },
-              { value: "1M+", label: "Units Shipped" },
+              { value: "1937", label: "Origins" },
+              { value: "300+", label: "Catalog Items" },
+              { value: "50K+", label: "Sq Ft Facility" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-2xl md:text-3xl font-bold" style={{ color: BLUE }}>{stat.value}</div>
@@ -264,18 +315,101 @@ function CompanyStorySection() {
             ))}
           </motion.div>
         </div>
+      </div>
+    </SectionWrapper>
+  );
+}
 
-        {/* Right — image placeholder */}
-        <motion.div
-          variants={fadeUp}
-          className="relative rounded-2xl overflow-hidden aspect-[4/3] flex items-center justify-center"
-          style={{ background: NAVY_LIGHTER, border: `1px solid rgba(255,255,255,0.06)` }}
-        >
-          <div className="absolute inset-0" style={{ background: `radial-gradient(circle at 50% 50%, ${BLUE_GLOW} 0%, transparent 70%)` }} />
-          <div className="relative text-center p-8">
-            <Factory className="w-16 h-16 mx-auto mb-4 opacity-30" style={{ color: BLUE }} />
-            <p className="text-sm" style={{ color: GRAY }}>Company Heritage Photo</p>
-            <p className="text-xs mt-1" style={{ color: GRAY }}>800 x 600 recommended</p>
+// ---------------------------------------------------------------------------
+// 2b. Legacy of Innovation
+// ---------------------------------------------------------------------------
+function LegacySection() {
+  return (
+    <SectionWrapper className="py-14 lg:py-20 max-w-7xl mx-auto" id="legacy">
+      <div className="text-center mb-10">
+        <SectionLabel>Our Heritage</SectionLabel>
+        <SectionTitle>A Legacy of Innovation and Growth</SectionTitle>
+        <motion.p variants={fadeUp} className="max-w-3xl mx-auto text-base leading-relaxed" style={{ color: GRAY_LIGHT }}>
+          From a handful of models in a Connecticut carriage house to hundreds of catalog items
+          manufactured in a state-of-the-art facility, Linemaster's story is one of relentless
+          innovation and enduring family stewardship.
+        </motion.p>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-16 items-start">
+        {/* Left column */}
+        <motion.div variants={fadeUp} className="space-y-5 text-base leading-relaxed" style={{ color: GRAY_LIGHT }}>
+          <p>
+            During the 1950s, additional models rapidly joined the Linemaster family:{" "}
+            <strong className="font-semibold" style={{ color: WHITE }}>
+              Hercules, Nautilus, Cadet, Clipper, Executive, and Deluxe
+            </strong>
+            &mdash;most of which remain in production to this day, a testament to the durability of
+            Al Simonds' original designs.
+          </p>
+          <p>
+            Al Simonds' untimely death in{" "}
+            <strong className="font-semibold" style={{ color: WHITE }}>1966</strong> left the company
+            at a crossroads. His wife,{" "}
+            <strong className="font-semibold" style={{ color: WHITE }}>Nancy Simonds</strong>, stepped
+            into the roles of President and Treasurer, guiding Linemaster with steady hands for over
+            three decades until her retirement in 2002.
+          </p>
+          <p>
+            <strong className="font-semibold" style={{ color: WHITE }}>Joseph Carlone</strong> joined
+            the company as Vice President and General Manager in 1996, was named President in 1998,
+            and purchased Linemaster Switch Corporation in{" "}
+            <strong className="font-semibold" style={{ color: WHITE }}>June 2002</strong>, guiding it
+            into the new millennium with a focus on advanced manufacturing and medical-grade quality.
+          </p>
+        </motion.div>
+
+        {/* Right column */}
+        <motion.div variants={fadeUp} className="space-y-5 text-base leading-relaxed" style={{ color: GRAY_LIGHT }}>
+          <p>
+            Today, Linemaster operates on{" "}
+            <strong className="font-semibold" style={{ color: WHITE }}>91 acres</strong> of the
+            original "Bald Hill" property in Woodstock, Connecticut, with over{" "}
+            <strong className="font-semibold" style={{ color: WHITE }}>50,000 square feet</strong> of
+            manufacturing space and more than{" "}
+            <strong className="font-semibold" style={{ color: WHITE }}>300 standard catalog items</strong>.
+          </p>
+          <p>
+            The company leverages modern technologies including{" "}
+            <strong className="font-semibold" style={{ color: WHITE }}>
+              solid modeling, stereolithography, and rapid prototyping
+            </strong>{" "}
+            to bring new products from concept to production faster than ever. Recent innovations like
+            the <strong className="font-semibold" style={{ color: WHITE }}>Air Seal</strong>,{" "}
+            <strong className="font-semibold" style={{ color: WHITE }}>Atlas</strong>, and{" "}
+            <strong className="font-semibold" style={{ color: WHITE }}>Aquiline</strong> foot switches
+            are designed not just for today's demands, but for tomorrow's standards.
+          </p>
+
+          {/* Original logo image */}
+          <div className="mt-6 rounded-2xl overflow-hidden" style={{ border: `1px solid rgba(255,255,255,0.06)` }}>
+            <img
+              src="/linemaster/images/linemaster_first_logo_edited.jpg"
+              alt="Original Linemaster logo — America's Foot Switch Leader"
+              className="w-full h-auto object-cover"
+            />
+            <div className="px-4 py-3" style={{ background: "rgba(0,0,0,0.3)" }}>
+              <p className="text-xs italic" style={{ color: GRAY_LIGHT }}>
+                The original LINEMASTER brand — "America's Foot Switch Leader"
+              </p>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="pt-4">
+            <Link
+              href="/custom-solutions"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-semibold transition-all hover:scale-105"
+              style={{ background: BLUE, color: WHITE }}
+            >
+              Talk to Our Experts
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </motion.div>
       </div>
@@ -315,8 +449,8 @@ const missionCards = [
 
 function MissionSection() {
   return (
-    <SectionWrapper className="py-24 lg:py-32 max-w-7xl mx-auto" id="mission">
-      <div className="text-center mb-16">
+    <SectionWrapper className="py-14 lg:py-20 max-w-7xl mx-auto" id="mission">
+      <div className="text-center mb-10">
         <SectionLabel>Who We Are</SectionLabel>
         <SectionTitle>Mission, Vision &amp; Values</SectionTitle>
       </div>
@@ -384,9 +518,9 @@ const qualityHighlights = [
 
 function CertificationsSection() {
   return (
-    <SectionWrapper className="py-24 lg:py-32" id="certifications">
+    <SectionWrapper className="py-14 lg:py-20" id="certifications">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
+        <div className="text-center mb-10">
           <SectionLabel>Quality Assurance</SectionLabel>
           <SectionTitle>Certifications &amp; Quality Systems</SectionTitle>
           <motion.p variants={fadeUp} className="max-w-2xl mx-auto text-base leading-relaxed" style={{ color: GRAY_LIGHT }}>
@@ -396,7 +530,7 @@ function CertificationsSection() {
         </div>
 
         {/* ISO Badge — prominent */}
-        <motion.div variants={fadeUp} className="flex justify-center mb-16">
+        <motion.div variants={fadeUp} className="flex justify-center mb-10">
           <div
             className="relative rounded-2xl p-10 md:p-14 text-center max-w-lg w-full"
             style={{
@@ -463,8 +597,8 @@ const capabilities = [
 
 function CapabilitiesSection() {
   return (
-    <SectionWrapper className="py-24 lg:py-32 max-w-7xl mx-auto" id="capabilities">
-      <div className="text-center mb-16">
+    <SectionWrapper className="py-14 lg:py-20 max-w-7xl mx-auto" id="capabilities">
+      <div className="text-center mb-10">
         <SectionLabel>What We Do</SectionLabel>
         <SectionTitle>Manufacturing Capabilities</SectionTitle>
         <motion.p variants={fadeUp} className="max-w-2xl mx-auto text-base leading-relaxed" style={{ color: GRAY_LIGHT }}>
@@ -533,8 +667,8 @@ const industrialIndustries = [
 
 function IndustriesSection() {
   return (
-    <SectionWrapper className="py-24 lg:py-32 max-w-7xl mx-auto" id="industries">
-      <div className="text-center mb-16">
+    <SectionWrapper className="py-14 lg:py-20 max-w-7xl mx-auto" id="industries">
+      <div className="text-center mb-10">
         <SectionLabel>Industries We Serve</SectionLabel>
         <SectionTitle>Trusted Across Critical Markets</SectionTitle>
       </div>
@@ -645,8 +779,8 @@ const services = [
 
 function ServicesSection() {
   return (
-    <SectionWrapper className="py-24 lg:py-32 max-w-7xl mx-auto" id="services">
-      <div className="text-center mb-16">
+    <SectionWrapper className="py-14 lg:py-20 max-w-7xl mx-auto" id="services">
+      <div className="text-center mb-10">
         <SectionLabel>How We Help</SectionLabel>
         <SectionTitle>End-to-End Services</SectionTitle>
       </div>
@@ -682,20 +816,23 @@ function ServicesSection() {
 // 8. Company Timeline
 // ---------------------------------------------------------------------------
 const timelineEvents = [
-  { year: "1952", title: "Founded", desc: "Linemaster Switch Corporation established as a manufacturer of industrial foot controls." },
-  { year: "1960s", title: "Market Expansion", desc: "Expanded product line to serve growing automotive, manufacturing, and defense industries." },
-  { year: "1970s", title: "Engineering Innovation", desc: "Introduced sealed and heavy-duty foot switches, setting new standards for durability and reliability." },
-  { year: "1980s", title: "Medical Market Entry", desc: "Began developing foot controls for medical device OEMs, entering operating room and imaging markets." },
-  { year: "1990s", title: "Facility Modernization", desc: "Major investment in modern production equipment, CAD/CAM design tools, and quality testing infrastructure." },
-  { year: "2000s", title: "ISO 13485 Certification", desc: "Achieved ISO 13485 certification, formalizing our commitment to medical device quality management." },
-  { year: "2010s", title: "Global OEM Partnerships", desc: "Became trusted supplier to Johnson & Johnson, Stryker, and other Fortune 500 medical device manufacturers." },
-  { year: "2020s", title: "Next-Generation Innovation", desc: "Advancing wireless, programmable, and ergonomic foot control technologies for the future of surgery and industry." },
+  { year: "1937", title: "Simonds Machine Co.", desc: "Albert Simonds incorporates the Simonds Machine Company in Southbridge, MA, producing Lensmaster optical machinery." },
+  { year: "1940s", title: "The Foot Switch is Born", desc: "Al invents the foot switch for hands-free machine operation. The Senior, Junior, and Duplex models launch the LINEMASTER brand." },
+  { year: "1945", title: "Post-War Expansion", desc: "Treadlite, Compact, and Electro-Lok models introduced as demand surges after WWII." },
+  { year: "1952", title: "Linemaster Established", desc: "Linemaster Switch Corporation officially established May 1, 1952 at Bald Hill Acres in Woodstock, Connecticut." },
+  { year: "1950s", title: "Product Line Grows", desc: "Hercules, Nautilus, Cadet, Clipper, Executive, and Deluxe models expand the catalog to serve American industry." },
+  { year: "1966", title: "Founder's Legacy", desc: "Al Simonds passes, leaving a strong legacy. Nancy Simonds becomes President and carries the company forward." },
+  { year: "1996", title: "New Leadership", desc: "Joseph Carlone joins as VP/GM, bringing manufacturing expertise. Named President in 1998." },
+  { year: "2002", title: "New Ownership", desc: "Joseph Carlone purchases Linemaster Switch Corporation, guiding it into the new millennium." },
+  { year: "2000s", title: "ISO 13485 Certified", desc: "Achieves ISO 13485 certification, formalizing commitment to medical device quality management." },
+  { year: "2010s", title: "Global OEM Partnerships", desc: "Becomes trusted supplier to Fortune 500 medical device manufacturers worldwide." },
+  { year: "Today", title: "America's Foot Switch Leader", desc: "50,000+ sq ft facility on 91 acres, producing 300+ catalog items with cutting-edge design and manufacturing technology." },
 ];
 
 function TimelineSection() {
   return (
-    <SectionWrapper className="py-24 lg:py-32 max-w-7xl mx-auto" id="timeline">
-      <div className="text-center mb-16">
+    <SectionWrapper className="py-14 lg:py-20 max-w-7xl mx-auto" id="timeline">
+      <div className="text-center mb-10">
         <SectionLabel>Our Journey</SectionLabel>
         <SectionTitle>A Legacy of Innovation</SectionTitle>
       </div>
@@ -770,7 +907,7 @@ function TimelineSection() {
 // ---------------------------------------------------------------------------
 function ContactSection() {
   return (
-    <SectionWrapper className="py-24 lg:py-32" id="contact">
+    <SectionWrapper className="py-14 lg:py-20" id="contact">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left: info */}
@@ -883,6 +1020,8 @@ export default function AboutPage() {
       <Divider />
       <CompanyStorySection />
       <Divider />
+      <LegacySection />
+      <Divider />
       <MissionSection />
       <Divider />
       <CertificationsSection />
@@ -897,7 +1036,7 @@ export default function AboutPage() {
       <Divider />
       <ContactSection />
       {/* Bottom spacer for footer */}
-      <div className="h-20" />
+      <div className="h-10" />
     </div>
   );
 }
