@@ -80,9 +80,14 @@ export function ProductCard({ product, matchReasons }: ProductCardProps) {
             </span>
           ) : null}
         </div>
-        <p className="text-sm text-muted-foreground mb-4 leading-relaxed min-h-[40px]">
-          {product.description}
-        </p>
+        {product.description &&
+          product.description !== `${product.series} - ${product.part_number}` &&
+          product.description !== `${product.series} - ${product.id}` &&
+          product.description !== product.series && (
+          <p className="text-sm text-muted-foreground mb-4 leading-relaxed min-h-[40px]">
+            {product.description}
+          </p>
+        )}
 
         {/* Tags */}
         <div className="flex flex-wrap gap-1.5 mb-5 min-h-[32px]">
