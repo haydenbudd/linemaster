@@ -11,6 +11,10 @@ import {
   CircleDot,
   ToggleLeft,
   Gauge,
+  Building2,
+  Briefcase,
+  ShieldCheck,
+  ShieldOff,
 } from 'lucide-react';
 
 export interface Option {
@@ -21,7 +25,30 @@ export interface Option {
   isMedical?: boolean;
   availableFor?: string[];
   hideFor?: string[];
+  parentCategory?: string;
 }
+
+export const categories: Option[] = [
+  {
+    id: 'industrial',
+    label: 'Industrial & Manufacturing',
+    icon: Building2,
+    description: 'Heavy machinery, CNC, woodworking, assembly lines',
+  },
+  {
+    id: 'medical',
+    label: 'Medical & Healthcare',
+    icon: Heart,
+    description: 'Surgical, diagnostic, patient care equipment',
+    isMedical: true,
+  },
+  {
+    id: 'commercial',
+    label: 'Commercial & Specialty',
+    icon: Briefcase,
+    description: 'Automotive, creative, and general-purpose applications',
+  },
+];
 
 export const applications: Option[] = [
   {
@@ -29,6 +56,7 @@ export const applications: Option[] = [
     label: 'Industrial & Manufacturing',
     icon: Factory,
     description: 'Heavy machinery, CNC, assembly',
+    parentCategory: 'industrial',
   },
   {
     id: 'medical',
@@ -36,30 +64,35 @@ export const applications: Option[] = [
     icon: Heart,
     description: 'Surgical, diagnostic, patient care',
     isMedical: true,
+    parentCategory: 'medical',
   },
   {
     id: 'automotive',
     label: 'Automotive & Repair',
     icon: Car,
     description: 'Lifts, paint booths, tire changers',
+    parentCategory: 'commercial',
   },
   {
     id: 'woodworking',
     label: 'Woodworking',
     icon: Hammer,
     description: 'Saws, lathes, routers',
+    parentCategory: 'industrial',
   },
   {
     id: 'tattoo',
     label: 'Tattoo & Body Art',
     icon: Palette,
     description: 'Precision control for artists',
+    parentCategory: 'commercial',
   },
   {
     id: 'general',
     label: 'General / Other',
     icon: Coffee,
     description: 'Office, consumer, specialty',
+    parentCategory: 'commercial',
   },
 ];
 
@@ -221,5 +254,20 @@ export const accessories: Option[] = [
     id: 'color',
     label: 'Custom Color',
     description: 'Match your device.',
+  },
+];
+
+export const guards: Option[] = [
+  {
+    id: 'yes',
+    label: 'Yes, Add Guard',
+    icon: ShieldCheck,
+    description: 'Safety guard prevents accidental activation.',
+  },
+  {
+    id: 'no',
+    label: 'No Guard Needed',
+    icon: ShieldOff,
+    description: 'No safety guard required.',
   },
 ];

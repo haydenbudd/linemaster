@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchProducts, Product, Option } from '@/app/lib/api';
 import {
+  categories as staticCategories,
   applications as staticApplications,
   technologies as staticTechnologies,
   actions as staticActions,
@@ -10,6 +11,7 @@ import {
   pedalCounts as staticPedalCounts,
   medicalTechnicalFeatures as staticMedicalTechnicalFeatures,
   accessories as staticAccessories,
+  guards as staticGuards,
 } from '@/app/data/options';
 import { products as staticProducts } from '@/app/data/products';
 
@@ -18,6 +20,7 @@ interface OptionWithIcon extends Option {
   isMedical?: boolean;
   availableFor?: string[];
   hideFor?: string[];
+  parentCategory?: string;
 }
 
 // Convert static options (React component icons) to OptionWithIcon (string icon names)
@@ -31,12 +34,14 @@ function toOptionWithIcon(opt: any): OptionWithIcon {
     isMedical: opt.isMedical || false,
     availableFor: opt.availableFor || undefined,
     hideFor: opt.hideFor || undefined,
+    parentCategory: opt.parentCategory || undefined,
     sortOrder: opt.sortOrder || 0,
   };
 }
 
 interface ProductData {
   products: Product[];
+  categories: OptionWithIcon[];
   applications: OptionWithIcon[];
   technologies: OptionWithIcon[];
   actions: OptionWithIcon[];
@@ -44,6 +49,7 @@ interface ProductData {
   features: OptionWithIcon[];
   consoleStyles: OptionWithIcon[];
   pedalCounts: OptionWithIcon[];
+  guards: OptionWithIcon[];
   medicalTechnicalFeatures: OptionWithIcon[];
   accessories: OptionWithIcon[];
   materials: OptionWithIcon[];
@@ -56,6 +62,7 @@ interface ProductData {
 
 // Pre-compute static option data so the wizard renders instantly
 const staticOptionData = {
+  categories: staticCategories.map(toOptionWithIcon),
   applications: staticApplications.map(toOptionWithIcon),
   technologies: staticTechnologies.map(toOptionWithIcon),
   actions: staticActions.map(toOptionWithIcon),
@@ -65,6 +72,7 @@ const staticOptionData = {
   pedalCounts: staticPedalCounts.map(toOptionWithIcon),
   medicalTechnicalFeatures: staticMedicalTechnicalFeatures.map(toOptionWithIcon),
   accessories: staticAccessories.map(toOptionWithIcon),
+  guards: staticGuards.map(toOptionWithIcon),
 };
 
 export function useProductData(): ProductData {
@@ -166,6 +174,7 @@ export function useProductData(): ProductData {
   // API options could supplement in the future but should never be the sole source.
   return {
     products,
+    categories: staticOptionData.categories,
     applications: staticOptionData.applications,
     technologies: staticOptionData.technologies,
     actions: staticOptionData.actions,
@@ -173,6 +182,7 @@ export function useProductData(): ProductData {
     features: staticOptionData.features,
     consoleStyles: staticOptionData.consoleStyles,
     pedalCounts: staticOptionData.pedalCounts,
+    guards: staticOptionData.guards,
     medicalTechnicalFeatures: staticOptionData.medicalTechnicalFeatures,
     accessories: staticOptionData.accessories,
     materials,

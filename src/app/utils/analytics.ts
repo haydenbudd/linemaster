@@ -29,3 +29,7 @@ export function trackQuoteRequest(flow: string, data: WizardStepData = {}) {
 export function trackNoResults(data: WizardStepData = {}) {
   console.log('[Analytics] No results:', data);
 }
+
+export function trackEvent(eventName: string, data: Record<string, any> = {}) {
+  console.log('[Analytics] Event:', eventName, data);
+}

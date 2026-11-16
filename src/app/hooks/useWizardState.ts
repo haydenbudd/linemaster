@@ -5,6 +5,7 @@ type FlowType = 'standard' | 'medical';
 export interface WizardState {
   flow: FlowType;
   step: number;
+  selectedCategory: string;
   selectedApplication: string;
   selectedTechnology: string;
   selectedAction: string;
@@ -15,7 +16,9 @@ export interface WizardState {
   selectedGuard: string;
   selectedPedalConfig: string;
   selectedFeatures: string[];
+  selectedCertifications: string[];
   // Medical flow
+  medicalSubFlow: string;
   selectedConsoleStyle: string;
   selectedPedalCount: string;
   selectedMedicalFeatures: string[];
@@ -23,6 +26,7 @@ export interface WizardState {
   // Setters
   setFlow: (flow: FlowType) => void;
   setStep: (step: number) => void;
+  setSelectedCategory: (id: string) => void;
   setSelectedApplication: (id: string) => void;
   setSelectedTechnology: (id: string) => void;
   setSelectedAction: (id: string) => void;
@@ -33,6 +37,8 @@ export interface WizardState {
   setSelectedGuard: (id: string) => void;
   setSelectedPedalConfig: (id: string) => void;
   setSelectedFeatures: React.Dispatch<React.SetStateAction<string[]>>;
+  setSelectedCertifications: React.Dispatch<React.SetStateAction<string[]>>;
+  setMedicalSubFlow: (id: string) => void;
   setSelectedConsoleStyle: (id: string) => void;
   setSelectedPedalCount: (id: string) => void;
   setSelectedMedicalFeatures: React.Dispatch<React.SetStateAction<string[]>>;
@@ -43,6 +49,7 @@ export interface WizardState {
 export function useWizardState(): WizardState {
   const [flow, setFlow] = useState<FlowType>('standard');
   const [step, setStep] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedApplication, setSelectedApplication] = useState('');
   const [selectedTechnology, setSelectedTechnology] = useState('');
   const [selectedAction, setSelectedAction] = useState('');
@@ -53,7 +60,9 @@ export function useWizardState(): WizardState {
   const [selectedGuard, setSelectedGuard] = useState('');
   const [selectedPedalConfig, setSelectedPedalConfig] = useState('');
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [selectedCertifications, setSelectedCertifications] = useState<string[]>([]);
   // Medical flow
+  const [medicalSubFlow, setMedicalSubFlow] = useState('');
   const [selectedConsoleStyle, setSelectedConsoleStyle] = useState('');
   const [selectedPedalCount, setSelectedPedalCount] = useState('');
   const [selectedMedicalFeatures, setSelectedMedicalFeatures] = useState<string[]>([]);
@@ -62,6 +71,7 @@ export function useWizardState(): WizardState {
   const resetWizard = useCallback(() => {
     setFlow('standard');
     setStep(0);
+    setSelectedCategory('');
     setSelectedApplication('');
     setSelectedTechnology('');
     setSelectedAction('');
@@ -72,6 +82,8 @@ export function useWizardState(): WizardState {
     setSelectedGuard('');
     setSelectedPedalConfig('');
     setSelectedFeatures([]);
+    setSelectedCertifications([]);
+    setMedicalSubFlow('');
     setSelectedConsoleStyle('');
     setSelectedPedalCount('');
     setSelectedMedicalFeatures([]);
@@ -81,6 +93,7 @@ export function useWizardState(): WizardState {
   return {
     flow,
     step,
+    selectedCategory,
     selectedApplication,
     selectedTechnology,
     selectedAction,
@@ -91,12 +104,15 @@ export function useWizardState(): WizardState {
     selectedGuard,
     selectedPedalConfig,
     selectedFeatures,
+    selectedCertifications,
+    medicalSubFlow,
     selectedConsoleStyle,
     selectedPedalCount,
     selectedMedicalFeatures,
     selectedAccessories,
     setFlow,
     setStep,
+    setSelectedCategory,
     setSelectedApplication,
     setSelectedTechnology,
     setSelectedAction,
@@ -107,6 +123,8 @@ export function useWizardState(): WizardState {
     setSelectedGuard,
     setSelectedPedalConfig,
     setSelectedFeatures,
+    setSelectedCertifications,
+    setMedicalSubFlow,
     setSelectedConsoleStyle,
     setSelectedPedalCount,
     setSelectedMedicalFeatures,
