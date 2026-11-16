@@ -4,9 +4,10 @@ import { ProductCard } from '@/app/components/ProductCard';
 import { FilterChip } from '@/app/components/FilterChip';
 import { EnhancedSearch } from '@/app/components/EnhancedSearch';
 import { GlassCard } from '@/app/components/GlassCard';
+import { BackButton } from '@/app/components/wizard/WizardStep';
 import { getProxiedImageUrl } from '@/app/utils/imageProxy';
 import { getProcessedProducts } from '@/app/utils/productFilters';
-import { ChevronLeft, ArrowRight, Download, Send, CheckCircle, Star } from 'lucide-react';
+import { ArrowRight, Download, Send, CheckCircle, Star } from 'lucide-react';
 
 export interface ResultsPageProps {
   wizardState: WizardState;
@@ -62,6 +63,7 @@ export function ResultsPage({
   if (needsCustomSolution) {
     return (
       <div className="max-w-[800px] mx-auto px-6 py-8">
+        <BackButton onClick={onBack} />
         <GlassCard cornerRadius={28} padding="0" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full overflow-hidden">
           {/* Banner */}
           <div
@@ -190,20 +192,11 @@ export function ResultsPage({
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 py-8">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 mb-4 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] rounded-xl transition-all"
-      >
-        <ChevronLeft className="w-4 h-4" />
-        Back
-      </button>
+      <BackButton onClick={onBack} />
 
       <div className="text-center mb-12">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-bold uppercase tracking-widest mb-4">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/60 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-          </span>
+          <span className="inline-flex rounded-full h-2 w-2 bg-primary"></span>
           {products.length} Products Analyzed
         </div>
 

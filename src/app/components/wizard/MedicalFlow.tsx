@@ -1,7 +1,7 @@
 import { Option } from '@/app/lib/api';
 import { WizardState } from '@/app/hooks/useWizardState';
 import { OptionCard } from '@/app/components/OptionCard';
-import { ProgressDots } from '@/app/components/ProgressDots';
+import { WizardStep } from '@/app/components/wizard/WizardStep';
 import { GlassCard } from '@/app/components/GlassCard';
 import { Header } from '@/app/components/Header';
 
@@ -104,124 +104,85 @@ export function MedicalFlow({
       )}
 
       {wizardState.step === 2 && (
-        <div className="max-w-[800px] mx-auto px-6 py-8">
-          <ProgressDots currentStep={0} totalSteps={totalSteps} isMedical />
-          <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
-            <div className="text-[#ff2d55] text-xs font-semibold uppercase tracking-wider mb-2">
-              STEP 1 OF {totalSteps}
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Console Style</h2>
-            <p className="text-sm text-muted-foreground mb-6">Select your preferred platform.</p>
-
-            <div className="mb-6">
-              <img
-                src={getProxiedImageUrl("https://linemaster.com/wp-content/uploads/2024/10/custom-footswitches-img-group.png")}
-                alt="Custom Footswitches"
-                className="max-w-[320px] mx-auto rounded-xl"
-              />
-            </div>
-
-            <div className="space-y-4 mb-8">
-              {consoleStyles.map((option) => (
-                <OptionCard
-                  key={option.id}
-                  option={option}
-                  selected={wizardState.selectedConsoleStyle === option.id}
-                  onSelect={() => {
-                    wizardState.setSelectedConsoleStyle(option.id);
-                    setTimeout(onContinue, 150);
-                  }}
-                />
-              ))}
-            </div>
-
-            <div className="flex items-center justify-between">
-              <button
-                onClick={onBack}
-                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
+        <WizardStep
+          isMedical
+          progressStep={0}
+          totalSteps={totalSteps}
+          displayStep={1}
+          onBack={onBack}
+          title="Console Style"
+          description="Select your preferred platform."
+          footer={
+            <div className="flex items-center justify-center">
               <span className="text-sm text-muted-foreground">Select to continue</span>
             </div>
-          </GlassCard>
-        </div>
+          }
+        >
+          <div className="mb-6">
+            <img
+              src={getProxiedImageUrl("https://linemaster.com/wp-content/uploads/2024/10/custom-footswitches-img-group.png")}
+              alt="Custom Footswitches"
+              className="max-w-[320px] mx-auto rounded-xl"
+            />
+          </div>
+
+          <div className="space-y-4 mb-8">
+            {consoleStyles.map((option) => (
+              <OptionCard
+                key={option.id}
+                option={option}
+                selected={wizardState.selectedConsoleStyle === option.id}
+                onSelect={() => {
+                  wizardState.setSelectedConsoleStyle(option.id);
+                  setTimeout(onContinue, 150);
+                }}
+              />
+            ))}
+          </div>
+        </WizardStep>
       )}
 
       {wizardState.step === 3 && (
-        <div className="max-w-[800px] mx-auto px-6 py-8">
-          <ProgressDots currentStep={1} totalSteps={totalSteps} isMedical />
-          <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
-            <div className="text-[#ff2d55] text-xs font-semibold uppercase tracking-wider mb-2">
-              STEP 2 OF {totalSteps}
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-6">Pedal Count</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              {pedalCounts.map((option) => (
-                <OptionCard
-                  key={option.id}
-                  option={option}
-                  selected={wizardState.selectedPedalCount === option.id}
-                  onSelect={() => {
-                    wizardState.setSelectedPedalCount(option.id);
-                    setTimeout(onContinue, 150);
-                  }}
-                />
-              ))}
-            </div>
-
-            <div className="flex items-center justify-between">
-              <button
-                onClick={onBack}
-                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
+        <WizardStep
+          isMedical
+          progressStep={1}
+          totalSteps={totalSteps}
+          displayStep={2}
+          onBack={onBack}
+          title="Pedal Count"
+          footer={
+            <div className="flex items-center justify-center">
               <span className="text-sm text-muted-foreground">Select to continue</span>
             </div>
-          </GlassCard>
-        </div>
+          }
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            {pedalCounts.map((option) => (
+              <OptionCard
+                key={option.id}
+                option={option}
+                selected={wizardState.selectedPedalCount === option.id}
+                onSelect={() => {
+                  wizardState.setSelectedPedalCount(option.id);
+                  setTimeout(onContinue, 150);
+                }}
+              />
+            ))}
+          </div>
+        </WizardStep>
       )}
 
       {wizardState.step === 4 && (
-        <div className="max-w-[800px] mx-auto px-6 py-8">
-          <ProgressDots currentStep={2} totalSteps={totalSteps} isMedical />
-          <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
-            <div className="text-[#ff2d55] text-xs font-semibold uppercase tracking-wider mb-2">
-              STEP 3 OF {totalSteps}
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Technical Features</h2>
-            <p className="text-sm text-muted-foreground mb-6">Select all that apply.</p>
-
-            <div className="space-y-4 mb-8">
-              {medicalTechnicalFeatures.map((option) => (
-                <OptionCard
-                  key={option.id}
-                  option={option}
-                  selected={wizardState.selectedMedicalFeatures.includes(option.id)}
-                  multiSelect
-                  onSelect={() => {
-                    wizardState.setSelectedMedicalFeatures((prev) =>
-                      prev.includes(option.id)
-                        ? prev.filter((id) => id !== option.id)
-                        : [...prev, option.id]
-                    );
-                  }}
-                />
-              ))}
-            </div>
-
-            <div className="flex items-center justify-between">
-              <button
-                onClick={onBack}
-                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
+        <WizardStep
+          isMedical
+          progressStep={2}
+          totalSteps={totalSteps}
+          displayStep={3}
+          onBack={onBack}
+          title="Technical Features"
+          description="Select all that apply."
+          footer={
+            <div className="flex items-center justify-end">
               <button
                 onClick={onContinue}
                 className="flex items-center gap-2 px-8 py-3 bg-[#ff2d55] hover:bg-[#ff2d55]/90 text-white font-semibold rounded-xl transition-colors"
@@ -230,46 +191,39 @@ export function MedicalFlow({
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-          </GlassCard>
-        </div>
+          }
+        >
+          <div className="space-y-4 mb-8">
+            {medicalTechnicalFeatures.map((option) => (
+              <OptionCard
+                key={option.id}
+                option={option}
+                selected={wizardState.selectedMedicalFeatures.includes(option.id)}
+                multiSelect
+                onSelect={() => {
+                  wizardState.setSelectedMedicalFeatures((prev) =>
+                    prev.includes(option.id)
+                      ? prev.filter((id) => id !== option.id)
+                      : [...prev, option.id]
+                  );
+                }}
+              />
+            ))}
+          </div>
+        </WizardStep>
       )}
 
       {wizardState.step === 5 && (
-        <div className="max-w-[800px] mx-auto px-6 py-8">
-          <ProgressDots currentStep={3} totalSteps={totalSteps} isMedical />
-          <GlassCard cornerRadius={28} padding="32px" blurAmount={0.25} saturation={150} displacementScale={40} overLight className="w-full">
-            <div className="text-[#ff2d55] text-xs font-semibold uppercase tracking-wider mb-2">
-              STEP 4 OF {totalSteps}
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Accessories & Add-ons</h2>
-            <p className="text-sm text-muted-foreground mb-6">Select all that apply.</p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              {accessories.map((option) => (
-                <OptionCard
-                  key={option.id}
-                  option={option}
-                  selected={wizardState.selectedAccessories.includes(option.id)}
-                  multiSelect
-                  onSelect={() => {
-                    wizardState.setSelectedAccessories((prev) =>
-                      prev.includes(option.id)
-                        ? prev.filter((id) => id !== option.id)
-                        : [...prev, option.id]
-                    );
-                  }}
-                />
-              ))}
-            </div>
-
-            <div className="flex items-center justify-between">
-              <button
-                onClick={onBack}
-                className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
+        <WizardStep
+          isMedical
+          progressStep={3}
+          totalSteps={totalSteps}
+          displayStep={4}
+          onBack={onBack}
+          title="Accessories & Add-ons"
+          description="Select all that apply."
+          footer={
+            <div className="flex items-center justify-end">
               <button
                 onClick={onContinue}
                 className="flex items-center gap-2 px-8 py-3 bg-[#ff2d55] hover:bg-[#ff2d55]/90 text-white font-semibold rounded-xl transition-colors"
@@ -278,9 +232,28 @@ export function MedicalFlow({
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-          </GlassCard>
-        </div>
+          }
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            {accessories.map((option) => (
+              <OptionCard
+                key={option.id}
+                option={option}
+                selected={wizardState.selectedAccessories.includes(option.id)}
+                multiSelect
+                onSelect={() => {
+                  wizardState.setSelectedAccessories((prev) =>
+                    prev.includes(option.id)
+                      ? prev.filter((id) => id !== option.id)
+                      : [...prev, option.id]
+                  );
+                }}
+              />
+            ))}
+          </div>
+        </WizardStep>
       )}
+
 
       {wizardState.step === 6 && (
         <div className="max-w-[800px] mx-auto px-6 py-8">
@@ -381,7 +354,7 @@ export function MedicalFlow({
                   className="flex items-center gap-2 px-6 py-3 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  Back to Accessories
+                  Back
                 </button>
               </div>
             </div>
