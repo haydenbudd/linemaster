@@ -1,6 +1,17 @@
-import { Check } from 'lucide-react';
-import * as Icons from 'lucide-react';
+import {
+  Anvil, Box, Layers, Circle, Feather, Scale, Shield, Footprints,
+  Factory, Heart, Car, Hammer, Palette, Coffee, Zap, Wind, Radio, CircleDot,
+  ToggleLeft, Gauge, Building2, Briefcase, ShieldCheck, ShieldOff, Check,
+  type LucideIcon,
+} from 'lucide-react';
 import { Option } from '@/app/lib/api';
+
+// Explicit map (instead of `import * as Icons`) so unused icons are tree-shaken.
+const ICONS: Record<string, LucideIcon> = {
+  Anvil, Box, Layers, Circle, Feather, Scale, Shield, Footprints,
+  Factory, Heart, Car, Hammer, Palette, Coffee, Zap, Wind, Radio, CircleDot,
+  ToggleLeft, Gauge, Building2, Briefcase, ShieldCheck, ShieldOff,
+};
 
 interface OptionCardProps {
   option: Option;
@@ -19,7 +30,7 @@ export function OptionCard({
   const IconComponent = (() => {
     if (!option.icon) return null;
     if (typeof option.icon === 'string') {
-      return (Icons as any)[option.icon] || null;
+      return ICONS[option.icon] || null;
     }
     // Already a React component (e.g., from static data)
     if (typeof option.icon === 'function' || typeof option.icon === 'object') {

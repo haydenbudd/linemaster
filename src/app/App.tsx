@@ -1,20 +1,28 @@
-import { useState, Suspense, lazy, useMemo } from 'react';
+import { useState, useEffect, Suspense, lazy, useMemo } from 'react';
 import { Router } from '@/app/components/Router';
 import { Header } from '@/app/components/Header';
 
 import { useProductData } from '@/app/hooks/useProductData';
 import { useWizardState } from '@/app/hooks/useWizardState';
 import { trackWizardStep, trackNoResults } from '@/app/utils/analytics';
-import { generatePDF } from '@/app/utils/generatePDF';
-import { MedicalFlow } from '@/app/components/wizard/MedicalFlow';
 import { StandardSteps } from '@/app/components/wizard/StandardSteps';
-import { ResultsPage } from '@/app/components/wizard/ResultsPage';
 
 // Lazy load admin panel
 const AdminContainer = lazy(() =>
   import('@/app/components/admin/AdminContainer').then(module => ({
     default: module.AdminContainer
   }))
+);
+
+const MedicalFlow = lazy(() =>
+  import('@/app/components/wizard/MedicalFlow').then(m => ({ default: m.MedicalFlow }))
+);
+const ResultsPage = lazy(() =>
+  import('@/app/components/wizard/ResultsPage').then(m => ({ default: m.ResultsPage }))
+);
+
+const stepFallback = (
+  <div className="flex items-center justify-center py-24 text-sm text-muted-foreground">Loading…</div>
 );
 
 function WizardApp() {
@@ -288,25 +296,8 @@ function WizardApp() {
     return { products: allForApplication, relaxed: 'all' as const };
   };
 
-  const needsCustomSolution = useMemo(() => {
-    const filtered = filterProducts();
-    const hasCustomFeature =
-      wizardState.selectedFeatures.includes('custom_cable') ||
-      wizardState.selectedFeatures.includes('custom_connector');
-
-    if (wizardState.step === 10 && filtered.length === 0) {
-      trackNoResults({
-        application: wizardState.selectedApplication,
-        technology: wizardState.selectedTechnology,
-        action: wizardState.selectedAction,
-        environment: wizardState.selectedEnvironment,
-        features: wizardState.selectedFeatures,
-      });
-    }
-    return hasCustomFeature;
-  }, [
+  const filteredProducts = useMemo(() => filterProducts(), [
     products,
-    wizardState.step,
     wizardState.selectedApplication,
     wizardState.selectedTechnology,
     wizardState.selectedAction,
@@ -316,12 +307,32 @@ function WizardApp() {
     wizardState.selectedConnection,
     wizardState.selectedGuard,
     wizardState.selectedFeatures,
-  ]);
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleGeneratePDF = () => {
+  const needsCustomSolution = useMemo(
+    () =>
+      wizardState.selectedFeatures.includes('custom_cable') ||
+      wizardState.selectedFeatures.includes('custom_connector'),
+    [wizardState.selectedFeatures]
+  );
+
+  useEffect(() => {
+    if (wizardState.step === 10 && filteredProducts.length === 0) {
+      trackNoResults({
+        application: wizardState.selectedApplication,
+        technology: wizardState.selectedTechnology,
+        action: wizardState.selectedAction,
+        environment: wizardState.selectedEnvironment,
+        features: wizardState.selectedFeatures,
+      });
+    }
+  }, [wizardState.step, filteredProducts]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleGeneratePDF = async () => {
+    const { generatePDF } = await import('@/app/utils/generatePDF');
     generatePDF({
       wizardState,
-      matchedProducts: filterProducts(),
+      matchedProducts: filteredProducts,
       applications, technologies, actions, environments, features, duties,
       consoleStyles, pedalCounts, medicalTechnicalFeatures, accessories,
     });
@@ -348,6 +359,7 @@ function WizardApp() {
   // Medical flow
   if (wizardState.flow === 'medical') {
     return (
+      <Suspense fallback={stepFallback}>
       <MedicalFlow
         wizardState={wizardState}
         consoleStyles={consoleStyles}
@@ -361,6 +373,7 @@ function WizardApp() {
         onGeneratePDF={handleGeneratePDF}
         onReset={handleReset}
       />
+      </Suspense>
     );
   }
 
@@ -394,6 +407,7 @@ function WizardApp() {
       )}
 
       {wizardState.step === 10 && (
+        <Suspense fallback={stepFallback}>
         <ResultsPage
           wizardState={wizardState}
           products={products}
@@ -419,6 +433,7 @@ function WizardApp() {
           cordedFilter={cordedFilter}
           setCordedFilter={setCordedFilter}
         />
+        </Suspense>
       )}
     </div>
   );
